@@ -1,0 +1,8 @@
+# IntelliJ project
+.idea
+
+# SBT
+target/
+.bsp
+
+src/main/resources
