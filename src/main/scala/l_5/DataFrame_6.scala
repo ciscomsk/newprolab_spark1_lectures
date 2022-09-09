@@ -164,7 +164,7 @@ object DataFrame_6 extends App {
 
   val right3: DataFrame = airportsDf
     .groupBy('type)
-    .count
+    .count()
     .localCheckpoint()
 
   val resDf5: DataFrame = left2.as("left").join(right.as("right"), joinExpr, "inner")

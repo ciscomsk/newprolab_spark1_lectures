@@ -11,18 +11,19 @@ object DataFrame_1 extends App {
     .getLogger("org")
     .setLevel(Level.OFF)
 
-  val spark: SparkSession = SparkSession
-    .builder
-    .master("local[*]")
-    .appName("DataFrame_1")
-    .getOrCreate()
+  val spark: SparkSession =
+    SparkSession
+      .builder
+      .master("local[*]")
+      .appName("DataFrame_1")
+      .getOrCreate()
 
   val cityList: Vector[String] = Vector("Moscow", "Paris", "Madrid", "London", "New York")
 
   import spark.implicits._
 
-  val df: DataFrame = cityList.toDF
-  df.printSchema
+  val df: DataFrame = cityList.toDF()
+  df.printSchema()
   /*
     root
      |-- value: string (nullable = true)
@@ -111,8 +112,8 @@ object DataFrame_1 extends App {
   withUpperDf.show
 
   /**
-   * select(col(*)) - позволяет получить DF со всеми колонками - полезно, когда не известен список всех колонок,
-   * но нужно выбрать их все и добавить новые колонки.
+   * select(col(*)) - позволяет получить DF со всеми колонками - полезно, когда список всех колонок не известен,
+   * и нужно выбрать все существующие + добавить новые колонки
    */
   withUpperDf
     .select(
@@ -133,7 +134,7 @@ object DataFrame_1 extends App {
       (length('value) + 1).as("length"),
       lit("foo").alias("bar")
     )
-    .explain
+    .explain()
   /*
     == Physical Plan ==
     *(1) Project [value#1, upperCity#97, lower(value#1) AS lowerCity#140, (length(value#1) + 1) AS length#141, foo AS bar#142]

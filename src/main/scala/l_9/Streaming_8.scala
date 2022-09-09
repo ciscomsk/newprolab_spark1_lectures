@@ -2,7 +2,7 @@ package l_9
 
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.sql.functions.{array, lit, shuffle, split}
-import org.apache.spark.sql.streaming.{DataStreamWriter, Trigger}
+import org.apache.spark.sql.streaming.{DataStreamWriter, OutputMode, Trigger}
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{Column, DataFrame, Dataset, Row, SaveMode, SparkSession}
 
@@ -91,6 +91,7 @@ object Streaming_8 extends App {
       .writeStream
       .trigger(Trigger.ProcessingTime("10 seconds"))
       .option("checkpointLocation", s"src/main/resources/l_9/chk/$chkName")
+//      .outputMode(OutputMode.Append())
       .foreachBatch(batchFunc)
 
   createSink("state3", myStreamDf) { (df, id) =>

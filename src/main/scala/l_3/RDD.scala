@@ -14,11 +14,12 @@ object RDD extends App {
     .getLogger("org")
     .setLevel(Level.ERROR)
 
-  val spark: SparkSession = SparkSession
-    .builder
-    .appName("l_3")
-    .master("local[*]")
-    .getOrCreate()
+  val spark: SparkSession =
+    SparkSession
+      .builder
+      .appName("l_3")
+      .master("local[*]")
+      .getOrCreate()
 
   val sc: SparkContext = spark.sparkContext
 
@@ -28,10 +29,10 @@ object RDD extends App {
   val rdd: RDD[String] = sc.parallelize(cities)
   println(s"The RDD has ${rdd.getNumPartitions} partitions,  ${rdd.count} elements, the first one is ${rdd.first}")
 
-  /** Transformation (map) - не запускают вычисления (lazy), строится граф. */
+  /** Transformation (map) - не запускают вычисления (lazy), выполняется построение графа */
   val upperRdd: RDD[String] = rdd.map(_.toUpperCase)
 
-  /** Action (take - передача N первых элементов rdd на драйвер) - запускает выполнение графа. */
+  /** Action (take - передача N первых элементов rdd на драйвер) - запускает выполнение графа */
   val upperVec: Array[String] = upperRdd.take(3)
   println(upperVec.mkString("Array(", ", ", ")"))
 
@@ -41,25 +42,26 @@ object RDD extends App {
 
   /**
    * Reduce - двухэтапная операция:
-   * 1. Reduce выполняется на воркерах - результат пересылается на драйвер.
-   * 2. Reduce выполняется на драйвере - на полученных с воркеров результатах.
+   * 1. Reduce выполняется на воркерах - результат пересылается на драйвер
+   * 2. Reduce выполняется на драйвере - на полученных с воркеров результатах
    */
-  val count: Int = rdd
-    .map(_.length)
-    .reduce(_ + _)
+  val count: Int =
+    rdd
+      .map(_.length)
+      .reduce(_ + _)
 
   println(count)
 
   val startsWithM: RDD[String] = upperRdd.filter(_.startsWith("M"))
   println(s"The following city names starts with M: ${startsWithM.collect.mkString(", ")}")
 
-  /** Count - двухэтапная операция. Легковесная операция. */
+  /** Count - двухэтапная операция (легковесная) */
   val countM: Long = startsWithM.count
   println(countM)
-  println
+  println()
 
 
-  /** Collect - передача всех элементов RDD на драйвер. */
+  /** Collect - передача всех элементов RDD на драйвер */
   val localArray: Array[String] = startsWithM.collect
   val containsMoscow: Boolean = localArray.contains("MOSCOW")
   println(s"The array contains MOSCOW: $containsMoscow")
@@ -74,7 +76,7 @@ object RDD extends App {
    */
   val twoSortedElements: Array[String] = startsWithM.takeOrdered(2)
   println(s"Two sorted elements of the RDD are: ${twoSortedElements.mkString(", ")}")
-  println
+  println()
 
 
   // "String".toVector == Vector(S, t, r, i, n, g)
@@ -90,7 +92,7 @@ object RDD extends App {
   println(s"Rdd map(_.toVector): $strMappedRdd")
 
   // RDD[String] == RDD[Collection[Char]]
-  val flatMappedRdd: RDD[Char] = rdd.flatMap(_.toLowerCase) // == rdd.map(_.toLowerCase).flatten
+  val flatMappedRdd: RDD[Char] = rdd.flatMap(_.toLowerCase)  // == rdd.map(_.toLowerCase).flatten
   val strFlatMappedRdd: String = flatMappedRdd.collect.mkString(", ")
   println(s"Rdd flatMap(_.toLowerCase): $strFlatMappedRdd")
   println()
@@ -100,13 +102,14 @@ object RDD extends App {
    * 1. Distinct выполняется на каждом воркере.
    * 2. Запускается шафл - по значению хэша данные собираются на разных воркерах, далее Distinct запускается повторно.
    */
-  val uniqueLetters: RDD[Char] = flatMappedRdd
-    .distinct
-    .filter(_ != ' ')
+  val uniqueLetters: RDD[Char] =
+    flatMappedRdd
+      .distinct
+      .filter(_ != ' ')
 
   val strUniqueLetters: String = uniqueLetters.collect.sorted.mkString(", ")
   println(s"Unique letters in the RDD are: $strUniqueLetters")
-  println
+  println()
 
 
   val foo: (Int, String) = 3 -> "hello"
@@ -116,61 +119,64 @@ object RDD extends App {
   // v2
   val (left, right) = foo
 
-  val pairRdd: RDD[(Char, Int)] = rdd
-    .flatMap(_.toLowerCase)
-    .map(x => (x, 1))
+  val pairRdd: RDD[(Char, Int)] =
+    rdd
+      .flatMap(_.toLowerCase)
+      .map(x => (x, 1))
 
-  /** CountByKey - подсчитывает количество кортежей по каждому ключу и возвращает ЛОКАЛЬНЫЙ Map. */
+  /** CountByKey - подсчитывает количество кортежей по каждому ключу и возвращает ЛОКАЛЬНЫЙ Map */
   val letterCount1: collection.Map[Char, Long] = pairRdd.countByKey
   println(letterCount1)
 
   /**
-   * ReduceByKey - работает аналогично обычному reduce, но промежуточный итог накапливается по каждому ключу независимо.
-   * 1. ReduceByKey выполняется в каждой партиции.
-   * 2. Выполняется репартицирование (шафл) по ключам.
-   * 3. ReduceByKey выполняется еще раз.
+   * ReduceByKey - работает аналогично обычному reduce, но промежуточный итог накапливается по каждому ключу независимо
+   * 1. ReduceByKey выполняется в каждой партиции
+   * 2. Выполняется репартицирование (шафл) по ключам
+   * 3. ReduceByKey выполняется еще раз
    *
    * ReduceByKey оптимальнее GroupByKey за счет применения reduceByKey сначала в каждой партиции.
    */
   val letterCount2: RDD[(Char, Int)] = pairRdd.reduceByKey(_ + _)
   val strLetterCount2: String = letterCount2.collect.mkString(", ")
   println(strLetterCount2)
-  println
+  println()
 
 
   val list: List[Int] = List(1, 2, 3)
   println(list.head)
 
-  // err - NoSuchElementException
-//  println(list.tail.tail.tail.head)
+//  println(list.tail.tail.tail.head)  // err - NoSuchElementException
   println(list.tail.tail.tail.headOption)
-  println
+  println()
 
   val opt1: Option[Int] = Option(1)
   val opt2: Option[Int] = Option(2)
 
-  val opt3: Option[Int] = for {
-    v1 <- opt1
-    v2 <- opt2
-  } yield v1 + v2
+  val opt3: Option[Int] =
+    for {
+      v1 <- opt1
+      v2 <- opt2
+    } yield v1 + v2
 
   println(None.getOrElse(0))
   println(opt2.map(_ + 1))
   println(opt2.contains(3))
 
-  val optVal: Int = Option(2) match {
-    case Some(v) => v
-    case None => Int.MinValue
-  }
+  val optVal: Int =
+    Option(2) match {
+      case Some(v) => v
+      case None => Int.MinValue
+    }
 
-  println
+  println()
 
 
   val favoriteLetters: Vector[Char] = Vector('a', 'd', 'o')
 
-  val favLetRdd: RDD[(Char, Int)] = sc
-    .parallelize(favoriteLetters)
-    .map(x => (x, 1))
+  val favLetRdd: RDD[(Char, Int)] =
+    sc
+      .parallelize(favoriteLetters)
+      .map(x => (x, 1))
 
   // (p,1), ( ,1), (a,2), (i,2), (y,1), (r,3), (s,2), (k,1), (c,1), (d,3), (l,1), (e,1), (m,2), (n,3), (w,2), (o,5)
   // leftOuterJoin
@@ -187,11 +193,12 @@ object RDD extends App {
         case None => println(s"The letter $letter is not my favourite!")
       }
     }
+
   println()
 
   /**
-   * !!! Не выведет ничего в консоль драйвера (при работе на кластере?) т.к. функция foreach применяется к данным НА ВОРКЕРАХ.
-   * Вывод будет в консоли воркеров.
+   * !!! Не выведет ничего в консоль драйвера (при работе на кластере?) т.к. функция foreach применяется к данным НА ВОРКЕРАХ
+   * Вывод будет в консоли воркеров
    */
 
   joined
@@ -204,7 +211,7 @@ object RDD extends App {
       }
     }
 
-  println
+  println()
 
 
   /**
@@ -234,7 +241,6 @@ object RDD extends App {
 
     def f(x: Iterator[T]): Iterator[T] = ???
     rdd.mapPartitions(f)
-
     =>
     p0: Iterator[T]
     p1: Iterator[T]
@@ -249,78 +255,80 @@ object RDD extends App {
 
   /**
    * v1
-   * Так инстанс connection будет создан на драйвере.
-   * При попытке сериализации для передачи на драйвере - упадет, т.к. сокеты не сериализуются.
+   * Инстанс connection будет создан на драйвере
+   * При попытке сериализации для передачи на воркеры - упадет, т.к. сокеты не сериализуются
+   * Если с сериализацией ок -
    */
   //  val connection = new ConnectionToDb(...)
 
+  /**
+   * v2
+   * Будет создан 1 инстанс для каждой партиции
+   */
   rdd.mapPartitions { partition =>  // Iterator[A]
-    /**
-     * v2
-     * Будет создан 1 инстанс для каждой партиции.
-     */
     //    val connection = new ConnectionToDb(...)
-
-    partition.map { elem => // A
-      //      connection.write(elem)
+    partition.map { elem =>  // A
+//      connection.write(elem)
     }
   }
 
   /**
    * v3 - Best! transient lazy val pattern.
-   * Передается описание конструктора класса.
+   * Передается описание конструктора класса
    * Инстанс класса будет создан на каждом воркере (1 на воркер, в mapPartitions - 1 на партицию)
    */
   object Foo {
     @transient
-    lazy val connection = ??? // new ConnectionToDb(...)
+    lazy val connection = ???  // new ConnectionToDb(...)
   }
 
 
   /**
-   * sc.textFile - позволяет прочитать файл на локальной/S3/HDFS файловой системе.
-   * С помощью данного метода можно читать как обычные файлы, так и директории с файлами, а также архивы.
+   * sc.textFile - позволяет прочитать файл на локальной/S3/HDFS файловой системе
+   * С помощью данного метода можно читать как обычные файлы, так и директории с файлами, а также архивы
    */
   val rdd3: RDD[String] = sc.textFile("src/main/resources/l_3/airport-codes.csv")
 
   rdd3.take(3).foreach(println)
-  println
+  println()
 
-  // кейс классы - сериализуются из коробки (extends Serializable).
+  // case class - сериализуется из коробки (extends Serializable)
   case class Airport(
-                        ident: String,
-                        `type`: String,
-                        name: String,
-                        elevationFt: String,
-                        continent: String,
-                        isoCountry: String,
-                        isoRegion: String,
-                        municipality: String,
-                        gpsCode: String,
-                        iataCode: String,
-                        localCode: String,
-                        longitude: String,
-                        latitude: String
+                      ident: String,
+                      `type`: String,
+                      name: String,
+                      elevationFt: String,
+                      continent: String,
+                      isoCountry: String,
+                      isoRegion: String,
+                      municipality: String,
+                      gpsCode: String,
+                      iataCode: String,
+                      localCode: String,
+                      longitude: String,
+                      latitude: String
                     )
 
   val firstElem: String = rdd3.first
   println(firstElem)
 
-  // Убираем шапку и кавычки.
-  val noHeader: RDD[String] = rdd3
+  // Убираем шапку и кавычки
+  val noHeader: RDD[String] =
+    rdd3
     .filter(_ != firstElem)
-    /** !!! Будет падать (при работе на кластере?) при попытке сериализовать rdd (rdd - несериализуем) для передачи на другие воркеры. */
+    /** !!! Будет падать (при работе на кластере?) при попытке сериализовать rdd (rdd - несериализуем) для передачи на другие воркеры */
 //    .filter(_ != rdd3.first)
     .map(_.replaceAll("\"", ""))
 
   println(noHeader.first)
   println(noHeader.count)
-  println
+  println()
 
   def toAirport(data: String): Airport = {
-    val airportArr: Array[String] = data
-      .split(",")
-      .map(_.trim)
+    val airportArr: Array[String] =
+      data
+        .split(",")
+        .map(_.trim)
 
     val Array(ident, aType, name, elevationFt, continent, isoCountry, isoRegion, municipality, gpsCode, iataCode, localCode, longitude, latitude) = airportArr
 
@@ -343,17 +351,17 @@ object RDD extends App {
 
   /**
    * !!! Поскольку любые трансформации являются ленивыми, отсутствие ошибок при получении airportRdd НЕ ОЗНАЧАЕТ,
-   * что данная функция отрабатывает корректно на датасете.
+   * что данная функция отрабатывает корректно на датасете
    */
   val airportRdd: RDD[Airport] = noHeader.map(toAirport)
 
   /**
-   * Проверить применимость (наличие ошибок) функции к данным можно с помощью любого action.
-   * MatchError - означает, что размер массива полученного после операции split, меньше количества переменных,
+   * Проверить применимость (наличие ошибок) функции к данным можно с помощью любого action
+   *
+   * MatchError - означает, что размер массива полученного после операции split, меньше количества переменных
    * которые мы указали в операции val Array(...) = airportArr
    */
-    // err - MatchError
-//  airportRdd.count
+//  airportRdd.count  // err - MatchError
 
   def toAirportOpt(data: String): Option[Airport] = {
     val airportArr: Array[String] = data
@@ -378,7 +386,7 @@ object RDD extends App {
           latitude = latitude
         ))
 
-      case _ => Option.empty[Airport] // == None
+      case _ => Option.empty[Airport]  // == None
     }
   }
 
@@ -388,19 +396,19 @@ object RDD extends App {
 //  println(airportOptRdd.getNumPartitions)
 //  val startTime: Long = System.currentTimeMillis
   /** !!! Если rdd3.filter(_ != rdd3.first) */
-//  println(airportOptRdd.count) // == 146.3
-//  println(airportOptRdd.repartition(8).count) // == 153.9
+//  println(airportOptRdd.count)  // == 146.3
+//  println(airportOptRdd.repartition(8).count)  // == 153.9
   /** Если rdd3.filter(_ != firstElem) */
   println(airportOptRdd.count) // == 0.3
 //  val endTime: Long = System.currentTimeMillis
 //  println((endTime.toDouble - startTime) / 1000)
   /** count == 55113 */
-  println
+  println()
 
-  // flatMap в данном случае отфильтрует None.
+  // flatMap в данном случае отфильтрует None
   val airportRdd2: RDD[Airport] = noHeader.flatMap(toAirportOpt)
   println(airportRdd2.count)
-  println
+  println()
 
   case class AirportTyped(
                            ident: String,
@@ -444,10 +452,9 @@ object RDD extends App {
   }
 
   val airportTypedRdd: RDD[AirportTyped] = noHeader.flatMap(toAirportTyped)
-  // err - NumberFormatException
-//  println(airportTypedRdd.count)
+//  println(airportTypedRdd.count)  // err - NumberFormatException
 
-  /** Try ловит только non-fatal ошибки. */
+  /** Try ловит только non-fatal ошибки */
   val try1: Try[Int] = Try { 1 / 0 }
   val try2: Try[Int] = Try { 1 / 1 }
 
@@ -457,7 +464,7 @@ object RDD extends App {
   println(try2.map(_ + 1))
   try1.foreach(println)
   try2.foreach(println)
-  println
+  println()
 
   val pmRes: Int = try1 match {
     case Success(v) => v
@@ -467,7 +474,7 @@ object RDD extends App {
 
   println(try1.toOption)
   println(try2.toOption)
-  println
+  println()
 
   case class AirportSafe(
                           ident: String,
@@ -513,7 +520,7 @@ object RDD extends App {
   val airportFinal: RDD[AirportSafe] = noHeader.flatMap(toAirportOtpSafe)
   airportFinal.take(3).foreach(println)
   println(airportFinal.count)
-  println
+  println()
 
   val pairAirport: RDD[(String, Option[Int])] = airportFinal.map(el => (el.isoCountry, el.elevationFt))
   println(pairAirport.first)
@@ -528,20 +535,21 @@ object RDD extends App {
   }
 
   println(fixedElevation1.first)
-  println
+  println()
 
-  val result: Array[(String, Int)] = fixedElevation1
-    .reduceByKey(Math.max)  // == (x, y) if (x > y) x else y
-    .collect
-    .sortBy(-_._2)
+  val result: Array[(String, Int)] =
+    fixedElevation1
+      .reduceByKey(Math.max) // == (x, y) if (x > y) x else y
+      .collect
+      .sortBy(-_._2)
 
   result.take(10).foreach(println)
-  println
+  println()
 
 
   /**
-   * Broadcast variable - read only snapshot, копии которого будут находиться на каждом воркере.
-   * Распространяется peer-to-peer - т.е. нагрузка распределяется между воркерами.
+   * Broadcast variable - read only snapshot, копии которого будут находиться на каждом воркере
+   * Распространяется peer-to-peer - т.е. нагрузка распределяется между воркерами
    */
 
   val myMap: Map[Int, String] = Map(1 -> "foo", 2 -> "bar")
@@ -549,8 +557,8 @@ object RDD extends App {
   val rdd4: RDD[Int] = sc.parallelize(1 to 100)
 
   /**
-   * myMap будет сериализован и передан в каждую партицию - нагрузка на драйвер/сеть.
-   * Передача будет осуществляться только с драйвера.
+   * myMap будет сериализован и передан в каждую партицию - нагрузка на драйвер/сеть
+   * Передача будет осуществляться только с драйвера
    */
   rdd4.map(el => myMap.get(el)).count
 
@@ -558,9 +566,9 @@ object RDD extends App {
   rdd4.map(el => myMapBroadcast.value.get(el)).count
 
 
-  /** Accumulator. */
+  /** Accumulator */
   var counter: Int = 0
-  /** Бессмысленное выражение - мутабельная переменная сериализуется и передается на каждую партицию, инкрементируется и там же остается. */
+  /** Бессмысленное выражение - мутабельная переменная сериализуется и передается на каждую партицию, инкрементируется и там же остается */
   rdd4.foreach(_ => counter += 1)
 
   val counterAccum: LongAccumulator = sc.longAccumulator("myAccum")
@@ -568,10 +576,10 @@ object RDD extends App {
   println(counterAccum)
 
 
-  /** SparkUI. */
+  /** SparkUI */
   println(sc.uiWebUrl)
   Thread.sleep(1000000)
 
   /** Освобождаем ресурсы кластера. */
-  spark.stop
+  spark.stop()
 }

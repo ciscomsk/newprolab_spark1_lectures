@@ -9,47 +9,53 @@ object DataFrame_2 extends App {
     .getLogger("org")
     .setLevel(Level.OFF)
 
-  val spark: SparkSession = SparkSession
-    .builder
-    .master("local[*]")
-    .appName("DataFrame_2")
-    .getOrCreate
+  val spark: SparkSession =
+    SparkSession
+      .builder
+      .master("local[*]")
+      .appName("DataFrame_2")
+      .getOrCreate
 
   import spark.implicits._
 
-  val cleanData: DataFrame = spark
-    .read
-    .load("src/main/resources/l_4/cleandata")
+  val cleanDataDf: DataFrame =
+    spark
+      .read
+      .load("src/main/resources/l_4/cleandata")
 
-  cleanData.show
+  cleanDataDf.show()
 
   /** groupBy вызывает репартицирование (сохранение на диске). */
-  val aggCount: DataFrame = cleanData
-    .groupBy('continent)  // после groupBy получаем RelationalGroupedDataset
-    .count
+  val aggCount: DataFrame =
+    cleanDataDf
+      .groupBy('continent) // после groupBy получаем RelationalGroupedDataset
+      .count()
 
-  aggCount.show
+  aggCount.show()
 
-  val aggSum: DataFrame = cleanData
-    .groupBy('continent)
-    .sum("population")
+  val aggSum: DataFrame =
+    cleanDataDf
+      .groupBy('continent)
+      .sum("population")
 
-  aggSum.show
+  aggSum.show()
 
   /** agg - позволяет рассчитать несколько агрегатов. */
-  val agg: DataFrame = cleanData
+  val agg: DataFrame =
+    cleanDataDf
     .groupBy('continent)
     .agg(
       count("*").alias("count"),
       sum("population").alias("sumPop")
     )
 
-  agg.show
+  agg.show()
 
   /** collect_list - собирает все значения в массив. */
-  val aggList: DataFrame = cleanData
-    .groupBy('continent)
-    .agg(collect_list("country").alias("countries"))
+  val aggList: DataFrame =
+    cleanDataDf
+      .groupBy('continent)
+      .agg(collect_list("country").alias("countries"))
 
   aggList.show()
   aggList.printSchema()
@@ -61,9 +67,9 @@ object DataFrame_2 extends App {
 
   val json1: DataFrame = withStruct.withColumn("s", to_json('s))
   json1.show(10, truncate = false)
-  json1.printSchema
+  json1.printSchema()
 
-  json1.explain
+  json1.explain()
   /*
     == Physical Plan ==
     AdaptiveSparkPlan isFinalPlan=false
@@ -95,7 +101,8 @@ object DataFrame_2 extends App {
                       +- FileScan parquet [continent#0,country#1] Batched: true, DataFilters: [], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/repos/newprolab/spark_1/lectures/src/main/resou..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<continent:string,country:string>
    */
 
-  val pivot: DataFrame = cleanData
+  val pivot: DataFrame =
+  cleanDataDf
     .groupBy(col("country"))
     .pivot("continent")
     .agg(sum("population"))
@@ -104,7 +111,7 @@ object DataFrame_2 extends App {
 
 //  spark.conf.set("spark.sql.shuffle.partitions", 150)
 
-  cleanData
+  cleanDataDf
     .localCheckpoint
     .groupBy(col("country"))
     .pivot("continent")
@@ -130,5 +137,5 @@ object DataFrame_2 extends App {
                          +- Scan ExistingRDD[continent#0,country#1,name#2,population#3L]
    */
 
-  spark.stop
+  spark.stop()
 }
