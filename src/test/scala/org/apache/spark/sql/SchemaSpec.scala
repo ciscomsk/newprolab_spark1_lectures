@@ -1,31 +1,38 @@
 package org.apache.spark.sql
 
 import org.apache.log4j.{Level, Logger}
+import org.apache.spark.SparkContext
 import org.apache.spark.sql.types._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should
 
 class SchemaSpec extends AnyFlatSpec with should.Matchers {
-  Logger
-    .getLogger("org")
-    .setLevel(Level.OFF)
+  // не работает в Spark 3.3.0
+//  Logger
+//    .getLogger("org")
+//    .setLevel(Level.OFF)
 
-  val spark: SparkSession = SparkSession
-    .builder
-    .master("local[*]")
-    .appName("l_5")
-    .getOrCreate()
+  val spark: SparkSession =
+    SparkSession
+      .builder()
+      .master("local[*]")
+      .appName("l_5")
+      .getOrCreate()
 
-  val someSchema: StructType = StructType(List(
-    StructField("foo", StringType),
-    StructField("bar", StringType),
-    StructField("boo",
-      StructType(List(
-        StructField("x", IntegerType),
-        StructField("y", BooleanType)
-      ))
-    )
-  ))
+  val sc: SparkContext = spark.sparkContext
+  sc.setLogLevel("ERROR")
+
+  val someSchema: StructType =
+    StructType(List(
+      StructField("foo", StringType),
+      StructField("bar", StringType),
+      StructField("boo",
+        StructType(List(
+          StructField("x", IntegerType),
+          StructField("y", BooleanType)
+        ))
+      )
+    ))
 
   def recursion(schema: DataType): DataType = {
     schema match {

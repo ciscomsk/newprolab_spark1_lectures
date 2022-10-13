@@ -15,11 +15,12 @@ class InternalRowSpec extends AnyFlatSpec with should.Matchers {
     .getLogger("org")
     .setLevel(Level.OFF)
 
-  val spark: SparkSession = SparkSession
-    .builder
-    .master("local[*]")
-    .appName("l_5")
-    .getOrCreate
+  val spark: SparkSession =
+    SparkSession
+      .builder()
+      .master("local[*]")
+      .appName("l_5")
+      .getOrCreate()
 
   val df: Dataset[lang.Long] = spark.range(0, 100)
   val schema: StructType = df.schema

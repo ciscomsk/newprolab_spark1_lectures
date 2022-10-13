@@ -3,13 +3,11 @@ name := "lectures"
 version := "0.1"
 
 //scalaVersion := "2.12.15"
-scalaVersion := "2.13.8"
+scalaVersion := "2.13.9"
 
 libraryDependencies ++= Seq(
-//  "org.apache.spark" %% "spark-core" % "3.2.0" % Provided,
-
-//  "org.apache.spark" %% "spark-sql" % "2.4.8" % "provided",
   "org.apache.spark" %% "spark-sql" % "3.3.0" % Provided,  // Provided - зависимость не будет включена при сборке fat jar (плагин assembly)
+//  "org.apache.spark" %% "spark-sql" % "2.4.8" % "provided",
 
   // !!! works only with Spark 2.4.8
 //  "org.elasticsearch" %% "elasticsearch-spark-20" % "7.16.3",
@@ -24,7 +22,7 @@ libraryDependencies ++= Seq(
 
 //  "com.datastax.spark" %% "spark-cassandra-connector" % "3.2.0", // works only with joda-time + нет под scala 2.13
 //  "joda-time" % "joda-time" % "2.10.12",
-  "joda-time" % "joda-time" % "2.10.13",  // новая версия - не тестировал
+//  "joda-time" % "joda-time" % "2.10.13",  // новая версия - не тестировал
   /** java.lang.NoClassDefFoundError: jnr/posix/POSIXHandler - и работает дальше. */
 
   /** Похоже нужен файл конфигурации - очень много логов. */
@@ -37,15 +35,15 @@ libraryDependencies ++= Seq(
    * С log4j.properties:
    * Пример: 14:09:18,328 INFO  com.datastax.spark.connector.cql.CassandraConnector           - Connected to Cassandra cluster.
    */
-  "org.slf4j" % "slf4j-log4j12" % "1.7.33",
-
-  "org.postgresql" % "postgresql" % "42.3.1",
-
-  "org.apache.spark" %% "spark-sql-kafka-0-10" % "3.3.0",
+//  "org.slf4j" % "slf4j-log4j12" % "1.7.33",
+//
+//  "org.postgresql" % "postgresql" % "42.3.1",
+//
+//  "org.apache.spark" %% "spark-sql-kafka-0-10" % "3.3.0",
 
   // Scala 2.13
 //  "org.scala-lang.modules" %% "scala-parallel-collections" % "1.0.4",
 
 
-  "org.scalatest" %% "scalatest" % "3.2.11" % Test
+  "org.scalatest" %% "scalatest" % "3.2.14" % Test
 )

@@ -9,5 +9,4 @@ object Demo {
     println(s"Point x location: ${point.x}")
     println(s"Point y location: ${point.y}")
   }
-
 }

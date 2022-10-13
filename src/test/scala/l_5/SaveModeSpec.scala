@@ -8,20 +8,22 @@ object SaveModeSpec extends App {
     .getLogger("org")
     .setLevel(Level.ERROR)
 
-  val spark: SparkSession = SparkSession
-    .builder
+  val spark: SparkSession =
+    SparkSession
+    .builder()
     .master("local[*]")
     .appName("l_5")
-    .getOrCreate
+    .getOrCreate()
 
   import spark.implicits._
 
   val csvOptions: Map[String, String] = Map("header" -> "true", "inferSchema" -> "true")
 
-  val airportsDf: DataFrame = spark
-    .read
-    .options(csvOptions)
-    .csv("src/main/resources/l_3/airport-codes.csv")
+  val airportsDf: DataFrame =
+    spark
+      .read
+      .options(csvOptions)
+      .csv("src/main/resources/l_3/airport-codes.csv")
 
 //    airportsDf
 //      .limit(10)

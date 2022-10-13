@@ -1,7 +1,7 @@
 import java.io.File
 
-val fs = "file://"
-val basePath = "/opt/otp/otfs/"
-val path = "mechfond/well_daily_params"
+val fs: String = "file://"
+val basePath: String = "/opt/otp/otfs/"
+val path: String = "mechfond/well_daily_params"
 
-val absolutePath = s"$fs${new File(basePath, path).getAbsolutePath}"
+val absolutePath: String = s"$fs${new File(basePath, path).getAbsolutePath}"
