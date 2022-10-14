@@ -59,7 +59,7 @@ object RDD extends App {
   println(s"count: $count")
 
   val startsWithM: RDD[String] = upperRdd.filter(_.startsWith("M"))
-  println(s"The following city names starts with M: ${startsWithM.collect.mkString(", ")}")
+  println(s"The following city names starts with M: ${startsWithM.collect().mkString(", ")}")
 
   /** count - двухэтапная операция (легковесная) */
   val countM: Long = startsWithM.count()
@@ -97,12 +97,12 @@ object RDD extends App {
   println()
 
   val mappedRdd: RDD[Vector[Char]] = rdd.map(_.toVector)
-  val strMappedRdd: String = mappedRdd.collect.mkString(", ")
+  val strMappedRdd: String = mappedRdd.collect().mkString(", ")
   println(s"rdd.map(_.toVector): $strMappedRdd")
 
   // String == Collection[Char]
   val flatMappedRdd: RDD[Char] = rdd.flatMap(_.toLowerCase)  // == rdd.map(_.toLowerCase).flatten
-  val strFlatMappedRdd: String = flatMappedRdd.collect.mkString(", ")
+  val strFlatMappedRdd: String = flatMappedRdd.collect().mkString(", ")
   println(s"rdd.flatMap(_.toLowerCase): $strFlatMappedRdd")
   println()
 
@@ -113,10 +113,10 @@ object RDD extends App {
    */
   val uniqueLetters: RDD[Char] =
     flatMappedRdd
-      .distinct
+      .distinct()
       .filter(_ != ' ')
 
-  val strUniqueLetters: String = uniqueLetters.collect.sorted.mkString(", ")
+  val strUniqueLetters: String = uniqueLetters.collect().sorted.mkString(", ")
   println(s"Unique letters in the RDD are: $strUniqueLetters")
   println()
 
@@ -146,7 +146,7 @@ object RDD extends App {
    * reduceByKey оптимальнее groupByKey за счет предварительной агрегации в каждой партиции
    */
   val letterCount2: RDD[(Char, Int)] = pairRdd.reduceByKey(_ + _)
-  val strLetterCount2: String = letterCount2.collect.mkString(", ")
+  val strLetterCount2: String = letterCount2.collect().mkString(", ")
   println(s"strLetterCount2: $strLetterCount2")
   println()
 
@@ -342,7 +342,7 @@ object RDD extends App {
      * При работе в local mode - все будет выполняться ОЧЕНЬ долго
      */
 //    .filter(_ != rdd3.first())
-    .map(_.replaceAll("\"", ""))  // \" - убираем символ "
+    .map(_.replaceAll("\"", ""))  // \" == символ "
 
   println(s"noHeader.first(): ${noHeader.first()}")
   println(noHeader.count())

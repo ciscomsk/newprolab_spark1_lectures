@@ -30,10 +30,13 @@ object DataFrame_2 extends App {
 
   cleanDataDf.show()
 
-  /** groupBy вызывает репартицирование (сохранение на диске) */
+  /**
+   * groupBy - инициирует выполнение шафла (сохранение на диске)
+   * Результат groupBy - RelationalGroupedDataset
+   */
   val aggCount: DataFrame =
     cleanDataDf
-      .groupBy($"continent")  // после groupBy получаем RelationalGroupedDataset
+      .groupBy($"continent")
       .count()
 
   aggCount.show()
@@ -56,7 +59,7 @@ object DataFrame_2 extends App {
 
   agg.show()
 
-  /** collect_list - собирает все значения в массив. */
+  /** collect_list - собирает все значения в массив */
   val aggList: DataFrame =
     cleanDataDf
       .groupBy($"continent")
@@ -64,17 +67,33 @@ object DataFrame_2 extends App {
 
   aggList.show()
   aggList.printSchema()
+  /*
+    root
+     |-- continent: string (nullable = true)
+     |-- countries: array (nullable = false)
+     |    |-- element: string (containsNull = false)
+   */
   aggList.show(numRows = 10, truncate = 100, vertical = true)
 
-  val withStruct: DataFrame = aggList.select(struct($"continent", $"countries").alias("s"))
-  withStruct.show(10, truncate = false)
-  withStruct.printSchema()
+  val withStructDf: DataFrame = aggList.select(struct($"continent", $"countries").alias("s"))
+  withStructDf.show(10, truncate = false)
+  withStructDf.printSchema()
+  /*
+    root
+     |-- s: struct (nullable = false)
+     |    |-- continent: string (nullable = true)
+     |    |-- countries: array (nullable = false)
+     |    |    |-- element: string (containsNull = false)
+   */
 
-  /** to_json - удобен при передаче в Kafka */
-  val json1: DataFrame = withStruct.withColumn("s", to_json($"s"))
+  /** to_json - удобен при передаче данных в Kafka */
+  val json1: DataFrame = withStructDf.withColumn("s", to_json($"s"))
   json1.show(10, truncate = false)
   json1.printSchema()
-
+  /*
+    root
+    |-- s: string (nullable = true)
+   */
   json1.explain()
   /*
     == Physical Plan ==
@@ -85,13 +104,13 @@ object DataFrame_2 extends App {
              +- FileScan parquet [continent#0,country#1] Batched: true, DataFilters: [], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn_2/courses/spark/newprolab/spark_1/_repos/lectur..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<continent:string,country:string>
    */
 
-  /** toJSON - преобразует все колонки DF в json */
+  /** toJSON - преобразует все колонки датафрейма в json */
   val json2: Dataset[String] = aggList.toJSON
   json2.show(5, truncate = false)
 
   json2.explain()
   /**
-   * Проблема toJSON (и других методов) из Dataset API - под капотом выполняется:
+   * Проблема toJSON (и других методов из Dataset API) - выполнение дополнительных сериализаций/десериализаций:
    * DeserializeToObject (Internal row => Java object) => MapPartitions => SerializeFromObject (Java object => Internal row)
    */
   /*
@@ -114,6 +133,7 @@ object DataFrame_2 extends App {
 
   pivot.show()
 
+  /** spark.sql.shuffle.partitions == 200 (по умолчанию) */
 //  spark.conf.set("spark.sql.shuffle.partitions", 150)
 
   cleanDataDf
@@ -126,17 +146,17 @@ object DataFrame_2 extends App {
     == Physical Plan ==
     AdaptiveSparkPlan isFinalPlan=false
     +- Project [country#1, __pivot_sum(population) AS `sum(population)`#324[0] AS Africa#325L, __pivot_sum(population) AS `sum(population)`#324[1] AS Europe#326L, __pivot_sum(population) AS `sum(population)`#324[2] AS Undefined#327L]
-       // Агрегация внутри каждой партиции после репартиционирования
+       // Агрегация внутри каждой партиции после репартиционирования - pivotfirst
        +- HashAggregate(keys=[country#1], functions=[pivotfirst(continent#0, sum(population)#316L, Africa, Europe, Undefined, 0, 0)])
           // Репартиционирование по country
           +- Exchange hashpartitioning(country#1, 200), ENSURE_REQUIREMENTS, [id=#785]
-             // Агрегация внутри каждой партиции
+             // Агрегация внутри каждой партиции - partial_pivotfirst
              +- HashAggregate(keys=[country#1], functions=[partial_pivotfirst(continent#0, sum(population)#316L, Africa, Europe, Undefined, 0, 0)])
-                // Агрегация внутри каждой партиции после репартиционирования
+                // Агрегация внутри каждой партиции после репартиционирования - sum(population)
                 +- HashAggregate(keys=[country#1, continent#0], functions=[sum(population#3L)])
                    // Репартиционирование по country + continent
                    +- Exchange hashpartitioning(country#1, continent#0, 200), ENSURE_REQUIREMENTS, [id=#781]
-                      // Агрегация внутри каждой партиции
+                      // Агрегация внутри каждой партиции - partial_sum(population)
                       +- HashAggregate(keys=[country#1, continent#0], functions=[partial_sum(population#3L)])
                          // Выбираем только колонки, использующиеся в агрегации
                          +- Project [continent#0, country#1, population#3L]

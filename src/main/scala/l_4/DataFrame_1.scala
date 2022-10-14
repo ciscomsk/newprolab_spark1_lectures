@@ -23,24 +23,23 @@ object DataFrame_1 extends App {
   val sc: SparkContext = spark.sparkContext
   sc.setLogLevel("ERROR")
 
-  val cityList: Vector[String] = Vector("Moscow", "Paris", "Madrid", "London", "New York")
-
   import spark.implicits._
 
-  val df: DataFrame = cityList.toDF()
+  val cityList: Vector[String] = Vector("Moscow", "Paris", "Madrid", "London", "New York")
+  val df: DataFrame = cityList.toDF()  // toDF - import spark.implicits._
   df.printSchema()
   /*
     root
      |-- value: string (nullable = true)
    */
 
-  /** Show работает аналогично take(rdd) - пытается взять данные из минимального количества партиций (оптимизация) */
+  /** df.show работает аналогично rdd.take - пытается взять данные из минимального количества партиций => оптимизация */
   df.show()
   df.show(numRows = 20, truncate = 100, vertical = true)  // вертикальная ориентация удобна при большом количестве столбцов
 
 
   /**
-   * Алгоритм работы count(df):
+   * Алгоритм работы df.count:
    * 1. Рассчитывается количество элементов в каждой партиции
    * 2. Агрегированные данные пересылаются в одну партицию (Exchange single partition) - где производится финальный reduce
    * 3. Результат передается на драйвер
@@ -49,71 +48,105 @@ object DataFrame_1 extends App {
   println()
 
   /**
-   * Filter == СРЕЗ
-   * В отличии от RDD - принимает SQL выражение
+   * filter == СРЕЗ (Filter)
+   * В отличии от RDD - может принимать SQL выражение
+   *
+   * filter(condition: Column): Dataset[T]
+   */
+
+  /**
+   * v1 - $
+   * $ - позволяет указывать колонки внутри структур
    */
   df
-    // сигнатура: filter(condition: Column)
-    .filter($"value" === "Moscow")  // v1
+    .filter($"value" === "Moscow")
     .show()
 
   val df2: Dataset[lang.Long] = spark.range(10)
   df2.show()
 
-  /** $ - позволяет указывать колонки внутри структур */
   val df3: DataFrame = df2.select(struct(col("id").alias("id")).alias("foo"))
   df3.show()
   df3.printSchema()
+  /*
+    root
+     |-- foo: struct (nullable = false)
+     |    |-- id: long (nullable = false)
+   */
 
   df3
     .select($"foo.id")
     .show()
 
   df3
-    .select($"foo.*")
+    .select($"foo.*")  // * - выбрать все элементы структуры
     .show()
 
-  println("df3.toJSON.show(): ")
+  println("df3.toJSON.show():")
   df3
     .toJSON
     .show()
 
 
+  /** v2 - col - классический API без синтаксического сахара */
   df
-    /** col - классический API без синтаксического сахара. */
-    .filter(col("value") === "Moscow") // v2
+    .filter(col("value") === "Moscow")
     .show()
 
+  /**
+   * v3 - DML в SQL-like формате
+   * Легко ошибиться и получить ошибку в рантайме
+   */
   df
-    // пишем DML в SQL-like формате
-    .filter("value = 'Moscow'") // v3 - легко ошибиться и получить ошибку в рантайме
+    .filter("value = 'Moscow'")
     .show()
 
+  /**
+   * v4 - expr - промежуточный вариант между col и обычной строкой
+   * expr также используется для вызова SQL builtin функций, отсутствующих в org.apache.sql.functions
+   */
   df
-    /** expr также используется для вызова SQL builtin функций, отсутствующих в org.apache.sql.functions */
-    .filter(expr("value = 'Moscow'")) // v4 - промежуточный вариант между col и обычной строкой
+    .filter(expr("value = 'Moscow'"))
     .show()
 
   df
     .localCheckpoint()
     .filter(expr("value = 'Moscow'"))
     .explain()
-  /** Каталист парсит выражение и создает план состоящий из физических операторов => план передается в тангстен для кодогенерации */
   /*
     == Physical Plan ==
     *(1) Filter (isnotnull(value#1) AND (value#1 = Moscow))
-    +- *(1) Scan ExistingRDD[value#1]  // чтение существующего (находящегося в памяти) rdd
+    +- *(1) Scan ExistingRDD[value#1]
    */
+  /** Каталист парсит выражение и создает план, состоящий из физических операторов => план передается в тангстен для кодогенерации */
 
+  /**
+   * withColumn - добавляет новую колонку
+   * Является трансформацией и аналогично другим методам - создает новый датафрейм (а не изменяет исходный)
+   */
+  val withColDf = df.withColumn("upperCity", upper($"value"))
+  withColDf.explain()
+  /*
+    == Physical Plan ==
+    LocalTableScan [value#1, upperCity#80]
+   */
+  withColDf.show()
 
-  /** ПРОЕКЦИЯ == выборка существующих колонок или добавление новых */
-  /** withColumn - добавляет новую колонку. Является трансформацией и создает новый датафрейм (а не изменяет существующий) */
-  df
-    .withColumn("upperCity", upper($"value"))
-    .show()
-
-  /** select - может быть использован не только для выбора определенных колонок, но и для создания новых */
+  /**
+   * select == ПРОЕКЦИЯ (Project)
+   * Может использоваться не только для выборки существующих колонок, но и для новых
+   *
+   * select(col(*)) - позволяет получить DF со всеми колонками - полезно, когда список всех колонок не известен,
+   * и нужно выбрать все существующие + добавить новые колонки
+   *
+   * В select можно передать список колонок, используя обычные строки
+   */
   val withUpperDf: DataFrame = df.select($"value", upper($"value").alias("upperCity"))
+  withUpperDf.explain()
+  /*
+    == Physical Plan ==
+    LocalTableScan [value#1, upperCity#92]
+   */
   withUpperDf.show()
 
   val myCols: List[Column] =
@@ -123,44 +156,41 @@ object DataFrame_1 extends App {
     .select(myCols: _*)
     .printSchema()
 
-  /**
-   * select(col(*)) - позволяет получить DF со всеми колонками - полезно, когда список всех колонок не известен,
-   * и нужно выбрать все существующие + добавить новые колонки
-   */
-  withUpperDf
-    .select(
-      col("*"),
-      /** alias == name == as */
-      lower($"value").name("lowerCity"),
-      (length($"value") + 1).as("length"),
-      lit("foo").alias("bar")
-    )
-    .show()
+  /** alias == name == as */
+  val multiSelectDf: DataFrame =
+    withUpperDf
+      .localCheckpoint()
+      .select(
+        col("*"),
+        lower($"value").name("lowerCity"),
+        (length($"value") + 1).as("length"),
+        lit("foo").alias("bar")
+      )
 
-  withUpperDf
-    .localCheckpoint()
-    .select(
-      col("*"),
-      /** alias == name == as */
-      lower($"value").name("lowerCity"),
-      (length($"value") + 1).as("length"),
-      lit("foo").alias("bar")
-    )
-    .explain()
+  multiSelectDf.printSchema()
+  /*
+    root
+     |-- value: string (nullable = true)
+     |-- upperCity: string (nullable = true)
+     |-- lowerCity: string (nullable = true)
+     |-- length: integer (nullable = true)
+     |-- bar: string (nullable = false)
+   */
+  multiSelectDf.show()
+  multiSelectDf.explain()
   /*
     == Physical Plan ==
-    *(1) Project [value#1, upperCity#92, lower(value#1) AS lowerCity#135, (length(value#1) + 1) AS length#136, foo AS bar#137]
+    *(1) Project [value#1, upperCity#92, lower(value#1) AS lowerCity#114, (length(value#1) + 1) AS length#115, foo AS bar#116]
     +- *(1) Scan ExistingRDD[value#1,upperCity#92]
    */
 
-  /** В select можно передать список колонок, используя обычные строки */
   withUpperDf
     .select("value", "upperCity")
     .show()
 
   /**
    * drop - удаляет колонки
-   * !!! drop не будет выдавать ошибку, если указана несуществующая колонка
+   * !!! drop не будет выбрасывать исключение, если указана несуществующая колонка
    */
   withUpperDf
     .drop("upperCity", "abraKadabra")
@@ -177,18 +207,14 @@ object DataFrame_1 extends App {
    */
 
 
-  /** Conditions */
-  // or/and/between
+  /** and/or/between conditions */
   df
-    .filter($"value" === "Moscow" or $"value" === "Paris")
+    .filter($"value" === "Moscow" or $"value" === "Paris")  // == $"value".===("Moscow").or($"value".===("Paris"))
     .show()
 
   df
     .filter($"value".isin("Moscow", "Paris"))
     .show()
-
-
-  /** cache/persist/repartition - позволяют не вычислять граф несколько раз */
 
 
   /** Data cleaning */
@@ -249,21 +275,22 @@ object DataFrame_1 extends App {
   val fillData: Map[String, Any] = Map("continent" -> "Undefined", "population" -> 0)
   val replaceData: Map[String, String] = Map("Rossiya" -> "Russia")
 
-  val cleanData: Dataset[Row] = df4
-    .drop(col("_corrupt_record"))  // drop - проекция
-    /**
-     * .na.drop("all") - удаляются строки, где все колонки == null
-     * .na.drop("any") - удаляются строки, где хотя бы одна колонка == null
-     * Можно указать на какие колонки это будет распространяться
-     * */
-    .na.drop("all")  // na.drop - срез
-    .na.fill(fillData)
-    .na.replace("country", replaceData)
-    /**
-     * dropDuplicates без аргументов == distinct
-     * dropDuplicates неявно запускает шафл
-     */
-    .dropDuplicates("continent", "country")
+  val cleanData: Dataset[Row] =
+    df4
+      .drop(col("_corrupt_record"))  // drop - это проекция
+      /**
+       * .na.drop("all") - удаляются строки, где все колонки == null
+       * .na.drop("any") - удаляются строки, где хотя бы одна колонка == null
+       * Можно указать на какие колонки это будет распространяться
+       * */
+      .na.drop("all") // na.drop - это срез
+      .na.fill(fillData)
+      .na.replace("country", replaceData)
+      /**
+       * dropDuplicates без аргументов == distinct
+       * dropDuplicates неявно запускает шафл
+       */
+      .dropDuplicates("continent", "country")
 
   cleanData
     .repartition(1)
@@ -286,7 +313,7 @@ object DataFrame_1 extends App {
 
   df4
     .drop(col("_corrupt_record"))
-    .localCheckpoint
+    .localCheckpoint()
     .na.drop("all")
     .na.fill(fillData)
     .explain()
@@ -299,7 +326,7 @@ object DataFrame_1 extends App {
 
   df4
     .drop(col("_corrupt_record"))
-    .localCheckpoint
+    .localCheckpoint()
     .na.drop("all")
     .na.fill(fillData)
     .na.replace("country", replaceData)
@@ -313,22 +340,21 @@ object DataFrame_1 extends App {
 
   df4
     .drop(col("_corrupt_record"))
-    .localCheckpoint
+    .localCheckpoint()
     .na.drop("all")
     .na.fill(fillData)
     .na.replace("country", replaceData)
+    /** dropDuplicates - инициирует выполнение шафла (Exchange hashpartitioning) */
     .dropDuplicates("continent", "country")
     .explain()
-
-  /** Результат репартиционирования всегда находится на локальных дисках воркеров. */
   /*
     == Physical Plan ==
     AdaptiveSparkPlan isFinalPlan=false
     // Удаление дубликатов внутри каждой партиции после репартиционирования
     +- SortAggregate(key=[continent#413, country#423], functions=[first(name#204, false), first(population#414L, false)])
-       // Репартиционирование по continent + country на 200 партиций
        +- Sort [continent#413 ASC NULLS FIRST, country#423 ASC NULLS FIRST], false, 0
-          +- Exchange hashpartitioning(continent#413, country#423, 200), ENSURE_REQUIREMENTS, [id=#478]
+          // Репартиционирование по continent + country на 200 партиций
+          +- Exchange hashpartitioning(continent#413, country#423, 200), ENSURE_REQUIREMENTS, [id=#490]
              // Удаление дубликатов внутри каждой партиции
              +- SortAggregate(key=[continent#413, country#423], functions=[partial_first(name#204, false), partial_first(population#414L, false)])
                 +- Sort [continent#413 ASC NULLS FIRST, country#423 ASC NULLS FIRST], false, 0
@@ -352,8 +378,8 @@ object DataFrame_1 extends App {
   whenDf.explain()
   /*
     == Physical Plan ==
-    *(1) Project [continent#256, country#266, name#212, population#257L, CASE WHEN (continent#256 = Europe) THEN 0 WHEN (continent#256 = Africa) THEN 1 ELSE 2 END AS newCol#472]
-    +- *(1) Scan ExistingRDD[continent#256,country#266,name#212,population#257L]
+    *(1) Project [continent#248, country#258, name#204, population#249L, CASE WHEN (continent#248 = Europe) THEN 0 WHEN (continent#248 = Africa) THEN 1 ELSE 2 END AS newCol#464]
+    +- *(1) Scan ExistingRDD[continent#248,country#258,name#204,population#249L]
    */
 
   val myConst: Column = lit(3)

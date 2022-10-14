@@ -30,24 +30,26 @@ object DataFrame_4 extends App {
 
   /** Built-in functions */
   val df: Dataset[lang.Long] = spark.range(0, 10)
-
   val newColFunc: Column = pmod(col("id"), lit(2))
+  // ==
+  val newColExpr: Column = expr("pmod(id, 2)")
 
   df
     .withColumn("pmod", newColFunc)
     .show()
 
-  val newColFromExpr: Column = expr("pmod(id, 2)")
-
   df
-    .withColumn("pmod", newColFromExpr)
+    .withColumn("pmod", newColExpr)
     .show()
 
   println()
 
 
-  /** User-defined functions */
-  /** При необходимости взаимодействия с бд в udf - @transient lazy val pattern */
+  /**
+   * User-defined functions
+   * При необходимости взаимодействия с бд в udf - @transient lazy val pattern
+   * При написании udf можно использовать монады - Try[T]/Option[T]
+   */
   val plusOne: UserDefinedFunction = udf { (value: Long) => value + 1 }
 
   df
@@ -60,7 +62,6 @@ object DataFrame_4 extends App {
     .withColumn("hostname", hostname())
     .show(10, truncate = false)
 
-  /** Можно использовать монады Try[T]/Option[T] */
   val divideToBy: UserDefinedFunction = udf { (inputValue: Long) => Try(2L / inputValue).toOption }
   val result: DataFrame = df.withColumn("divideTwoBy", divideToBy(col("id")))
   result.printSchema()
@@ -92,7 +93,7 @@ object DataFrame_4 extends App {
   println("aggCountry: ")
   aggCountry.show(5, truncate = false)
 
-  val percentDf: DataFrame =
+  val innerJoinDf: DataFrame =
     aggTypeCountry
       .join(aggCountry, Seq("iso_country"), "inner") // inner == default
       .select(
@@ -102,12 +103,12 @@ object DataFrame_4 extends App {
       )
 
   println("percentDf: ")
-  percentDf.show(5, truncate = false)
+  innerJoinDf.show(5, truncate = false)
 
-  val resDf: DataFrame = airportsDf.join(percentDf, Seq("iso_country", "type"), "left")
+  val leftJoinDf: DataFrame = airportsDf.join(innerJoinDf, Seq("iso_country", "type"), "left")
 
   println("resDf: ")
-  resDf
+  leftJoinDf
     .select($"ident", $"iso_country", $"type", $"percent")
     /** sample(0.2) - выборка 20% значений из разных партиций */
     .sample(0.2)
@@ -162,12 +163,7 @@ object DataFrame_4 extends App {
   val cntCountryType: Column = count("*").over(windowTypeCountry).alias("cnt_country_type")
   val percent: Column = round(lit(100) *  cntCountryType / cntCountry).alias("percent")
 
-  val res3Df: DataFrame =
-    airportsDf
-      .select(
-        $"*",
-        percent
-      )
+  val res3Df: DataFrame = airportsDf.select($"*", percent)
 
   res3Df
     .select(

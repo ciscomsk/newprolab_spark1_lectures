@@ -105,10 +105,7 @@ object DataFrame_6 extends App {
   left2.as("left").join(right2.as("right"), expr("(left.iso_country < right.type) == true"))
 
 
-  /**
-   * Автоматическое вычисление объема данных в датафрейме - часто работает некорректно
-   * Лучше отключить
-   */
+  /** Автоматическое вычисление объема данных в датафрейме - часто работает некорректно => лучше отключить */
   spark.conf.set("spark.sql.autoBroadcastJoinThreshold", "-1")
 
   /** SortMerge Join */

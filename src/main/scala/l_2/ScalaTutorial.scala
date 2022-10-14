@@ -148,7 +148,7 @@ object ScalaTutorial extends App {
    * Short circuit семантика: если a == false, b - можно не рассчитывать => оптимизация
    * b: => Boolean
    */
-  def and(a: Boolean, b: => Boolean): Boolean = ???
+  def and(a: Boolean, b: => Boolean): Boolean = false
 
 
   /** Управляющие конструкции **/
