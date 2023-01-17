@@ -92,6 +92,11 @@ object DataFrame_1 extends App {
   df
     .filter(col("value") === "Moscow")
     .show()
+  // ==
+  val moscow: Column = col("value") === "Moscow"
+  df
+    .filter(moscow)
+    .show()
 
   /**
    * v3 - DML в SQL-like формате
@@ -120,6 +125,8 @@ object DataFrame_1 extends App {
    */
   /** Каталист парсит выражение и создает план, состоящий из физических операторов => план передается в тангстен для кодогенерации */
 
+  /** withColumn/select == ПРОЕКЦИЯ (Project) */
+
   /**
    * withColumn - добавляет новую колонку
    * Является трансформацией и аналогично другим методам - создает новый датафрейм (а не изменяет исходный)
@@ -133,8 +140,7 @@ object DataFrame_1 extends App {
   withColDf.show()
 
   /**
-   * select == ПРОЕКЦИЯ (Project)
-   * Может использоваться не только для выборки существующих колонок, но и для новых
+   * select - может использоваться не только для выборки существующих колонок, но и для новых
    *
    * select(col(*)) - позволяет получить DF со всеми колонками - полезно, когда список всех колонок не известен,
    * и нужно выбрать все существующие + добавить новые колонки
@@ -347,6 +353,7 @@ object DataFrame_1 extends App {
     /** dropDuplicates - инициирует выполнение шафла (Exchange hashpartitioning) */
     .dropDuplicates("continent", "country")
     .explain()
+//    .explain(extended = true)
   /*
     == Physical Plan ==
     AdaptiveSparkPlan isFinalPlan=false

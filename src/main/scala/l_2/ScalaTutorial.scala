@@ -99,9 +99,9 @@ object ScalaTutorial extends App {
 
 
   /**
-   * def - выполняется при каждом вызове
+   * def == define - выполняется при каждом вызове
    * val - вычисляется 1 раз при появлении в области видимости
-   * lazy val - вычисляется 1 раз при первом обращении
+   * lazy val - вычисляется 1 раз при первом обращении к нему
    */
 
   /** Функции могут быть определены как def или val */
@@ -128,7 +128,7 @@ object ScalaTutorial extends App {
   println(">> t created")
   println()
 
-  /** Call by name - obj будет рассчитан 1 раз перед вызовом функцию */
+  /** Call by value - аргумент будет рассчитан 1 раз перед вызовом функцию */
   def repeatByValue(obj: Int): Unit = (1 to 3).foreach(_ => println(obj))
   println("call by name:")
   repeatByValue(t.`val`)
@@ -136,7 +136,7 @@ object ScalaTutorial extends App {
   repeatByValue(t.`def`())
   println()
 
-  /** Call by value - obj будет рассчитываться каждый раз при обращении к нему в теле функции */
+  /** Call by name - аргумент будет рассчитываться каждый раз при обращении к нему в теле функции */
   def repeatByName(obj: => Int): Unit = (1 to 3).foreach(_ => println(obj))
   println("call by value:")
   repeatByName(t.`val`)
@@ -148,7 +148,10 @@ object ScalaTutorial extends App {
    * Short circuit семантика: если a == false, b - можно не рассчитывать => оптимизация
    * b: => Boolean
    */
-  def and(a: Boolean, b: => Boolean): Boolean = false
+  def and(a: Boolean, b: => Boolean): Boolean = {
+    if (!a) false
+    else a && b
+  }
 
 
   /** Управляющие конструкции **/
@@ -193,11 +196,12 @@ object ScalaTutorial extends App {
       if a + b < 6  // условие
     } yield a + b  // генератор
   // ==
-  (1 to 5).flatMap { a =>
-    (1 to 5)
-      .withFilter(b => a + b < 6)
-      .map(b => a + b)
-  }
+  (1 to 5)
+    .flatMap { a =>
+      (1 to 5)
+        .withFilter(b => a + b < 6)
+        .map(b => a + b)
+    }
 
   println(s"for-comprehension: $res8")
   println()
@@ -237,16 +241,18 @@ object ScalaTutorial extends App {
   println(fruits2)
   println()
 
-  val filledList: List[String] = List.fill(10)("apples")
-  println(s"List.fill(10)(\"apples\"): $filledList")
+  val filledList: List[String] = List.fill(10)("apple")
+  println(s"List.fill(10)(\"apple\"): $filledList")
 
   val mappedList: List[String] = fruits1.map(el => s"This is $el")
-  println(s"fruits1.map(el => s\"This is el\"): $mappedList")
+  println(s"fruits1.map(el => s\"This is $$el\"): $mappedList")
 
   val contains: Boolean = fruits1.contains("apple")
   println(s"fruits1.contains(\"apple\"): $contains")
 
-  val head: String = fruits1.head  // == fruit(0)
+  val head: String = fruits1.head
+  // ==
+  val head2 = fruits1(0)
   println(s"fruits1.head: $head")
 
   val take: List[String] = fruits1.take(2)
@@ -310,6 +316,16 @@ object ScalaTutorial extends App {
   println(emptyList)
   println()
 
+  /** flatten: G[F[A]] => G[A] - распаковывает внутреннюю коллекцию (монаду) */
+  println("_flatten_: G[F[A]] => G[A]")
+
+  val flatten: List[Int] = List(List(1), List(2, 3), List(4, 5), Nil).flatten
+  println(flatten)
+
+  val mapFlatten: List[Int] = intList.map(el => List(el, el, el)).flatten // == intList.flatMap(el => List(el, el, el))
+  println(mapFlatten)
+  println()
+
   /**
    * flatMap: A => F[B]
    * flatMap == map + flatten
@@ -324,16 +340,6 @@ object ScalaTutorial extends App {
   println("_foreach_: A => Unit")
 
   intList.foreach(println)
-  println()
-
-  /** flatten: G[F[A]] => G[A] - распаковывает внутреннюю коллекцию (монаду) */
-  println("_flatten_: G[F[A]] => G[A]")
-
-  val flatten: List[Int] = List(List(1), List(2, 3), List(4, 5), Nil).flatten
-  println(flatten)
-
-  val mapFlatten: List[Int] = intList.map(el => List(el, el, el)).flatten  // == intList.flatMap(el => List(el, el, el))
-  println(mapFlatten)
   println()
 
 
@@ -363,16 +369,18 @@ object ScalaTutorial extends App {
   println()
 
   val colors: Map[String, String] = Map("red" -> "#FF0000", "azure" -> "#F0FFFF")
-  println(s"Keys in colors: ${colors.keys}")
-  println(s"Values in colors: ${colors.values}")
-  println(s"Check if colors is empty: ${colors.isEmpty}")
+  println(s"colors.keys: ${colors.keys}")
+  println(s"colors.values: ${colors.values}")
+  println(s"colors.isEmpty: ${colors.isEmpty}")
   println()
 
-  val colorsImmutable: Map[String, String] = colors.updated("black", "#000000")  // Immutable map - updateD, result type == Map
+  // Immutable map - updateD, result type == Map
+  val colorsImmutable: Map[String, String] = colors.updated("black", "#000000")
   println(s"colorsImmutable: $colorsImmutable")
 
+  // Mutable map - update_, result type == Unit
   val colorsMutable: mutable.Map[String, String] = mutable.Map("red" -> "#FF0000", "azure" -> "#F0FFFF")
-  colorsMutable.update("black", "#000000")  // Mutable map - update_, result type == ()
+  val _: Unit = colorsMutable.update("black", "#000000")
   println(s"colorsMutable: $colorsMutable")
   println()
 
@@ -385,7 +393,7 @@ object ScalaTutorial extends App {
   println()
 
 
-  /** Tuple - его элементы могут иметь разные типы */
+  /** Tuple - элементы могут иметь разные типы */
   println("__Tuple__")
 
   val t3: (Int, String, Double) = (1, "hello", 3.0)
@@ -501,7 +509,6 @@ object ScalaTutorial extends App {
       case Failure(_) => 0
       case Success(value) => value
     }
-
   println(tryRes1)
 
   /** Safe get value - v2 - getOrElse */
@@ -514,7 +521,7 @@ object ScalaTutorial extends App {
   println("__Class__")
 
   class Point(xc: Int, yc: Int) {  // (xc: Int, yc: Int) - конструктор по умолчанию
-    /** Поля( == атрибуты) */
+    /** Поля == атрибуты */
     var x: Int = xc
     var y: Int = yc
 
@@ -570,7 +577,14 @@ object ScalaTutorial extends App {
       case Person(name, age) => println(s"Age: $age years, name: $name")
     }
   }
+  println()
 
+  println("unapply:")
+  val personEx = Person("Bob", 32)
+  val Person(name, _) = personEx
+  println(name)
+  val unapplyRes: Option[(String, Int)] = Person.unapply(personEx)
+  println(unapplyRes)
   println()
 
 
@@ -706,10 +720,10 @@ object ScalaTutorial extends App {
 
     def push(x: A): Unit = elements = x :: elements
 
-    def pick: A = elements.head
+    def pick(): A = elements.head
 
     def pop(): A = {
-      val currentTop: A = pick
+      val currentTop: A = pick()
       elements = elements.tail
       currentTop
     }
@@ -755,7 +769,7 @@ object ScalaTutorial extends App {
   println("__Implicit class__")
   object Helper {
     implicit class StringExtended(str: String) {
-      def sayItLoud(): Unit = println(s"${str.toUpperCase}!")
+      def sayItLoud(): Unit = println(s"${str.toUpperCase}!!!")
     }
   }
 
@@ -769,8 +783,8 @@ object ScalaTutorial extends App {
   /** Implicit conversion */
   println("__Implicit conversion__")
 
-  val flag: Boolean = false
-//  val sum1: String = flag + 1  // err - type mismatch
+  val flag: Boolean = true
+//  val sum1: Int = flag + 1  // err - type mismatch
 
   implicit def bool2Int(b: Boolean): Int = if (b) 1 else 0
   val sum2: Int = flag + 1  // == bool2Int(flag) + 1

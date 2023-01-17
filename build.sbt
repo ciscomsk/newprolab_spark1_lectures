@@ -2,11 +2,11 @@ name := "lectures"
 
 version := "0.1"
 
-//scalaVersion := "2.12.15"
-scalaVersion := "2.13.9"
+//scalaVersion := "2.12.17"
+scalaVersion := "2.13.10"
 
 libraryDependencies ++= Seq(
-  "org.apache.spark" %% "spark-sql" % "3.3.0" % Provided,  // Provided - зависимость не будет включена при сборке fat jar (плагин assembly)
+  "org.apache.spark" %% "spark-sql" % "3.3.1" % Provided,  // Provided - зависимость не будет включена при сборке fat jar (плагин assembly)
 //  "org.apache.spark" %% "spark-sql" % "2.4.8" % "provided",
 
   // !!! works only with Spark 2.4.8
@@ -45,5 +45,5 @@ libraryDependencies ++= Seq(
 //  "org.scala-lang.modules" %% "scala-parallel-collections" % "1.0.4",
 
 
-  "org.scalatest" %% "scalatest" % "3.2.14" % Test
+  "org.scalatest" %% "scalatest" % "3.2.15" % Test
 )
