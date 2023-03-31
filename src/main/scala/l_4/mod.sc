@@ -15,7 +15,7 @@
 -10 % 3
 
 def pmod(a: Int, n: Int): Int = {
-  val r = a % n
+  val r: Int = a % n
   if (r < 0) {
     (r + n) % n
   } else r

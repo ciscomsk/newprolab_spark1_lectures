@@ -58,7 +58,7 @@ object SparkUI extends App {
 
   airportsDf
     /**
-     * Проекция колонки type будет вынесена на уровень чтения источника.
+     * Проекция колонки type будет вынесена на уровень чтения источника
      * (1) Scan csv  - ReadSchema: struct<type:string>
      */
     .groupBy($"type")

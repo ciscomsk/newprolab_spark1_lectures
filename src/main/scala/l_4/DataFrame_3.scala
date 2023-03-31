@@ -3,12 +3,12 @@ package l_4
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.functions.{col, lit, pmod, rand, round, sum, when}
-import org.apache.spark.sql.{Column, DataFrame, Dataset, RelationalGroupedDataset, Row, SparkSession}
+import org.apache.spark.sql.{Column, DataFrame, Dataset, Row, SparkSession}
 
 import java.lang
 
 object DataFrame_3 extends App {
-  // не работает в Spark 3.3.0
+  // не работает в Spark 3.3.2
 //  Logger
 //    .getLogger("org")
 //    .setLevel(Level.OFF)
@@ -65,12 +65,12 @@ object DataFrame_3 extends App {
     .show()
 
   val end1: Long = System.currentTimeMillis()
-  println(s"time1: ${(end1.toDouble - start1) / 1000}")  // 1.363s
+  println(s"time1: ${(end1.toDouble - start1) / 1000}")  // 1.619s
   println()
 
   /**
    * !!! cache/persist - ленивые операции
-   * => best practice - после cache/persist выполнять count - т.к. будут рассчитаны все партиции => все партиции попаду в кэш
+   * => best practice - после cache/persist выполнять count - т.к. будут рассчитаны все партиции => все партиции попадут в кэш
    *
    * !!! Если после cache/persist будет show => рассчитана будет только 1 партиция => 1 партиция будет помещена в кэш
    * Т.е. часть данных будет в виде снэпшота в кэше, часть в источнике (csv-файл)
@@ -92,7 +92,7 @@ object DataFrame_3 extends App {
     .show()
 
   val end2: Long = System.currentTimeMillis()
-  println(s"time2: ${(end2.toDouble - start2) / 1000}")  // 0.63s
+  println(s"time2: ${(end2.toDouble - start2) / 1000}")  // 0.747s
   onlyRuAndHigh.unpersist()
   println()
 
@@ -114,9 +114,9 @@ object DataFrame_3 extends App {
    */
 
   /**
-   * Память выделенная воркеру делится на:
+   * Память выделенная экзекьютору делится на:
    * 1. Расположение внутренних объектов Spark в хипе
-   * 2. Storage (max 50%)
+   * 2. Storage - для кэша (max 50%)
    *
    * Распределение памяти по областям является динамическим
    */
@@ -128,9 +128,10 @@ object DataFrame_3 extends App {
   val skewDs: Dataset[lang.Long] =
     spark
       .range(0, 1000)  // col("id")
-      // будет 2 непустых партиции c 900/100 элементами соответственно
+      // будет 2 непустых партиции c 900/100 элементами соответственно => датасет с перекосом данных
       .repartition(10, skewColumn)
 
+  println("skewDs: ")
   skewDs.show()
   println(skewDs.count())
   println()
@@ -142,26 +143,28 @@ object DataFrame_3 extends App {
         .withColumnRenamed("value", "itemPerPartition")
 
     resDf.show(50, truncate = false)
-    println(resDf.count())
+    println(s"partitionsNumber: ${resDf.rdd.getNumPartitions}")
   }
 
+  println("printItemPerPartition[java.lang.Long](skewDs): ")
   printItemPerPartition[java.lang.Long](skewDs)
   println()
 
   /**
    * Любые операции с датасетом skewDs будет работать медленно, т.к.:
-   * 1. Если суммарное количество потоков на всех воркерах больше 10, то в один момент времени работать будут максимум 10,
+   * 1. Если суммарное количество ядер на всех экзекьюторах больше 10, то в один момент времени работать будут максимум 10,
    * остальные будут простаивать
-   * 2. Из 10 партиций только в 2-х есть данные => только 2 потока будут обрабатывать данные,
+   * 2. Из 10 партиций только в 2-х есть данные => только 2 ядра будут обрабатывать данные,
    * при этом из-за перекоса данных между ними (900 vs 100) первый станет bottleneck'ом
    */
 
   /**
    * 1. RoundRobinRepartitioning - равномерное случайное перераспределение
-   * Решает задачу восстановления распределения данных между партициями
+   * Решает задачу равномерного распределения данных между партициями
    * Позволяет снизить количество партиций перед записью в базу/файл
    */
   val repartitionedDf1: Dataset[lang.Long] = skewDs.repartition(20)
+  println("printItemPerPartition[java.lang.Long](repartitionedDf1): ")
   printItemPerPartition[java.lang.Long](repartitionedDf1)
   println()
 
@@ -169,7 +172,7 @@ object DataFrame_3 extends App {
   /*
     == Physical Plan ==
     AdaptiveSparkPlan isFinalPlan=false
-    +- Exchange RoundRobinPartitioning(20), REPARTITION_BY_NUM, [id=#698]
+    +- Exchange RoundRobinPartitioning(20), REPARTITION_BY_NUM, [plan_id=698]
        +- Range (0, 1000, step=1, splits=8)
    */
 
@@ -180,6 +183,7 @@ object DataFrame_3 extends App {
    */
 
   val repartitionedDf2: Dataset[lang.Long] = skewDs.repartition(20, col("id"))
+  println("printItemPerPartition[java.lang.Long](repartitionedDf2): ")
   printItemPerPartition[java.lang.Long](repartitionedDf2)
   println()
 
@@ -187,7 +191,7 @@ object DataFrame_3 extends App {
   /*
     == Physical Plan ==
     AdaptiveSparkPlan isFinalPlan=false
-    +- Exchange hashpartitioning(id#1247L, 20), REPARTITION_BY_NUM, [id=#861]
+    +- Exchange hashpartitioning(id#1247L, 20), REPARTITION_BY_NUM, [plan_id=838]
        +- Range (0, 1000, step=1, splits=8)
    */
 
@@ -201,6 +205,7 @@ object DataFrame_3 extends App {
 
   /** coalesce */
   val coalescedDf: Dataset[lang.Long] = skewDs.coalesce(3)
+  println("printItemPerPartition(coalescedDf): ")
   printItemPerPartition(coalescedDf)
   println()
 
@@ -209,7 +214,7 @@ object DataFrame_3 extends App {
     == Physical Plan ==
     AdaptiveSparkPlan isFinalPlan=false
     +- Coalesce 3
-       +- Exchange hashpartitioning(CASE WHEN (id#1247L < 900) THEN 0 ELSE 1 END, 10), REPARTITION_BY_NUM, [id=#1045]
+       +- Exchange hashpartitioning(CASE WHEN (id#1247L < 900) THEN 0 ELSE 1 END, 10), REPARTITION_BY_NUM, [plan_id=989]
           +- Range (0, 1000, step=1, splits=8)
    */
 
@@ -231,7 +236,8 @@ object DataFrame_3 extends App {
   val saltModTen: Column = pmod(round(rand() * 100, 0), lit(10)).cast("int")
 
   val saltedDf: DataFrame = airportsDf.withColumn("salt", saltModTen)
-  saltedDf.show(numRows = 1, truncate = 200, vertical = true)
+  println("saltedDf: ")
+  saltedDf.show(numRows = 10, truncate = 100)
   println(s"saltedDf partitions: ${saltedDf.rdd.getNumPartitions}")
   println()
 
@@ -257,10 +263,10 @@ object DataFrame_3 extends App {
    * Несмотря на то, что мы сделали 2 группировки вместо 1, распределение данных по воркерам стало более равномерным,
    * что позволило избежать OOM на воркерах
    */
-
   secondStep
     .orderBy($"count".desc)
     .show(200, truncate = false)
+
 
   println(sc.uiWebUrl)
   Thread.sleep(1000000)

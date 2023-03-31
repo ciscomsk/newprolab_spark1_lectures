@@ -2,13 +2,14 @@ package l_4
 
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
+import org.apache.spark.sql.catalyst.expressions.Expression
 import org.apache.spark.sql.functions.{col, explode, expr, length, lit, lower, split, struct, upper, when}
 import org.apache.spark.sql.{Column, DataFrame, Dataset, Row, SaveMode, SparkSession}
 
 import java.lang
 
 object DataFrame_1 extends App {
-  // не работает в Spark 3.3.0
+  // не работает в Spark 3.3.2
 //  Logger
 //    .getLogger("org")
 //    .setLevel(Level.OFF)
@@ -35,7 +36,7 @@ object DataFrame_1 extends App {
 
   /** df.show работает аналогично rdd.take - пытается взять данные из минимального количества партиций => оптимизация */
   df.show()
-  df.show(numRows = 20, truncate = 100, vertical = true)  // вертикальная ориентация удобна при большом количестве столбцов
+  df.show(numRows = 20, truncate = 100, vertical = true)  // вертикальная ориентация удобна при большом количестве колонок или длинной строке в колонке
 
 
   /**
@@ -48,15 +49,15 @@ object DataFrame_1 extends App {
   println()
 
   /**
-   * filter == СРЕЗ (Filter)
+   * filter == СРЕЗ (PO Filter)
    * В отличии от RDD - может принимать SQL выражение
    *
-   * filter(condition: Column): Dataset[T]
+   * def filter(condition: Column): Dataset[T]
    */
 
   /**
    * v1 - $
-   * $ - позволяет указывать колонки внутри структур
+   * $ также позволяет указывать колонки внутри структур
    */
   df
     .filter($"value" === "Moscow")
@@ -88,7 +89,7 @@ object DataFrame_1 extends App {
     .show()
 
 
-  /** v2 - col - классический API без синтаксического сахара */
+  /** v2 - col() - классический API без синтаксического сахара */
   df
     .filter(col("value") === "Moscow")
     .show()
@@ -125,22 +126,29 @@ object DataFrame_1 extends App {
    */
   /** Каталист парсит выражение и создает план, состоящий из физических операторов => план передается в тангстен для кодогенерации */
 
-  /** withColumn/select == ПРОЕКЦИЯ (Project) */
+
+  /** withColumn/select/drop == ПРОЕКЦИЯ (PO Project) */
 
   /**
    * withColumn - добавляет новую колонку
    * Является трансформацией и аналогично другим методам - создает новый датафрейм (а не изменяет исходный)
    */
-  val withColDf = df.withColumn("upperCity", upper($"value"))
-  withColDf.explain()
+  df
+    .withColumn("upperCity", upper($"value"))
+    .show()
+
+  df
+    .localCheckpoint()
+    .withColumn("upperCity", upper($"value"))
+    .explain()
   /*
-    == Physical Plan ==
-    LocalTableScan [value#1, upperCity#80]
+    *(1) Project [value#1, upper(value#1) AS upperCity#86]
+    +- *(1) Scan ExistingRDD[value#1]
    */
-  withColDf.show()
+
 
   /**
-   * select - может использоваться не только для выборки существующих колонок, но и для новых
+   * select - может использоваться не только для выборки существующих колонок, но и для СОЗДАНИЯ новых
    *
    * select(col(*)) - позволяет получить DF со всеми колонками - полезно, когда список всех колонок не известен,
    * и нужно выбрать все существующие + добавить новые колонки
@@ -148,12 +156,17 @@ object DataFrame_1 extends App {
    * В select можно передать список колонок, используя обычные строки
    */
   val withUpperDf: DataFrame = df.select($"value", upper($"value").alias("upperCity"))
-  withUpperDf.explain()
+  withUpperDf.show()
+
+  df
+    .localCheckpoint()
+    .select($"value", upper($"value").alias("upperCity"))
+    .explain()
   /*
     == Physical Plan ==
-    LocalTableScan [value#1, upperCity#92]
+    *(1) Project [value#1, upper(value#1) AS upperCity#114]
+    +- *(1) Scan ExistingRDD[value#1]
    */
-  withUpperDf.show()
 
   val myCols: List[Column] =
     List(col("value"), lit("foo"), lit(false), struct(col("value").alias("woo")).alias("moo"))
@@ -161,6 +174,14 @@ object DataFrame_1 extends App {
   df
     .select(myCols: _*)
     .printSchema()
+  /*
+    root
+     |-- value: string (nullable = true)
+     |-- foo: string (nullable = false)
+     |-- false: boolean (nullable = false)
+     |-- moo: struct (nullable = false)
+     |    |-- woo: string (nullable = true)
+   */
 
   /** alias == name == as */
   val multiSelectDf: DataFrame =
@@ -186,8 +207,8 @@ object DataFrame_1 extends App {
   multiSelectDf.explain()
   /*
     == Physical Plan ==
-    *(1) Project [value#1, upperCity#92, lower(value#1) AS lowerCity#114, (length(value#1) + 1) AS length#115, foo AS bar#116]
-    +- *(1) Scan ExistingRDD[value#1,upperCity#92]
+    *(1) Project [value#1, upperCity#101, lower(value#1) AS lowerCity#127, (length(value#1) + 1) AS length#128, foo AS bar#129]
+    +- *(1) Scan ExistingRDD[value#1,upperCity#101]
    */
 
   withUpperDf
@@ -209,11 +230,11 @@ object DataFrame_1 extends App {
   /*
     == Physical Plan ==
     *(1) Project [value#1]
-    +- *(1) Scan ExistingRDD[value#1,upperCity#92]
+    +- *(1) Scan ExistingRDD[value#1,upperCity#101]
    */
 
 
-  /** and/or/between conditions */
+  /** and/or/between/isin filter conditions */
   df
     .filter($"value" === "Moscow" or $"value" === "Paris")  // == $"value".===("Moscow").or($"value".===("Paris"))
     .show()
@@ -235,35 +256,35 @@ object DataFrame_1 extends App {
       |{ "name": "New York", "country": "USA",
       |""".stripMargin
 
-  val raw: DataFrame =
+  val rawDf: DataFrame =
     spark
       .range(0, 1)
       .select(lit(testData).alias("value"))
 
-  println("raw: ")
-  raw.show(truncate = false)
+  println("rawDf: ")
+  rawDf.show(truncate = false)
 
-  val json: DataFrame =
-    raw.select(split(col("value"), "\n").alias("value"))
+  val jsonDf: DataFrame =
+    rawDf.select(split(col("value"), "\n").alias("value"))
 
-  println("json: ")
-  json.show(truncate = false)
+  println("jsonDf: ")
+  jsonDf.show(truncate = false)
   
   val jsonStrings: Column = split(col("value"), "\n").alias("value")
 
-  val splitted: Dataset[String] =
-    raw
+  val splittedDs: Dataset[String] =
+    rawDf
       .select(explode(jsonStrings))
       .as[String]
 
-  println("splitted: ")
-  splitted.show(numRows = 10, truncate = false)
+  println("splittedDs: ")
+  splittedDs.show(numRows = 10, truncate = false)
 
   /** !!! spark.read.json позволяет читать не только json-файлы, но и Dataset[String], содержащие JSON строки */
   val df4: DataFrame =
     spark
       .read
-      .json(splitted)
+      .json(splittedDs)
 
   println("df4: ")
   df4.show(truncate = false)
@@ -281,7 +302,7 @@ object DataFrame_1 extends App {
   val fillData: Map[String, Any] = Map("continent" -> "Undefined", "population" -> 0)
   val replaceData: Map[String, String] = Map("Rossiya" -> "Russia")
 
-  val cleanData: Dataset[Row] =
+  val cleanDataDs: Dataset[Row] =
     df4
       .drop(col("_corrupt_record"))  // drop - это проекция
       /**
@@ -289,22 +310,22 @@ object DataFrame_1 extends App {
        * .na.drop("any") - удаляются строки, где хотя бы одна колонка == null
        * Можно указать на какие колонки это будет распространяться
        * */
-      .na.drop("all") // na.drop - это срез
-      .na.fill(fillData)
-      .na.replace("country", replaceData)
+      .na.drop("all")  // na.drop - это срез
+      .na.fill(fillData)  // na.fill - это срез
+      .na.replace("country", replaceData)  // na.replace - это срез
       /**
        * dropDuplicates без аргументов == distinct
        * dropDuplicates неявно запускает шафл
        */
       .dropDuplicates("continent", "country")
 
-  cleanData
+  cleanDataDs
     .repartition(1)
     .write
     .mode(SaveMode.Overwrite)
     .save("src/main/resources/l_4/cleandata")
 
-  cleanData.show()
+  cleanDataDs.show()
 
   df4
     .drop(col("_corrupt_record"))
@@ -312,9 +333,9 @@ object DataFrame_1 extends App {
     .na.drop("all")
     .explain()
   /*
-    == Physical Plan ==
-    *(1) Filter atleastnnonnulls(1, continent#202, country#203, name#204, population#205L)
-    +- *(1) Scan ExistingRDD[continent#202,country#203,name#204,population#205L]
+    === Physical Plan ==
+    *(1) Filter atleastnnonnulls(1, continent#215, country#216, name#217, population#218L)
+    +- *(1) Scan ExistingRDD[continent#215,country#216,name#217,population#218L]
    */
 
   df4
@@ -325,9 +346,9 @@ object DataFrame_1 extends App {
     .explain()
   /*
     == Physical Plan ==
-    *(1) Project [coalesce(continent#202, Undefined) AS continent#360, country#203, name#204, coalesce(population#205L, 0) AS population#361L]
-    +- *(1) Filter atleastnnonnulls(1, continent#202, country#203, name#204, population#205L)
-       +- *(1) Scan ExistingRDD[continent#202,country#203,name#204,population#205L]
+    *(1) Project [coalesce(continent#215, Undefined) AS continent#373, country#216, name#217, coalesce(population#218L, 0) AS population#374L]
+    +- *(1) Filter atleastnnonnulls(1, continent#215, country#216, name#217, population#218L)
+       +- *(1) Scan ExistingRDD[continent#215,country#216,name#217,population#218L]
    */
 
   df4
@@ -339,9 +360,9 @@ object DataFrame_1 extends App {
     .explain()
   /*
     == Physical Plan ==
-    *(1) Project [coalesce(continent#202, Undefined) AS continent#382, CASE WHEN (country#203 = Rossiya) THEN Russia ELSE country#203 END AS country#392, name#204, coalesce(population#205L, 0) AS population#383L]
-    +- *(1) Filter atleastnnonnulls(1, continent#202, country#203, name#204, population#205L)
-       +- *(1) Scan ExistingRDD[continent#202,country#203,name#204,population#205L]
+    *(1) Project [coalesce(continent#215, Undefined) AS continent#395, CASE WHEN (country#216 = Rossiya) THEN Russia ELSE country#216 END AS country#405, name#217, coalesce(population#218L, 0) AS population#396L]
+    +- *(1) Filter atleastnnonnulls(1, continent#215, country#216, name#217, population#218L)
+       +- *(1) Scan ExistingRDD[continent#215,country#216,name#217,population#218L]
    */
 
   df4
@@ -358,16 +379,16 @@ object DataFrame_1 extends App {
     == Physical Plan ==
     AdaptiveSparkPlan isFinalPlan=false
     // Удаление дубликатов внутри каждой партиции после репартиционирования
-    +- SortAggregate(key=[continent#413, country#423], functions=[first(name#204, false), first(population#414L, false)])
-       +- Sort [continent#413 ASC NULLS FIRST, country#423 ASC NULLS FIRST], false, 0
+    +- SortAggregate(key=[continent#426, country#436], functions=[first(name#217, false), first(population#427L, false)])
+       +- Sort [continent#426 ASC NULLS FIRST, country#436 ASC NULLS FIRST], false, 0
           // Репартиционирование по continent + country на 200 партиций
-          +- Exchange hashpartitioning(continent#413, country#423, 200), ENSURE_REQUIREMENTS, [id=#490]
+          +- Exchange hashpartitioning(continent#426, country#436, 200), ENSURE_REQUIREMENTS, [plan_id=506]
              // Удаление дубликатов внутри каждой партиции
-             +- SortAggregate(key=[continent#413, country#423], functions=[partial_first(name#204, false), partial_first(population#414L, false)])
-                +- Sort [continent#413 ASC NULLS FIRST, country#423 ASC NULLS FIRST], false, 0
-                   +- Project [coalesce(continent#202, Undefined) AS continent#413, CASE WHEN (country#203 = Rossiya) THEN Russia ELSE country#203 END AS country#423, name#204, coalesce(population#205L, 0) AS population#414L]
-                      +- Filter atleastnnonnulls(1, continent#202, country#203, name#204, population#205L)
-                         +- Scan ExistingRDD[continent#202,country#203,name#204,population#205L]
+             +- SortAggregate(key=[continent#426, country#436], functions=[partial_first(name#217, false), partial_first(population#427L, false)])
+                +- Sort [continent#426 ASC NULLS FIRST, country#436 ASC NULLS FIRST], false, 0
+                   +- Project [coalesce(continent#215, Undefined) AS continent#426, CASE WHEN (country#216 = Rossiya) THEN Russia ELSE country#216 END AS country#436, name#217, coalesce(population#218L, 0) AS population#427L]
+                      +- Filter atleastnnonnulls(1, continent#215, country#216, name#217, population#218L)
+                         +- Scan ExistingRDD[continent#215,country#216,name#217,population#218L]
    */
 
   /** when */
@@ -377,7 +398,7 @@ object DataFrame_1 extends App {
       .otherwise(lit(2))
 
   val whenDf: DataFrame =
-    cleanData
+    cleanDataDs
       .localCheckpoint()
       .withColumn("newCol", newCol)
 
@@ -385,16 +406,20 @@ object DataFrame_1 extends App {
   whenDf.explain()
   /*
     == Physical Plan ==
-    *(1) Project [continent#248, country#258, name#204, population#249L, CASE WHEN (continent#248 = Europe) THEN 0 WHEN (continent#248 = Africa) THEN 1 ELSE 2 END AS newCol#464]
-    +- *(1) Scan ExistingRDD[continent#248,country#258,name#204,population#249L]
+    *(1) Project [continent#261, country#271, name#217, population#262L, CASE WHEN (continent#261 = Europe) THEN 0 WHEN (continent#261 = Africa) THEN 1 ELSE 2 END AS newCol#477]
+    +- *(1) Scan ExistingRDD[continent#261,country#271,name#217,population#262L]
    */
 
-  val myConst: Column = lit(3)
-  val myConstExpr: String = myConst.expr.toJSON
+  val constCol: Column = lit(3)
+  val constColExpr: Expression = constCol.expr
+  println(constColExpr)
+  // == 3
+  val constColExprJson: String = constCol.expr.toJSON
+  println(constColExprJson)
   // == [{"class":"org.apache.spark.sql.catalyst.expressions.Literal","num-children":0,"value":"3","dataType":"integer"}]
-  println(myConstExpr)
 
 
+  println(sc.uiWebUrl)
   Thread.sleep(1000000)
 
   spark.stop()

@@ -10,11 +10,12 @@ object Datasource_2 extends App {
     .getLogger("org")
     .setLevel(Level.OFF)
 
-  val spark: SparkSession = SparkSession
-    .builder
-    .master("local[*]")
-    .appName("l_6")
-    .getOrCreate
+  val spark: SparkSession =
+    SparkSession
+      .builder
+      .master("local[*]")
+      .appName("l_6")
+      .getOrCreate
 
   val sc: SparkContext = spark.sparkContext
 
@@ -22,13 +23,14 @@ object Datasource_2 extends App {
 
   val csvOption: Map[String, String] = Map("header" -> "true", "inferSchema" -> "true")
 
-  val airportsDf: DataFrame = spark
-    .read
-    .options(csvOption)
-    .csv("src/main/resources/l_3/airport-codes.csv")
+  val airportsDf: DataFrame =
+    spark
+      .read
+      .options(csvOption)
+      .csv("src/main/resources/l_3/airport-codes.csv")
 
   airportsDf.printSchema()
-  println(airportsDf.count)
+  println(airportsDf.count())
   println()
 
   /** !!! Не записывать crc файлы - не работает.  */

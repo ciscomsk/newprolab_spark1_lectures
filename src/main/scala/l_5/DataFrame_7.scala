@@ -9,7 +9,7 @@ import org.apache.spark.sql.{Column, DataFrame, Dataset, Row, SparkSession}
 
 /** test: l_5 + org.apache.spark.sql  */
 object DataFrame_7 extends App {
-  // не работает в Spark 3.3.0
+  // не работает в Spark 3.3.1
 //  Logger
 //    .getLogger("org")
 //    .setLevel(Level.OFF)
@@ -25,7 +25,6 @@ object DataFrame_7 extends App {
   sc.setLogLevel("ERROR")
 
   import spark.implicits._
-  println(sc.uiWebUrl)
 
   val csvOptions: Map[String, String] = Map("header" -> "true", "inferSchema" -> "true")
 
@@ -47,7 +46,7 @@ object DataFrame_7 extends App {
   println()
 
   /** apply - получение поля структуры по имени/индексу */
-  val field: StructField = schema("ident") // == schema(0)
+  val field: StructField = schema("ident")  // == schema(0)
   println(field)
   println()
 
@@ -184,5 +183,8 @@ object DataFrame_7 extends App {
   /** !!! cast может менять названия/типы колонок внутри структуры, но не список колонок (например - убрать нельзя, это можно сделать с помощью рекурсии) */
   // cast(StructType(...))
 
+  println(sc.uiWebUrl)
   Thread.sleep(1000000)
+
+  spark.stop()
 }

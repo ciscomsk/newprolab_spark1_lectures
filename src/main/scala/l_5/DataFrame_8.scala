@@ -2,6 +2,7 @@ package l_5
 
 import l_5.DataFrame_5.printPhysicalPlan
 import org.apache.log4j.{Level, Logger}
+import org.apache.spark.SparkContext
 import org.apache.spark.sql.functions.{col, lit}
 import org.apache.spark.sql.types.LongType
 import org.apache.spark.sql.{DataFrame, Dataset, Row, SaveMode, SparkSession}
@@ -9,9 +10,10 @@ import org.apache.spark.sql.{DataFrame, Dataset, Row, SaveMode, SparkSession}
 import java.lang
 
 object DataFrame_8 extends App {
-  Logger
-    .getLogger("org")
-    .setLevel(Level.OFF)
+  // не работает в Spark 3.3.1
+//  Logger
+//    .getLogger("org")
+//    .setLevel(Level.OFF)
 
   val spark: SparkSession = SparkSession
     .builder
@@ -19,14 +21,18 @@ object DataFrame_8 extends App {
     .appName("l_5")
     .getOrCreate
 
+  val sc: SparkContext = spark.sparkContext
+  sc.setLogLevel("ERROR")
+
   import spark.implicits._
 
   val csvOptions: Map[String, String] = Map("header" -> "true", "inferSchema" -> "true")
 
-  val airportsDf: DataFrame = spark
-    .read
-    .options(csvOptions)
-    .csv("src/main/resources/l_3/airport-codes.csv")
+  val airportsDf: DataFrame =
+    spark
+      .read
+      .options(csvOptions)
+      .csv("src/main/resources/l_3/airport-codes.csv")
 
 //  airportsDf
 //    .write
@@ -35,20 +41,21 @@ object DataFrame_8 extends App {
 //    .mode(SaveMode.Overwrite)
 //    .save("src/main/resources/l_5/airports")
 
-  val airportPartPqDf: DataFrame = spark
-    .read
-    .parquet("src/main/resources/l_5/airports")
+  val airportPartPqDf: DataFrame =
+    spark
+      .read
+      .parquet("src/main/resources/l_5/airports")
 
-  airportPartPqDf.printSchema
-  println
+  airportPartPqDf.printSchema()
+  println()
 
-  /** Column projection. */
+  /** Column projection */
   spark.time {
-    val selectedDf: DataFrame = airportPartPqDf.select('ident)
+    val selectedDf: DataFrame = airportPartPqDf.select($"ident")
 
-    selectedDf.cache
-    selectedDf.count
-    selectedDf.unpersist
+    selectedDf.cache()
+    selectedDf.count()
+    selectedDf.unpersist()
 
     printPhysicalPlan(selectedDf)
     /*
@@ -64,9 +71,9 @@ object DataFrame_8 extends App {
   spark.time {
     val selectedDf: DataFrame = airportPartPqDf
 
-    selectedDf.cache
-    selectedDf.count
-    selectedDf.unpersist
+    selectedDf.cache()
+    selectedDf.count()
+    selectedDf.unpersist()
 
     printPhysicalPlan(selectedDf)
     /*
@@ -84,9 +91,9 @@ object DataFrame_8 extends App {
    * PartitionFilters.
    */
   spark.time {
-    val filteredDf: Dataset[Row] = airportPartPqDf.filter('iso_country === "RU")
+    val filteredDf: Dataset[Row] = airportPartPqDf.filter($"iso_country" === "RU")
 
-    filteredDf.count
+    filteredDf.count()
 
     printPhysicalPlan(filteredDf)
     /*
@@ -100,7 +107,7 @@ object DataFrame_8 extends App {
   spark.time {
     val filteredDf: Dataset[Row] = airportPartPqDf
 
-    filteredDf.count
+    filteredDf.count()
 
     printPhysicalPlan(filteredDf)
     /*
@@ -117,9 +124,9 @@ object DataFrame_8 extends App {
    * PushedFilters.
    */
   spark.time {
-    val filteredDf: Dataset[Row] = airportPartPqDf.filter('iso_region === "RU")
+    val filteredDf: Dataset[Row] = airportPartPqDf.filter($"iso_region" === "RU")
 
-    filteredDf.count
+    filteredDf.count()
 
     printPhysicalPlan(filteredDf)
     /*
@@ -133,12 +140,13 @@ object DataFrame_8 extends App {
 
 
   /**
-   * Simplify casts.
-   * LongType.cast(LongType) => каста не будет.
+   * Simplify casts
+   * LongType.cast(LongType) => каста не будет
    */
-  val resDf1: DataFrame = spark
-    .range(0, 10)
-    .select('id.cast(LongType))
+  val resDf1: DataFrame =
+    spark
+      .range(0, 10)
+      .select($"id".cast(LongType))
 
   printPhysicalPlan(resDf1)
   /*
@@ -164,9 +172,10 @@ object DataFrame_8 extends App {
    */
 
   /** LongType => IntegerType => LongType - оптимизация работать не будет. */
-  val resDf2: DataFrame = spark
-    .range(0, 10)
-    .select('id.cast("int").cast("long"))
+  val resDf2: DataFrame =
+    spark
+      .range(0, 10)
+      .select($"id".cast("int").cast("long"))
 
   printPhysicalPlan(resDf2)
   /*
@@ -176,12 +185,13 @@ object DataFrame_8 extends App {
 
 
   /**
-   * Constant folding.
+   * Constant folding
    * (lit(3) > lit(0) => true
    */
-  val resDf3: Dataset[Row] = spark
-    .range(0, 10)
-    .select((lit(3) > lit(0)).alias("foo"))
+  val resDf3: Dataset[Row] =
+    spark
+      .range(0, 10)
+      .select((lit(3) > lit(0)).alias("foo"))
 
   printPhysicalPlan(resDf3)
   /*
@@ -209,9 +219,10 @@ object DataFrame_8 extends App {
     +- *(1) Range (0, 10, step=1, splits=8)
    */
 
-  val resDf4: DataFrame = spark
-    .range(0, 10)
-    .select(('id > 0).alias("foo"))
+  val resDf4: DataFrame =
+    spark
+      .range(0, 10)
+      .select(($"id" > 0).alias("foo"))
 
   printPhysicalPlan(resDf4)
   /*
@@ -224,13 +235,14 @@ object DataFrame_8 extends App {
    * Combine filters.
    * .filter('id > 0) + .filter('id =!= 5) + .filter('id < 10) => Filter ((id#546L > 0) AND (NOT (id#546L = 5) AND (id#546L < 10)))
    */
-  val resDf5: Dataset[Row] = spark
-    .range(0, 10)
-    .filter('id > 0)
-    /** Проекция не мешает объединению фильтров. */
-    .select(col("*"))
-    .filter('id =!= 5)
-    .filter('id < 10)
+  val resDf5: Dataset[Row] =
+    spark
+      .range(0, 10)
+      .filter($"id" > 0)
+      /** Проекция не мешает объединению фильтров. */
+      .select(col("*"))
+      .filter($"id" =!= 5)
+      .filter($"id" < 10)
 
   printPhysicalPlan(resDf5)
   /*
@@ -264,5 +276,8 @@ object DataFrame_8 extends App {
     +- *(1) Range (0, 10, step=1, splits=8)
    */
 
+  println(sc.uiWebUrl)
   Thread.sleep(1000000)
+
+  spark.stop()
 }

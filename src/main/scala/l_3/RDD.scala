@@ -10,7 +10,7 @@ import org.apache.spark.util.LongAccumulator
 import scala.util.{Failure, Success, Try}
 
 object RDD extends App {
-  // не работает в Spark 3.3.1
+  // не работает в Spark 3.3.2
 //  Logger
 //    .getLogger("org")
 //    .setLevel(Level.ERROR)
@@ -32,14 +32,19 @@ object RDD extends App {
 
   /** RDD[T] */
   val rdd: RDD[String] = sc.parallelize(cities)
+  rdd.cache()
   println(s"The RDD has: ${rdd.getNumPartitions} partitions, ${rdd.count()} elements, the first element is: ${rdd.first()}")
   println()
 
-  /** Transformations (например - map) - не запускают вычисления (lazy), выполняется только построение графа */
-  /** map */
+  /**
+   * Transformations (map/flatMap/filter/...) - не запускают вычисления (т.е. являются lazy), выполняется только построение графа
+   * Actions (count/reduce/collect/take/takeOrdered/distinct...) - запускают выполнение графа
+   */
+
+  /** map - применение трансформации к каждому элементу коллекции */
   val upperRdd: RDD[String] = rdd.map(_.toUpperCase)
 
-  /** Actions (например - take - передача N первых элементов rdd на драйвер) - запускают выполнение графа */
+  /** take - передача N первых элементов RDD на драйвер */
   val upperVec: Array[String] = upperRdd.take(3)
 
   // mkString - позволяет сделать из любой локальной коллекции строку
@@ -48,9 +53,9 @@ object RDD extends App {
   println()
 
   /**
-   * reduce - двухэтапная операция:
-   * 1. Reduce выполняется на экзекьюторах - результат пересылается на драйвер
-   * 2. Reduce выполняется на драйвере - на полученных с экзекьюторов результатах
+   * reduce - двухэтапный action:
+   * 1. reduce выполняется в каждой партиции - результат пересылается на драйвер
+   * 2. reduce выполняется на драйвере - на агрегированных данных
    */
   val totalLength: Int =
     rdd
@@ -58,39 +63,53 @@ object RDD extends App {
       .reduce(_ + _)
 
   println(s"totalLength: $totalLength")
+  println()
 
   /** filter */
   val startsWithM: RDD[String] = upperRdd.filter(_.startsWith("M"))
+  startsWithM.cache()
+  startsWithM.count()
   println(s"The following city names starts with M: ${startsWithM.collect().mkString(", ")}")
+  println()
 
-  /** count - двухэтапная операция (легковесная) */
+  /**
+   * count - легковесный двухэтапный action
+   * 1. count выполняется в каждой партиции - результат пересылается на драйвер
+   * 2. count выполняется на драйвере - на агрегированных данных
+   * */
   val countM: Long = startsWithM.count()
   println(s"countM: $countM")
   println()
-
 
   /** collect - передача всех элементов RDD на драйвер - может привести к OOM */
   val localArray: Array[String] = startsWithM.collect()
   val containsMoscow: Boolean = localArray.contains("MOSCOW")
   println(s"The array contains MOSCOW: $containsMoscow")
+  println()
 
   /**
-   * take - получение N элементов из RDD
-   * Отдает элементы из одной партиции - если в партиции хватает элементов, если нет - будет вычитываться следующие партиции => оптимизация
+   * take - передача N первых элементов RDD на драйвер
+   * элементы берутся из одной партиции - если в ней хватает элементов, если нет - будут вычитываться следующие партиции => оптимизация
    */
   val twoFirstElements: Array[String] = startsWithM.take(2)
   println(s"Two first elements of the RDD are: ${twoFirstElements.mkString(", ")}")
+  println()
 
   /**
-   * takeOrdered - двухэтапная операция - возвращает N минимальных элементов
-   * Передает на драйвер N минимальных элементов RDD из каждой партиции (сортировка) - из которых снова выбирается N минимальных элементов (сортировка)
+   * takeOrdered - двухэтапный action - передача N минимальных элементов RDD на драйвер
+   * 1. выборка N минимальных элементов из каждой партиции (сортировка) + передача на драйвер
+   * 2. выборка N минимальных элементов (сортировка) на драйвере
    */
   val twoSortedElements: Array[String] = startsWithM.takeOrdered(2)
   println(s"Two sorted elements of the RDD are: ${twoSortedElements.mkString(", ")}")
+  startsWithM.unpersist()
   println()
 
 
-  // "String".toVector == Vector(S, t, r, i, n, g)
+  /*
+    String == Seq[Char]
+    "String".toVector == Vector(S, t, r, i, n, g)
+   */
   val listStrMap: List[Vector[Char]] = List("String").map(_.toVector)
   println(s"List(\"String\").map(_.toVector): $listStrMap")
 
@@ -102,17 +121,16 @@ object RDD extends App {
   val strMappedRdd: String = mappedRdd.collect().mkString(", ")
   println(s"rdd.map(_.toVector): $strMappedRdd")
 
-  // String == Collection[Char]
-  // String == Collection[Char]
   val flatMappedRdd: RDD[Char] = rdd.flatMap(_.toLowerCase)  // == rdd.map(_.toLowerCase).flatten
   val strFlatMappedRdd: String = flatMappedRdd.collect().mkString(", ")
   println(s"rdd.flatMap(_.toLowerCase): $strFlatMappedRdd")
   println()
 
   /**
-   * distinct - двухэтапная операция
-   * 1. distinct выполняется на каждом экзекьюторе
-   * 2. Запускается шафл(== репартиционирование/перемешивание) - по значению хэша данные собираются на разных экзекьюторах, далее сновы выполняется distinct
+   * distinct - двухэтапный action
+   * 1. distinct выполняется в каждой партиции
+   * 2. выполняется шафл(== репартиционирование/перемешивание) - данные перемещаются в партиции по значению хэша
+   * 3. повторное выполнение distinct в каждой партиции
    */
   val uniqueLetters: RDD[Char] =
     flatMappedRdd
@@ -137,6 +155,9 @@ object RDD extends App {
       .flatMap(_.toLowerCase)
       .map(x => (x, 1))
 
+  pairRdd.cache()
+  pairRdd.count()
+
   /** countByKey - подсчитывает количество элементов для каждого ключа и возвращает ЛОКАЛЬНЫЙ Map */
   val letterCount1: collection.Map[Char, Long] = pairRdd.countByKey()
   println(s"letterCount1: $letterCount1")
@@ -144,14 +165,15 @@ object RDD extends App {
   /**
    * reduceByKey - работает аналогично обычному reduce, но промежуточный итог накапливается по каждому ключу независимо
    * 1. reduceByKey выполняется в каждой партиции
-   * 2. Выполняется репартицирование по ключам
-   * 3. reduceByKey выполняется еще раз
+   * 2. выполняется репартицирование по ключам
+   * 3. повторное выполнение reduceByKey в каждой партиции
    *
    * reduceByKey оптимальнее groupByKey за счет предварительной агрегации в каждой партиции
    */
   val letterCount2: RDD[(Char, Int)] = pairRdd.reduceByKey(_ + _)
   val strLetterCount2: String = letterCount2.collect().mkString(", ")
   println(s"strLetterCount2: $strLetterCount2")
+  pairRdd.unpersist()
   println()
 
 
@@ -297,6 +319,8 @@ object RDD extends App {
 //      connection.write(elem)
     }
   }
+
+  rdd.unpersist()
 
   /**
    * v3 - best
@@ -553,6 +577,7 @@ object RDD extends App {
   val airportFinal: RDD[AirportSafe] = noHeaderRdd.flatMap(toAirportOtpSafe)
   airportFinal.take(3).foreach(println)
   println(s"airportFinal.count(): ${airportFinal.count()}")
+  noHeaderRdd.unpersist()
   println()
 
   val pairAirport: RDD[(String, Option[Int])] = airportFinal.map(el => (el.isoCountry, el.elevationFt))
@@ -581,7 +606,7 @@ object RDD extends App {
   println()
 
 
-  /** Broadcast */
+  /** Broadcast variables */
   val myMap: Map[Int, String] = Map(1 -> "foo", 2 -> "bar")
   val rdd4: RDD[Int] = sc.parallelize(1 to 100)
 
@@ -597,6 +622,8 @@ object RDD extends App {
    * Broadcast variable - read only контейнер, копии которого будут находиться на каждом экзекьюторе
    * Распространяется peer-to-peer - т.е. нагрузка распределяется между экзекьюторами
    *
+   * myMap - существует только на драйвере
+   * myMapBroadcast - read only копия myMap, существующая на каждом экзекьюторе
    * Если myMap изменится - myMapBroadcast не изменится
    */
   val myMapBroadcast: Broadcast[Map[Int, String]] = sc.broadcast(myMap)
@@ -609,7 +636,7 @@ object RDD extends App {
   /** Accumulator */
   var counter: Int = 0
 
-  /** Бессмысленное выражение - мутабельная переменная сериализуется и передается в каждую партицию, инкрементируется и там же остается */
+  /** Бессмысленное выражение (при работе на кластере) - мутабельная переменная сериализуется и передается в каждую партицию, инкрементируется и там же остается */
   rdd4.foreach(_ => counter += 1)
   println(s"counter: $counter")
   println()

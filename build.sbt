@@ -6,7 +6,7 @@ version := "0.1"
 scalaVersion := "2.13.10"
 
 libraryDependencies ++= Seq(
-  "org.apache.spark" %% "spark-sql" % "3.3.1" % Provided,  // Provided - зависимость не будет включена при сборке fat jar (плагин assembly)
+  "org.apache.spark" %% "spark-sql" % "3.3.2" % Provided,  // Provided - зависимость не будет включена при сборке fat jar (плагин assembly)
 //  "org.apache.spark" %% "spark-sql" % "2.4.8" % "provided",
 
   // !!! works only with Spark 2.4.8

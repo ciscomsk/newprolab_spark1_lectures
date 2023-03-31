@@ -29,7 +29,7 @@ object Datasource_1 extends App {
     .options(csvOptions)
     .csv("src/main/resources/l_3/airport-codes.csv")
   
-  airportsDf.printSchema
+  airportsDf.printSchema()
   airportsDf.show(numRows = 1, truncate = 100, vertical = true)
   println(airportsDf.rdd.getNumPartitions)
   println()
@@ -70,8 +70,8 @@ object Datasource_1 extends App {
   val firstLineWritedDf: String = spark
     .read
     .text("src/main/resources/l_6/airports-2.csv")
-    .head
-    .toString
+    .head()
+    .toString()
 
   println(firstLineWritedDf)
   println()
@@ -94,26 +94,27 @@ object Datasource_1 extends App {
     .options(csvOptions2)
     .csv("src/main/resources/l_6/airports-2.csv")
 
-  airportsDf2.printSchema
+  airportsDf2.printSchema()
   airportsReadDf.show(numRows = 1, truncate = 100, vertical = true)
   println(airportsDf2.rdd.getNumPartitions)
   println()
 
   /** Получение схемы из строки текстового файла. */
   val originalCsv: BufferedSource = fromFile("src/main/resources/l_3/airport-codes.csv")
-  val firstLineOriginalCsv: String = originalCsv.getLines.next
+  val firstLineOriginalCsv: String = originalCsv.getLines.next()
   println(firstLineOriginalCsv)
 
-  val processedSchema: StructType = StructType(
-    firstLineOriginalCsv
-      .split(",", -1)
-      .map(el => StructField(el, StringType))
-  )
+  val processedSchema: StructType =
+    StructType(
+      firstLineOriginalCsv
+        .split(",", -1)
+        .map(el => StructField(el, StringType))
+    )
 
   println(processedSchema)
   println()
 
-  /** Запись с компрессией gzip. */
+  /** Запись с компрессией gzip */
 //  airportsDf2
 //    .repartition(1)
 //    .write
@@ -121,11 +122,12 @@ object Datasource_1 extends App {
 //    .option("codec", "gzip")
 //    .csv("src/main/resources/l_6/airports-3.csv.gz")
 
-  val compressedDf: DataFrame = spark
-    .read
-    .schema(DataType.fromJson(airportDFSchemaJson).asInstanceOf[StructType])
-    .options(csvOptions2)
-    .csv("src/main/resources/l_6/airports-3.csv.gz")
+  val compressedDf: DataFrame =
+    spark
+      .read
+      .schema(DataType.fromJson(airportDFSchemaJson).asInstanceOf[StructType])
+      .options(csvOptions2)
+      .csv("src/main/resources/l_6/airports-3.csv.gz")
 
   /** !!! Сжатый файл при чтении превращается ровно в 1 партицию. Антипаттерн. */
   println(compressedDf.rdd.getNumPartitions)
@@ -163,7 +165,7 @@ object Datasource_1 extends App {
   println(sc.hadoopConfiguration.get("fs.defaultFS"))
 
   /**
-   * Сохранение датасета в text.
+   * Сохранение датасета в text
    * !!! Для этого датафрейм должен содержать 1 StringType колонку
    */
 //  airportsDf
@@ -194,18 +196,20 @@ object Datasource_1 extends App {
 //    .json("src/main/resources/l_6/airports-6.text")
 
   /** При попытке чтения данных как text мы получим все данные, т.к. формат json сохраняет все в виде JSON строк. */
-  val mixedTextDf: DataFrame = spark
-    .read
-    .text("src/main/resources/l_6/airports-6.text")
+  val mixedTextDf: DataFrame =
+    spark
+      .read
+      .text("src/main/resources/l_6/airports-6.text")
 
   mixedTextDf.show(3, truncate = false)
 
   /** Если прочитать данные с помощью json, часть данных будет помечена как невалидная и помещена в колонку _corrupt_record. */
-  val mixedJsonDf: DataFrame = spark
-    .read
-    .json("src/main/resources/l_6/airports-6.text")
+  val mixedJsonDf: DataFrame =
+    spark
+      .read
+      .json("src/main/resources/l_6/airports-6.text")
     /** Можно читать только файлы определенного формата. */
-//    .json("src/main/resources/l_6/airports-6.text/*.json") // | *.txt
+//      .json("src/main/resources/l_6/airports-6.text/*.json") // | *.txt
 
   mixedJsonDf.printSchema()
   mixedJsonDf.show(3)
@@ -257,7 +261,7 @@ object Datasource_1 extends App {
       .options(csvOptions)
       .csv("src/main/resources/l_3/airport-codes.csv")
 
-    airportsDf.printSchema
+    airportsDf.printSchema()
   }  // 176 ms
 
   spark.time {

@@ -22,6 +22,4 @@ package l_11
     ...
  */
 
-object SparkDistr {
-
-}
+object SparkDistr {}

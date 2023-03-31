@@ -1,6 +1,7 @@
 package l_5
 
 import org.apache.log4j.{Level, Logger}
+import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.types.StructType
@@ -11,9 +12,10 @@ import org.scalatest.matchers.should
 import java.lang
 
 class InternalRowSpec extends AnyFlatSpec with should.Matchers {
-  Logger
-    .getLogger("org")
-    .setLevel(Level.OFF)
+  // не работает в Spark 3.3.1
+//  Logger
+//    .getLogger("org")
+//    .setLevel(Level.OFF)
 
   val spark: SparkSession =
     SparkSession
@@ -22,19 +24,24 @@ class InternalRowSpec extends AnyFlatSpec with should.Matchers {
       .appName("l_5")
       .getOrCreate()
 
+  val sc: SparkContext = spark.sparkContext
+  sc.setLogLevel("ERROR")
+
   val df: Dataset[lang.Long] = spark.range(0, 100)
   val schema: StructType = df.schema
   println(schema)
 
-  val rdd: RDD[InternalRow] = df
-    .queryExecution
-    .toRdd
+  val rdd: RDD[InternalRow] =
+    df
+      .queryExecution
+      .toRdd
 
   println(rdd)
 
-  val thisRow: InternalRow = rdd
-    .collect
-    .head
+  val thisRow: InternalRow =
+    rdd
+      .collect()
+      .head
 
   println(thisRow)
 

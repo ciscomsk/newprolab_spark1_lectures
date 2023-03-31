@@ -1,12 +1,14 @@
 package l_5
 
 import org.apache.log4j.{Level, Logger}
+import org.apache.spark.SparkContext
 import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 
 object SaveModeSpec extends App {
-  Logger
-    .getLogger("org")
-    .setLevel(Level.ERROR)
+  // не работает в Spark 3.3.1
+//  Logger
+//    .getLogger("org")
+//    .setLevel(Level.ERROR)
 
   val spark: SparkSession =
     SparkSession
@@ -14,6 +16,9 @@ object SaveModeSpec extends App {
     .master("local[*]")
     .appName("l_5")
     .getOrCreate()
+
+  val sc: SparkContext = spark.sparkContext
+  sc.setLogLevel("ERROR")
 
   import spark.implicits._
 

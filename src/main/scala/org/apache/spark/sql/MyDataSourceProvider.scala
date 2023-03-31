@@ -15,7 +15,7 @@ import scala.util.Random
 class MyDataSourceProvider extends StreamSourceProvider with Logging {
   log.info(s"${this.logName} has been created")
 
-  /** sourceSchema - вызывается первой. */
+  /** sourceSchema - вызывается первой */
   override def sourceSchema(sqlContext: SQLContext,
                             schema: Option[StructType],  // то, что будет передано в readStream.schema
                             providerName: String,
@@ -32,7 +32,7 @@ class MyDataSourceProvider extends StreamSourceProvider with Logging {
     }
   }
 
-  /** createSource - вызывается второй. */
+  /** createSource - вызывается второй */
   override def createSource(sqlContext: SQLContext,
                             metadataPath: String,
                             schema: Option[StructType],
@@ -62,10 +62,10 @@ class MyDataSource(sourceSchema: StructType) extends Source with Logging {
   override def schema: StructType = sourceSchema
 
   /**
-   * getOffset - вызывается драйвером перед вычиткой каждого микробатча.
+   * getOffset - вызывается драйвером перед вычиткой каждого микробатча
    *
-   * Если функция возвращает None - стрим пуст. В нем никогда не было данных.
-   * Если функция возвращает Some(value) != предыдущему оффсету - будет вызван getBatch(предыдущий оффсет, value).
+   * Если функция возвращает None - стрим пуст (в нем никогда не было данных)
+   * Если функция возвращает Some(value) и value != предыдущему оффсету - будет вызван getBatch(предыдущий оффсет, value)
    */
   override def getOffset: Option[Offset] = {
     log.info("getOffset call")
@@ -107,8 +107,8 @@ class MyDataSource(sourceSchema: StructType) extends Source with Logging {
 }
 
 /**
- * При сравнении оффсетов вызывается метод equals.
- * Если строки (currentOffset.json() != previousOffset.json()) не равны => в стриме есть новые данные => будет вызван getBatch.
+ * При сравнении оффсетов вызывается метод equals
+ * Если строки currentOffset.json() и previousOffset.json() не равны => в стриме есть новые данные => будет вызван getBatch
  */
 
 /** package org.apache.spark.sql.connector.read.streaming */
@@ -216,5 +216,5 @@ class MyRdd extends RDD[InternalRow](SparkSession.active.sparkContext, Nil) {
     )
 }
 
-/** Партиция - некая метаинформация необходимая для чтения данных. */
+/** Партиция - некая метаинформация необходимая для чтения данных */
 case class MyPartition(index: Int) extends Partition

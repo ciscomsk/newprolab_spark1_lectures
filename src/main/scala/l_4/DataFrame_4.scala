@@ -11,12 +11,12 @@ import java.net.InetAddress
 import scala.util.{Failure, Success, Try}
 
 object DataFrame_4 extends App {
-  // не работает в Spark 3.3.0
+  // не работает в Spark 3.3.2
 //  Logger
 //    .getLogger("org")
 //    .setLevel(Level.OFF)
 
-  val spark =
+  val spark: SparkSession =
     SparkSession
       .builder()
       .master("local[*]")
@@ -63,9 +63,9 @@ object DataFrame_4 extends App {
     .show(10, truncate = false)
 
   val divideToBy: UserDefinedFunction = udf { (inputValue: Long) => Try(2L / inputValue).toOption }
-  val result: DataFrame = df.withColumn("divideTwoBy", divideToBy(col("id")))
-  result.printSchema()
-  result.show(10, truncate = false)
+  val resultDf: DataFrame = df.withColumn("divideTwoBy", divideToBy(col("id")))
+  resultDf.printSchema()
+  resultDf.show(10, truncate = false)
 
 
   /** Joins */
@@ -77,37 +77,37 @@ object DataFrame_4 extends App {
       .options(csvOptions)
       .csv("src/main/resources/l_3/airport-codes.csv")
 
-  val aggTypeCountry: DataFrame =
+  val aggTypeCountryDf: DataFrame =
     airportsDf
       .groupBy($"type", $"iso_country")
       .agg(count("*").alias("cnt_country_type"))
 
-  println("aggTypeCountry: ")
-  aggTypeCountry.show(5, truncate = false)
+  println("aggTypeCountryDf: ")
+  aggTypeCountryDf.show(5, truncate = false)
 
-  val aggCountry: DataFrame =
+  val aggCountryDf: DataFrame =
     airportsDf
       .groupBy($"iso_country")
       .agg(count("*").alias("cnt_country"))
 
-  println("aggCountry: ")
-  aggCountry.show(5, truncate = false)
+  println("aggCountryDf: ")
+  aggCountryDf.show(5, truncate = false)
 
   val innerJoinDf: DataFrame =
-    aggTypeCountry
-      .join(aggCountry, Seq("iso_country"), "inner") // inner == default
+    aggTypeCountryDf
+      .join(aggCountryDf, Seq("iso_country"), "inner") // inner join - default
       .select(
         $"iso_country",
         $"type",
         round(lit(100) * $"cnt_country_type" / $"cnt_country", 2).alias("percent")
       )
 
-  println("percentDf: ")
+  println("innerJoinDf: ")
   innerJoinDf.show(5, truncate = false)
 
   val leftJoinDf: DataFrame = airportsDf.join(innerJoinDf, Seq("iso_country", "type"), "left")
 
-  println("resDf: ")
+  println("leftJoinDf: ")
   leftJoinDf
     .select($"ident", $"iso_country", $"type", $"percent")
     /** sample(0.2) - выборка 20% значений из разных партиций */
@@ -126,23 +126,23 @@ object DataFrame_4 extends App {
 
   println()
 
-  val commonJoinCondition: Column =
-    col("left_a") === col("right_a") and col("left_b") === col("right_b")
+  val joinCondition: Column =
+    col("left_id") === col("right_id") and col("left_foo") === col("right_foo")
 
   val joinConditionExpr: Column =
     expr("left.id = right.id and left.foo = right.foo")
 
-  val left: DataFrame = spark.range(10).withColumn("foo", lit("foo"))
+  val leftDf: DataFrame = spark.range(10).withColumn("foo", lit("foo"))
 
-  left.printSchema()
-  left.show()
+  leftDf.printSchema()
+  leftDf.show()
 
-  val right: DataFrame = spark.range(10).withColumn("foo", lit("foo"))
+  val rightDf: DataFrame = spark.range(10).withColumn("foo", lit("foo"))
 
-  left.as("left")
-    .join(right.as("right"), joinConditionExpr, "inner")
+  leftDf.as("left")
+    .join(rightDf.as("right"), joinConditionExpr, "inner")
     .drop($"right.id")  // v1
-    .select($"id", left("foo").as("left_foo"))  // v2
+    .select($"id", leftDf("foo").as("left_foo"))  // v2
     .show()
 
 
@@ -162,13 +162,13 @@ object DataFrame_4 extends App {
     /*
       == Physical Plan ==
       AdaptiveSparkPlan isFinalPlan=false
-      +- Project [ident#90, type#91, name#92, elevation_ft#93, continent#94, iso_country#95, iso_region#96, municipality#97, gps_code#98, iata_code#99, local_code#100, coordinates#101, cnt_country#313L, cnt_country_type#329L, round((cast((100 * cnt_country_type#329L) as double) / cast(cnt_country#313L as double)), 2) AS percent#344]
-         +- Window [count(1) windowspecdefinition(type#91, iso_country#95, specifiedwindowframe(RowFrame, unboundedpreceding$(), unboundedfollowing$())) AS cnt_country_type#329L], [type#91, iso_country#95]
+      +- Project [ident#90, type#91, name#92, elevation_ft#93, continent#94, iso_country#95, iso_region#96, municipality#97, gps_code#98, iata_code#99, local_code#100, coordinates#101, cnt_country#321L, cnt_country_type#337L, round((cast((100 * cnt_country_type#337L) as double) / cast(cnt_country#321L as double)), 2) AS percent#352]
+         +- Window [count(1) windowspecdefinition(type#91, iso_country#95, specifiedwindowframe(RowFrame, unboundedpreceding$(), unboundedfollowing$())) AS cnt_country_type#337L], [type#91, iso_country#95]
             +- Sort [type#91 ASC NULLS FIRST, iso_country#95 ASC NULLS FIRST], false, 0
-               +- Window [count(1) windowspecdefinition(iso_country#95, specifiedwindowframe(RowFrame, unboundedpreceding$(), unboundedfollowing$())) AS cnt_country#313L], [iso_country#95]
+               +- Window [count(1) windowspecdefinition(iso_country#95, specifiedwindowframe(RowFrame, unboundedpreceding$(), unboundedfollowing$())) AS cnt_country#321L], [iso_country#95]
                   +- Sort [iso_country#95 ASC NULLS FIRST], false, 0
-                     +- Exchange hashpartitioning(iso_country#95, 200), ENSURE_REQUIREMENTS, [id=#752]
-                        +- FileScan csv [ident#90,type#91,name#92,elevation_ft#93,continent#94,iso_country#95,iso_region#96,municipality#97,gps_code#98,iata_code#99,local_code#100,coordinates#101] Batched: false, DataFilters: [], Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn_2/courses/spark/newprolab/spark_1/_repos/lectur..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_country:string,...
+                     +- Exchange hashpartitioning(iso_country#95, 200), ENSURE_REQUIREMENTS, [plan_id=746]
+                        +- FileScan csv [ident#90,type#91,name#92,elevation_ft#93,continent#94,iso_country#95,iso_region#96,municipality#97,gps_code#98,iata_code#99,local_code#100,coordinates#101] Batched: false, DataFilters: [], Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_country:string,...
      */
 
   res2Df
@@ -191,20 +191,18 @@ object DataFrame_4 extends App {
   /*
     == Physical Plan ==
     AdaptiveSparkPlan isFinalPlan=false
-    +- Project [rn#387, ident#90]
-       +- Window [row_number() windowspecdefinition(ident#90 ASC NULLS FIRST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS rn#387], [ident#90 ASC NULLS FIRST]
+    +- Project [rn#395, ident#90]
+       +- Window [row_number() windowspecdefinition(ident#90 ASC NULLS FIRST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS rn#395], [ident#90 ASC NULLS FIRST]
           +- Sort [ident#90 ASC NULLS FIRST], false, 0
              // !!! Exchange SinglePartition - все сливается в 1 партицию
-             +- Exchange SinglePartition, ENSURE_REQUIREMENTS, [id=#856]
-                +- FileScan csv [ident#90] Batched: false, DataFilters: [], Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn_2/courses/spark/newprolab/spark_1/_repos/lectur..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<ident:string>
-
+             +- Exchange SinglePartition, ENSURE_REQUIREMENTS, [plan_id=883]
+                +- FileScan csv [ident#90] Batched: false, DataFilters: [], Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<ident:string>
    */
 
   /**
    * Колонки оторваны от данных
    * Привязка происходит на этапе формирования физического плана
    */
-
   val cntCountry: Column = count("*").over(windowCountry).alias("cnt_country")
   val cntCountryType: Column = count("*").over(windowTypeCountry).alias("cnt_country_type")
   val percent: Column = round(lit(100) *  cntCountryType / cntCountry).alias("percent")
@@ -220,6 +218,9 @@ object DataFrame_4 extends App {
     )
     .sample(0.2)
     .show(20, truncate = false)
+
+  println(sc.uiWebUrl)
+  Thread.sleep(1000000)
 
   spark.stop()
 }
