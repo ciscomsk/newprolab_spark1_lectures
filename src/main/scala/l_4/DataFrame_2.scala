@@ -31,8 +31,8 @@ object DataFrame_2 extends App {
   cleanDataDf.show()
 
   /**
-   * groupBy - инициирует выполнение шафла
-   * Результат groupBy - RelationalGroupedDataset
+   * groupBy - запускает шафл
+   * результат groupBy - RelationalGroupedDataset
    */
   val aggCount: DataFrame =
     cleanDataDf
@@ -75,8 +75,8 @@ object DataFrame_2 extends App {
    */
   aggList.show(numRows = 10, truncate = 100, vertical = true)
 
-  val structDf: DataFrame = aggList.select(struct($"continent", $"countries").alias("s"))
-  println("withStructDf: ")
+  val structDf: DataFrame = aggList.select(struct($"continent", $"countries").alias("s"))  // struct(col("*")) - если нужны все колонки
+  println("structDf: ")
   structDf.show(10, truncate = false)
   structDf.printSchema()
   /*
@@ -94,7 +94,7 @@ object DataFrame_2 extends App {
   json1Df.printSchema()
   /*
     root
-    |-- s: string (nullable = true)
+     |-- s: string (nullable = true)
    */
   json1Df.explain()
   /*
@@ -119,11 +119,11 @@ object DataFrame_2 extends App {
   /*
     == Physical Plan ==
     AdaptiveSparkPlan isFinalPlan=false
-    // Конвертация Object (String) => Internal row
+    // Конвертация Java object (String) => Internal row
     +- SerializeFromObject [staticinvoke(class org.apache.spark.unsafe.types.UTF8String, StringType, fromString, input[0, java.lang.String, true], true, false, true) AS value#175]
-       // Применение функции к объекту (строке)
-       +- MapPartitions org.apache.spark.sql.Dataset$$Lambda$3361/0x0000000801486840@20dc2df1, obj#174: java.lang.String
-          // Конвертация Internal row => Object (String)
+       // Применение функции к Java object (String)
+       +- MapPartitions org.apache.spark.sql.Dataset$$Lambda$3364/0x0000000801483840@27b89e0a, obj#174: java.lang.String
+          // Конвертация Internal row => Java object (String)
           +- DeserializeToObject createexternalrow(continent#0.toString, staticinvoke(class scala.collection.mutable.ArraySeq$, ObjectType(interface scala.collection.Seq), make, mapobjects(lambdavariable(MapObject, StringType, true, -1), lambdavariable(MapObject, StringType, true, -1).toString, countries#102, None).array, true, false, true), StructField(continent,StringType,true), StructField(countries,ArrayType(StringType,false),false)), obj#173: org.apache.spark.sql.Row
              +- ObjectHashAggregate(keys=[continent#0], functions=[collect_list(country#1, 0, 0)])
                 +- Exchange hashpartitioning(continent#0, 200), ENSURE_REQUIREMENTS, [plan_id=442]

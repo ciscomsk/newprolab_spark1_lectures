@@ -33,6 +33,7 @@ object DataFrame_4 extends App {
   val newColFunc: Column = pmod(col("id"), lit(2))
   // ==
   val newColExpr: Column = expr("pmod(id, 2)")
+  println()
 
   df
     .withColumn("pmod", newColFunc)
@@ -47,8 +48,9 @@ object DataFrame_4 extends App {
 
   /**
    * User-defined functions
-   * При необходимости взаимодействия с бд в udf - @transient lazy val pattern
    * При написании udf можно использовать монады - Try[T]/Option[T]
+   *
+   * При необходимости работать с DB/IO в udf - @transient lazy val pattern
    */
   val plusOne: UserDefinedFunction = udf { (value: Long) => value + 1 }
 
@@ -62,8 +64,9 @@ object DataFrame_4 extends App {
     .withColumn("hostname", hostname())
     .show(10, truncate = false)
 
-  val divideToBy: UserDefinedFunction = udf { (inputValue: Long) => Try(2L / inputValue).toOption }
-  val resultDf: DataFrame = df.withColumn("divideTwoBy", divideToBy(col("id")))
+  val divideTwoBy: UserDefinedFunction = udf { (inputValue: Long) => Try(2L / inputValue).toOption }
+
+  val resultDf: DataFrame = df.withColumn("divideTwoBy", divideTwoBy(col("id")))
   resultDf.printSchema()
   resultDf.show(10, truncate = false)
 
@@ -95,7 +98,7 @@ object DataFrame_4 extends App {
 
   val innerJoinDf: DataFrame =
     aggTypeCountryDf
-      .join(aggCountryDf, Seq("iso_country"), "inner") // inner join - default
+      .join(aggCountryDf, Seq("iso_country"), "inner")  // inner join - default
       .select(
         $"iso_country",
         $"type",
@@ -109,7 +112,12 @@ object DataFrame_4 extends App {
 
   println("leftJoinDf: ")
   leftJoinDf
-    .select($"ident", $"iso_country", $"type", $"percent")
+    .select(
+      $"ident",
+      $"iso_country",
+      $"type",
+      $"percent"
+    )
     /** sample(0.2) - выборка 20% значений из разных партиций */
     .sample(0.2)
     .show(20, truncate = false)
@@ -133,7 +141,6 @@ object DataFrame_4 extends App {
     expr("left.id = right.id and left.foo = right.foo")
 
   val leftDf: DataFrame = spark.range(10).withColumn("foo", lit("foo"))
-
   leftDf.printSchema()
   leftDf.show()
 
@@ -142,7 +149,7 @@ object DataFrame_4 extends App {
   leftDf.as("left")
     .join(rightDf.as("right"), joinConditionExpr, "inner")
     .drop($"right.id")  // v1
-    .select($"id", leftDf("foo").as("left_foo"))  // v2
+//    .select($"id", leftDf("foo").as("left_foo"))  // v2
     .show()
 
 
@@ -150,7 +157,7 @@ object DataFrame_4 extends App {
   val window: WindowSpec = Window.partitionBy("a", "b").orderBy("a")
 
   val windowCountry: WindowSpec = Window.partitionBy("iso_country")
-  val windowTypeCountry: WindowSpec = Window.partitionBy("type", "iso_country")
+  val windowTypeCountry: WindowSpec = Window.partitionBy("iso_country", "type")
 
   val res2Df: DataFrame =
     airportsDf
@@ -162,10 +169,10 @@ object DataFrame_4 extends App {
     /*
       == Physical Plan ==
       AdaptiveSparkPlan isFinalPlan=false
-      +- Project [ident#90, type#91, name#92, elevation_ft#93, continent#94, iso_country#95, iso_region#96, municipality#97, gps_code#98, iata_code#99, local_code#100, coordinates#101, cnt_country#321L, cnt_country_type#337L, round((cast((100 * cnt_country_type#337L) as double) / cast(cnt_country#321L as double)), 2) AS percent#352]
-         +- Window [count(1) windowspecdefinition(type#91, iso_country#95, specifiedwindowframe(RowFrame, unboundedpreceding$(), unboundedfollowing$())) AS cnt_country_type#337L], [type#91, iso_country#95]
-            +- Sort [type#91 ASC NULLS FIRST, iso_country#95 ASC NULLS FIRST], false, 0
-               +- Window [count(1) windowspecdefinition(iso_country#95, specifiedwindowframe(RowFrame, unboundedpreceding$(), unboundedfollowing$())) AS cnt_country#321L], [iso_country#95]
+      +- Project [ident#90, type#91, name#92, elevation_ft#93, continent#94, iso_country#95, iso_region#96, municipality#97, gps_code#98, iata_code#99, local_code#100, coordinates#101, cnt_country#322L, cnt_country_type#338L, round((cast((100 * cnt_country_type#338L) as double) / cast(cnt_country#322L as double)), 2) AS percent#353]
+         +- Window [count(1) windowspecdefinition(iso_country#95, type#91, specifiedwindowframe(RowFrame, unboundedpreceding$(), unboundedfollowing$())) AS cnt_country_type#338L], [iso_country#95, type#91]
+            +- Sort [iso_country#95 ASC NULLS FIRST, type#91 ASC NULLS FIRST], false, 0
+               +- Window [count(1) windowspecdefinition(iso_country#95, specifiedwindowframe(RowFrame, unboundedpreceding$(), unboundedfollowing$())) AS cnt_country#322L], [iso_country#95]
                   +- Sort [iso_country#95 ASC NULLS FIRST], false, 0
                      +- Exchange hashpartitioning(iso_country#95, 200), ENSURE_REQUIREMENTS, [plan_id=746]
                         +- FileScan csv [ident#90,type#91,name#92,elevation_ft#93,continent#94,iso_country#95,iso_region#96,municipality#97,gps_code#98,iata_code#99,local_code#100,coordinates#101] Batched: false, DataFilters: [], Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_country:string,...
@@ -191,8 +198,8 @@ object DataFrame_4 extends App {
   /*
     == Physical Plan ==
     AdaptiveSparkPlan isFinalPlan=false
-    +- Project [rn#395, ident#90]
-       +- Window [row_number() windowspecdefinition(ident#90 ASC NULLS FIRST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS rn#395], [ident#90 ASC NULLS FIRST]
+    +- Project [rn#396, ident#90]
+       +- Window [row_number() windowspecdefinition(ident#90 ASC NULLS FIRST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS rn#396], [ident#90 ASC NULLS FIRST]
           +- Sort [ident#90 ASC NULLS FIRST], false, 0
              // !!! Exchange SinglePartition - все сливается в 1 партицию
              +- Exchange SinglePartition, ENSURE_REQUIREMENTS, [plan_id=883]
@@ -200,12 +207,12 @@ object DataFrame_4 extends App {
    */
 
   /**
-   * Колонки оторваны от данных
-   * Привязка происходит на этапе формирования физического плана
+   * Колонки оторваны от реальных данных,
+   * привязка происходит на этапе формирования физического плана/кодогенерации (unresolved attribute)
    */
   val cntCountry: Column = count("*").over(windowCountry).alias("cnt_country")
   val cntCountryType: Column = count("*").over(windowTypeCountry).alias("cnt_country_type")
-  val percent: Column = round(lit(100) *  cntCountryType / cntCountry).alias("percent")
+  val percent: Column = round(lit(100) * cntCountryType / cntCountry).alias("percent")
 
   val res3Df: DataFrame = airportsDf.select($"*", percent)
 

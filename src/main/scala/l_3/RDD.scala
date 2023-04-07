@@ -157,6 +157,7 @@ object RDD extends App {
 
   pairRdd.cache()
   pairRdd.count()
+  rdd.unpersist()
 
   /** countByKey - подсчитывает количество элементов для каждого ключа и возвращает ЛОКАЛЬНЫЙ Map */
   val letterCount1: collection.Map[Char, Long] = pairRdd.countByKey()
@@ -170,8 +171,11 @@ object RDD extends App {
    *
    * reduceByKey оптимальнее groupByKey за счет предварительной агрегации в каждой партиции
    */
-  val letterCount2: RDD[(Char, Int)] = pairRdd.reduceByKey(_ + _)
-  val strLetterCount2: String = letterCount2.collect().mkString(", ")
+  val letterCount2Rdd: RDD[(Char, Int)] = pairRdd.reduceByKey(_ + _)
+  letterCount2Rdd.cache()
+  letterCount2Rdd.count()
+
+  val strLetterCount2: String = letterCount2Rdd.collect().mkString(", ")
   println(s"strLetterCount2: $strLetterCount2")
   pairRdd.unpersist()
   println()
@@ -195,11 +199,10 @@ object RDD extends App {
       v1 <- opt1
       v2 <- opt2
     } yield v1 + v2
-
   println(s"forOpt: $forOpt")
   println()
 
-  // v1 - getOrElse
+  // safe - v1 - getOrElse
   println(None.getOrElse(0))
   println(None.contains(3))
   println(opt2.map(_ + 1))
@@ -207,13 +210,12 @@ object RDD extends App {
   println(opt2.contains(3))
   println()
 
-  // v2 - pattern matching
+  // safe - v2 - pattern matching
   val optValue: Int =
     opt2 match {
       case Some(v) => v
       case None => Int.MinValue
     }
-
   println(optValue)
   println()
 
@@ -228,9 +230,12 @@ object RDD extends App {
   // letterCount2 == (p,1), ( ,1), (a,2), (i,2), (y,1), (r,3), (s,2), (k,1), (c,1), (d,3), (l,1), (e,1), (m,2), (n,3), (w,2), (o,5)
   // favLetRdd    == (a,1), (d,1), (o,1)
   // (Int, Option[Int]) - Option[Int] т.к. left join
-  val joined: RDD[(Char, (Int, Option[Int]))] = letterCount2.leftOuterJoin(favLetRdd)
+  val joinedRdd: RDD[(Char, (Int, Option[Int]))] = letterCount2Rdd.leftOuterJoin(favLetRdd)
+  joinedRdd.cache()
+  joinedRdd.count()
+  letterCount2Rdd.unpersist()
 
-  joined
+  joinedRdd
     .collect()
     .foreach { el =>
       val (letter, (leftCount, rightCount)) = el
@@ -246,7 +251,7 @@ object RDD extends App {
    * !!! Не выведет ничего в консоль драйвера (при работе на кластере) т.к. функция foreach применяется к данным НА ЭКЗЕКЬЮТОРАХ
    * Вывод будет в консолях экзекьюторов
    */
-  joined
+  joinedRdd
 //    .collect()
     .foreach { el =>
       val (letter, (leftCount, rightCount)) = el
@@ -256,7 +261,7 @@ object RDD extends App {
         case None => println(s"The letter $letter is not my favourite!")
       }
     }
-
+  joinedRdd.unpersist()
   println()
 
   /**
@@ -265,18 +270,20 @@ object RDD extends App {
    * mapPartition/foreachPartition
    */
 
+  val rdd2: RDD[Int] = sc.parallelize(1 to 1000)
+
   /*
     map
 
     def f(x: T): T = _
-    rdd.map(f)
+    rdd2.map(f)
     =>
     partition0: Iterator[T]
     partition1: Iterator[T]
     partition2: Iterator[T]
     partition3: Iterator[T]
     =>
-    На каждой партиции (p0 - p3) будет выполнен цикл:
+    на каждой партиции будет выполнен цикл:
     while (partition.hasNext) {
       f(partition.next())
     }
@@ -286,18 +293,16 @@ object RDD extends App {
     mapPartition
 
     def f(x: Iterator[T]): Iterator[T] = _
-    rdd.mapPartitions(f)
+    rdd2.mapPartitions(f)
     =>
     partition0: Iterator[T]
     partition1: Iterator[T]
     partition2: Iterator[T]
     partition3: Iterator[T]
     =>
-    Для каждой партиции (p0 - p3) будет выполнена функция:
+    для каждой партиции будет выполнена функция:
     f(p)
    */
-
-  val rdd2: RDD[Int] = sc.parallelize(1 to 1000)
 
   /**
    * v1 - bad
@@ -311,23 +316,21 @@ object RDD extends App {
   /**
    * v2 - better
    *
-   * Будет создан 1 инстанс для каждой партиции
+   * Будет создан 1 инстанс connection для каждой партиции
    */
-  rdd.mapPartitions { partition =>  // Iterator[A]
+  rdd2.mapPartitions { partition =>  // Iterator[A]
     //    val connection = new ConnectionToDb(...)
     partition.map { elem =>  // A
 //      connection.write(elem)
     }
   }
 
-  rdd.unpersist()
-
   /**
    * v3 - best
    *
    * Transient lazy val pattern
    * Передается описание конструктора класса
-   * Инстанс класса будет создан на каждом экзекьюторе (1 на экзкьютор, в mapPartitions - 1 на партицию)
+   * Инстанс класса connection будет создан на каждом экзекьюторе (1 на экзкьютор, в mapPartitions - 1 на партицию)
    */
   object Foo {
     @transient
@@ -337,14 +340,16 @@ object RDD extends App {
 
   /**
    * sc.textFile - позволяет прочитать файл на локальной/S3/HDFS файловой системе
-   * С помощью данного метода можно читать как обычные файлы, так и директории с файлами, а также архивы
+   * С помощью метода textFile можно читать файлы/директории с файлами/архивы
    */
   val rdd3: RDD[String] = sc.textFile("src/main/resources/l_3/airport-codes.csv")
+  rdd3.cache()
+  rdd3.count()
 
   rdd3.take(3).foreach(println)
   println()
 
-  /** case class - сериализуется "из коробки" - (extends Serializable) */
+  /** case class - сериализуется "из коробки" (extends Serializable) */
   case class Airport(
                       ident: String,
                       `type`: String,
@@ -361,22 +366,24 @@ object RDD extends App {
                       latitude: String
                     )
 
-  val firstElem: String = rdd3.first()  // String - можно сериализовать, rdd - нет
+  val firstElem: String = rdd3.first()  // String - сериализуется (implements java.io.Serializable), rdd - тоже (extends Serializable)
   println(s"firstElem: $firstElem")
 
   /** Убираем шапку и кавычки */
   val noHeaderRdd: RDD[String] =
     rdd3
-    .filter(_ != firstElem)
-    /**
-     * !!! Будет падать (при работе на кластере) при попытке сериализовать rdd для передачи на другие экзекьюторы
-     * При работе в local mode - будет выполняться ОЧЕНЬ долго
-     */
-//    .filter(_ != rdd3.first())
-    .map(_.replaceAll("\"", ""))  // \" == символ "
+      .filter(_ != firstElem)
+      /**
+       * !!! Будет падать (при работе на кластере)
+       * https://issues.apache.org/jira/browse/SPARK-5063 - Spark does not support nested RDDs or performing Spark actions inside of transformations
+       * При работе в local mode - будет выполняться ОЧЕНЬ долго
+       */
+//      .filter(_ != rdd3.first())
+      .map(_.replaceAll("\"", "")) // \" == символ "
 
   noHeaderRdd.cache()
   noHeaderRdd.count()
+  rdd3.unpersist()
 
   println(s"noHeader.first(): ${noHeaderRdd.first()}")
   println(noHeaderRdd.count())
@@ -427,32 +434,38 @@ object RDD extends App {
 
     airportArr match {
       case Array(ident, aType, name, elevationFt, continent, isoCountry, isoRegion, municipality, gpsCode, iataCode, localCode, longitude, latitude) =>
-        Some(Airport(
-          ident = ident,
-          `type` = aType,
-          name = name,
-          elevationFt = elevationFt,
-          continent = continent,
-          isoCountry = isoCountry,
-          isoRegion = isoRegion,
-          municipality = municipality,
-          gpsCode = gpsCode,
-          iataCode = iataCode,
-          localCode = localCode,
-          longitude = longitude,
-          latitude = latitude
-        ))
+        Some(
+          Airport(
+            ident = ident,
+            `type` = aType,
+            name = name,
+            elevationFt = elevationFt,
+            continent = continent,
+            isoCountry = isoCountry,
+            isoRegion = isoRegion,
+            municipality = municipality,
+            gpsCode = gpsCode,
+            iataCode = iataCode,
+            localCode = localCode,
+            longitude = longitude,
+            latitude = latitude
+          )
+        )
 
       case _ => Option.empty[Airport]  // == None
     }
   }
 
   val airportOptRdd: RDD[Option[Airport]] = noHeaderRdd.map(toAirportOpt)
+  airportOptRdd.cache()
+  airportOptRdd.count()
+
   airportOptRdd.take(3).foreach(println)
   println()
 
   println(s"airportOptRdd.getNumPartitions: ${airportOptRdd.getNumPartitions}")
   println(s"airportOptRdd.count(): ${airportOptRdd.count()}")  // == 55113
+  airportOptRdd.unpersist()
   println()
 
   /** flatMap в данном случае отфильтрует None */
@@ -481,21 +494,23 @@ object RDD extends App {
 
     airportArr match {
       case Array (ident, aType, name, evelationFt, continent, isoCountry, isoRegion, municipality, gpsCode, iataCode, localCode, longitude, latitude) =>
-        Some(AirportTyped(
-          ident = ident,
-          `type` = aType,
-          name = name,
-          elevationFt = evelationFt.toInt,
-          continent = continent,
-          isoCountry = isoCountry,
-          isoRegion = isoRegion,
-          municipality = municipality,
-          gpsCode = gpsCode,
-          iataCode = iataCode,
-          localCode = localCode,
-          longitude = longitude.toDouble,
-          latitude = latitude.toDouble
-        ))
+        Some(
+          AirportTyped(
+            ident = ident,
+            `type` = aType,
+            name = name,
+            elevationFt = evelationFt.toInt,
+            continent = continent,
+            isoCountry = isoCountry,
+            isoRegion = isoRegion,
+            municipality = municipality,
+            gpsCode = gpsCode,
+            iataCode = iataCode,
+            localCode = localCode,
+            longitude = longitude.toDouble,
+            latitude = latitude.toDouble
+          )
+        )
 
       case _ => None
     }
@@ -574,34 +589,49 @@ object RDD extends App {
     }
   }
 
-  val airportFinal: RDD[AirportSafe] = noHeaderRdd.flatMap(toAirportOtpSafe)
-  airportFinal.take(3).foreach(println)
-  println(s"airportFinal.count(): ${airportFinal.count()}")
+  val airportFinalRdd: RDD[AirportSafe] = noHeaderRdd.flatMap(toAirportOtpSafe)
+  airportFinalRdd.cache()
+  airportFinalRdd.count()
+
+  airportFinalRdd.take(3).foreach(println)
+  println(s"airportFinal.count(): ${airportFinalRdd.count()}")
   noHeaderRdd.unpersist()
   println()
 
-  val pairAirport: RDD[(String, Option[Int])] = airportFinal.map(el => (el.isoCountry, el.elevationFt))
-  println(s"pairAirport.first(): ${pairAirport.first()}")
+  val pairAirportRdd: RDD[(String, Option[Int])] = airportFinalRdd.map(el => (el.isoCountry, el.elevationFt))
+  pairAirportRdd.cache()
+  pairAirportRdd.count()
+  airportFinalRdd.unpersist()
+  println(s"pairAirport.first(): ${pairAirportRdd.first()}")
 
-  /** Get values - v1 - getOrElse */
-  val fixedElevation1: RDD[(String, Int)] = pairAirport.map(el => (el._1, el._2.getOrElse(Int.MinValue)))
 
-  /** Get values - v2 - pattern matching */
-  val fixedElevation2: RDD[(String, Int)] =
-    pairAirport.map {  // partially applied function
+  /** Get values from Option - v1 - getOrElse */
+  val fixedElevationRdd1: RDD[(String, Int)] =
+    pairAirportRdd.map { case (isoCountry, elevationFt) => (isoCountry, elevationFt.getOrElse(Int.MinValue)) }
+
+  fixedElevationRdd1.cache()
+  fixedElevationRdd1.count()
+  pairAirportRdd.unpersist()
+
+  /** Get values from Option - v2 - pattern matching */
+  val fixedElevationRdd2: RDD[(String, Int)] =
+    pairAirportRdd.map {  // partially applied function
       case (k, Some(v)) => (k, v)
       case (k, None) => (k, Int.MinValue)
     }
 
-  println(s"fixedElevation1.first(): ${fixedElevation1.first()}")
+  println(s"fixedElevation1.first(): ${fixedElevationRdd1.first()}")
   println()
 
   val result: Array[(String, Int)] =
-    fixedElevation1
-      .reduceByKey(Math.max) // Math.max == (x, y) if (x > y) x else y
+    fixedElevationRdd1
+      .reduceByKey(Math.max)  // Math.max == (x, y) if (x > y) x else y
       .collect()
-      .sortBy(-_._2) // -_._2 == desc
+      .sortBy { case (_, elevationFt) => -elevationFt }  // - == desc
+      // ==
+//      .sortBy(-_._2)  // -_._2 == desc
 
+  fixedElevationRdd1.unpersist()
   result.take(10).foreach(println)
   println()
 
@@ -611,8 +641,8 @@ object RDD extends App {
   val rdd4: RDD[Int] = sc.parallelize(1 to 100)
 
   /**
-   * myMap будет сериализован и передан в каждую партицию => нагрузка на драйвер/сеть
-   * Передача будет осуществляться ТОЛЬКО с драйвера
+   * myMap будет сериализован и передан в КАЖДУЮ партицию => нагрузка на драйвер/сеть
+   * передача будет осуществляться ТОЛЬКО с драйвера
    */
   rdd4
     .map(el => myMap.get(el))
@@ -620,11 +650,11 @@ object RDD extends App {
 
   /**
    * Broadcast variable - read only контейнер, копии которого будут находиться на каждом экзекьюторе
-   * Распространяется peer-to-peer - т.е. нагрузка распределяется между экзекьюторами
+   * распространяется peer-to-peer - т.е. нагрузка распределяется между экзекьюторами
    *
    * myMap - существует только на драйвере
    * myMapBroadcast - read only копия myMap, существующая на каждом экзекьюторе
-   * Если myMap изменится - myMapBroadcast не изменится
+   * если myMap изменится - myMapBroadcast не изменится
    */
   val myMapBroadcast: Broadcast[Map[Int, String]] = sc.broadcast(myMap)
 
@@ -636,18 +666,21 @@ object RDD extends App {
   /** Accumulator */
   var counter: Int = 0
 
-  /** Бессмысленное выражение (при работе на кластере) - мутабельная переменная сериализуется и передается в каждую партицию, инкрементируется и там же остается */
+  /**
+   * Бессмысленное выражение (при работе на кластере)
+   * мутабельная переменная сериализуется и передается в каждую партицию, инкрементируется и там же остается
+   */
   rdd4.foreach(_ => counter += 1)
   println(s"counter: $counter")
   println()
 
   val counterAccum: LongAccumulator = sc.longAccumulator("myAccum")
   rdd4.foreach(_ => counterAccum.add(1))
-  println(s"rdd4.count(): ${rdd4.count()}")
 
-  /** ??? counterAccum не всегда равен rdd4.count() */
   println(s"counterAccum: $counterAccum")
+  /** counterAccum.value иногда не равен rdd4.count() (?) */
   println(s"counterAccum.value: ${counterAccum.value}")
+  println(s"rdd4.count(): ${rdd4.count()}")
   println()
 
 

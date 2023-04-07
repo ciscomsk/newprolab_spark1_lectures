@@ -41,9 +41,9 @@ object DataFrame_1 extends App {
 
   /**
    * Алгоритм работы df.count:
-   * 1. Рассчитывается количество элементов в каждой партиции
-   * 2. Агрегированные данные пересылаются в одну партицию (Exchange single partition) - где производится финальный reduce
-   * 3. Результат передается на драйвер
+   * 1. рассчитывается количество элементов в каждой партиции
+   * 2. агрегированные данные пересылаются в одну партицию (Exchange single partition) - где производится финальный reduce
+   * 3. результат передается на драйвер
    */
   println(df.count())
   println()
@@ -55,6 +55,8 @@ object DataFrame_1 extends App {
    * def filter(condition: Column): Dataset[T]
    */
 
+
+  /** Обращение к объекту Column */
   /**
    * v1 - $
    * $ также позволяет указывать колонки внутри структур
@@ -101,7 +103,7 @@ object DataFrame_1 extends App {
 
   /**
    * v3 - DML в SQL-like формате
-   * Легко ошибиться и получить ошибку в рантайме
+   * легко ошибиться + ошибка обнаружится только в рантайме
    */
   df
     .filter("value = 'Moscow'")
@@ -124,6 +126,7 @@ object DataFrame_1 extends App {
     *(1) Filter (isnotnull(value#1) AND (value#1 = Moscow))
     +- *(1) Scan ExistingRDD[value#1]
    */
+
   /** Каталист парсит выражение и создает план, состоящий из физических операторов => план передается в тангстен для кодогенерации */
 
 
@@ -131,7 +134,7 @@ object DataFrame_1 extends App {
 
   /**
    * withColumn - добавляет новую колонку
-   * Является трансформацией и аналогично другим методам - создает новый датафрейм (а не изменяет исходный)
+   * является трансформацией и аналогично другим методам - создает новый датафрейм (а не изменяет исходный)
    */
   df
     .withColumn("upperCity", upper($"value"))
@@ -142,7 +145,8 @@ object DataFrame_1 extends App {
     .withColumn("upperCity", upper($"value"))
     .explain()
   /*
-    *(1) Project [value#1, upper(value#1) AS upperCity#86]
+    == Physical Plan ==
+    *(1) Project [value#1, upper(value#1) AS upperCity#98]
     +- *(1) Scan ExistingRDD[value#1]
    */
 
@@ -153,7 +157,7 @@ object DataFrame_1 extends App {
    * select(col(*)) - позволяет получить DF со всеми колонками - полезно, когда список всех колонок не известен,
    * и нужно выбрать все существующие + добавить новые колонки
    *
-   * В select можно передать список колонок, используя обычные строки
+   * в select можно передать список колонок, используя обычные строки
    */
   val withUpperDf: DataFrame = df.select($"value", upper($"value").alias("upperCity"))
   withUpperDf.show()
@@ -245,6 +249,7 @@ object DataFrame_1 extends App {
 
 
   /** Data cleaning */
+
   val testData: String =
     """{ "name": "Moscow", "country": "Rossiya", "continent": "Europe", "population": 12380664 }
       |{ "name": "Madrid", "country": "Spain" }
@@ -291,13 +296,15 @@ object DataFrame_1 extends App {
   df4.printSchema()
 
 
-  val corruptData: Array[Row] =
+  val corruptedData: Array[Row] =
     df4
       .select(col("_corrupt_record"))
       .na.drop("all")
       .collect()
 
-  println(corruptData.mkString("Array(", ", ", ")"))
+  println("corruptedData: ")
+  println(corruptedData.mkString("Array(", ", ", ")"))
+  println()
 
   val fillData: Map[String, Any] = Map("continent" -> "Undefined", "population" -> 0)
   val replaceData: Map[String, String] = Map("Rossiya" -> "Russia")
@@ -308,7 +315,7 @@ object DataFrame_1 extends App {
       /**
        * .na.drop("all") - удаляются строки, где все колонки == null
        * .na.drop("any") - удаляются строки, где хотя бы одна колонка == null
-       * Можно указать на какие колонки это будет распространяться
+       * можно указать на какие колонки будет распространяться это поведение (all/any)
        * */
       .na.drop("all")  // na.drop - это срез
       .na.fill(fillData)  // na.fill - это срез
@@ -333,7 +340,7 @@ object DataFrame_1 extends App {
     .na.drop("all")
     .explain()
   /*
-    === Physical Plan ==
+    == Physical Plan ==
     *(1) Filter atleastnnonnulls(1, continent#215, country#216, name#217, population#218L)
     +- *(1) Scan ExistingRDD[continent#215,country#216,name#217,population#218L]
    */
@@ -371,7 +378,7 @@ object DataFrame_1 extends App {
     .na.drop("all")
     .na.fill(fillData)
     .na.replace("country", replaceData)
-    /** dropDuplicates - инициирует выполнение шафла (Exchange hashpartitioning) */
+    /** dropDuplicates - запускает шафл (Exchange hashpartitioning) */
     .dropDuplicates("continent", "country")
     .explain()
 //    .explain(extended = true)
@@ -381,7 +388,7 @@ object DataFrame_1 extends App {
     // Удаление дубликатов внутри каждой партиции после репартиционирования
     +- SortAggregate(key=[continent#426, country#436], functions=[first(name#217, false), first(population#427L, false)])
        +- Sort [continent#426 ASC NULLS FIRST, country#436 ASC NULLS FIRST], false, 0
-          // Репартиционирование по continent + country на 200 партиций
+          // Репартиционирование по ключу continent + country на 200 партиций
           +- Exchange hashpartitioning(continent#426, country#436, 200), ENSURE_REQUIREMENTS, [plan_id=506]
              // Удаление дубликатов внутри каждой партиции
              +- SortAggregate(key=[continent#426, country#436], functions=[partial_first(name#217, false), partial_first(population#427L, false)])
@@ -417,7 +424,7 @@ object DataFrame_1 extends App {
   val constColExprJson: String = constCol.expr.toJSON
   println(constColExprJson)
   // == [{"class":"org.apache.spark.sql.catalyst.expressions.Literal","num-children":0,"value":"3","dataType":"integer"}]
-
+  println()
 
   println(sc.uiWebUrl)
   Thread.sleep(1000000)
