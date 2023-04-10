@@ -45,8 +45,8 @@ object DataFrame_6 extends App {
   /** BroadcastHash Join */
   val resDf: DataFrame = leftDf.join(broadcast(rightDf), Seq("type"), "inner")
 
+  println()
   printPhysicalPlan(resDf)
-  /** Ниже более читаемый план с localCheckpoint */
   /*
     AdaptiveSparkPlan isFinalPlan=false
     +- Project [type#18, ident#17, iso_country#22, count#58L]
@@ -77,15 +77,19 @@ object DataFrame_6 extends App {
   val resDf2: DataFrame = leftDf2.join(broadcast(rightDf2), Seq("type"), "inner")
 
   printPhysicalPlan(resDf2)
-  /** BroadcastHashJoin - PO BroadcastExchange HashedRelationBroadcastMode */
+  /** BroadcastHashJoin - PO BroadcastExchange_HashedRelationBroadcastMode */
+
+  /** Более читаемый план с localCheckpoint */
   /*
     AdaptiveSparkPlan isFinalPlan=false
     +- Project [type#18, ident#17, iso_country#22, count#111L]
        +- BroadcastHashJoin [type#18], [type#110], Inner, BuildRight, false
+          // null c null не джойнятся
           :- Filter isnotnull(type#18)
           :  +- Scan ExistingRDD[type#18,ident#17,iso_country#22]
           // HashedRelationBroadcastMode
           +- BroadcastExchange HashedRelationBroadcastMode(List(input[0, string, false]),false), [plan_id=128]
+             // null c null не джойнятся
              +- Filter isnotnull(type#110)
                 +- Scan ExistingRDD[type#110,count#111L]
    */
@@ -93,11 +97,11 @@ object DataFrame_6 extends App {
   leftDf2.printSchema()
   rightDf2.printSchema()
 
-  /** Примеры equ-join */
+  /** Примеры equ-join: */
   leftDf2.join(rightDf2, Seq("type"), "inner")
   leftDf2.as("left").join(rightDf2.as("right"), expr("left.iso_country = right.type"))
 
-  /** Примеры non-equ join */
+  /** Примеры non-equ join: */
   leftDf2.as("left").join(rightDf2.as("right"), expr("left.iso_country < right.type"))
   // ==
   leftDf2.as("left").join(rightDf2.as("right"), expr("(left.iso_country < right.type) == true"))
@@ -137,7 +141,7 @@ object DataFrame_6 extends App {
       .map { date =>
         leftDf.filter(dateExpression).join(right.filter(dateExpression), Seq(...), "inner")
       }
-      .reduce((acc, df) => acc.unionAll(df))
+      .reduce { (acc, df) => acc.unionAll(df) }
 
     !!! unionAll - важен порядок колонок, есть unionByName
    */
@@ -145,7 +149,7 @@ object DataFrame_6 extends App {
 
   /** BroadcastNestedLoop Join */
   /**
-   * Несмотря на то, что UDF сравнивает два ключа (т.е. фактически equ-join), Spark ничего не знает про UDF
+   * Несмотря на то, что udf проверяет на равенство два ключа (т.е. фактически equ-join), Spark ничего не знает про логику udf
    * и не может применить BroadcastHashJoin/SortMergeJoin => применится BroadcastNestedLoopJoin/CartesianProduct
    *
    * Через udf можно сделать null-safe join
@@ -162,7 +166,6 @@ object DataFrame_6 extends App {
     AdaptiveSparkPlan isFinalPlan=false
     +- BroadcastNestedLoopJoin BuildRight, Inner, UDF(type#18, type#167)
        :- Scan ExistingRDD[type#18,ident#17,iso_country#22]
-       // IdentityBroadcastMode
        +- BroadcastExchange IdentityBroadcastMode, [plan_id=174]
           +- Scan ExistingRDD[type#167,count#168L]
    */
@@ -172,9 +175,9 @@ object DataFrame_6 extends App {
   val resDf5: DataFrame = leftDf2.as("left").join(rightDf2.as("right"), joinExpr, "inner")
   printPhysicalPlan(resDf5)
   /*
-    CartesianProduct UDF(type#18, type#212)
+    CartesianProduct UDF(type#18, type#191)
     :- *(1) Scan ExistingRDD[type#18,ident#17,iso_country#22]
-    +- *(2) Scan ExistingRDD[type#212,count#213L]
+    +- *(2) Scan ExistingRDD[type#191,count#192L]
    */
 
   println(
@@ -199,39 +202,41 @@ object DataFrame_6 extends App {
         .groupBy($"type")
         .count()
 
-    val joined: DataFrame = leftDf.join(rightDf, Seq("type"))
+    val joinedDf: DataFrame = leftDf.join(rightDf, Seq("type"))
 
-//    joined.explain()
+//    joinedDf.explain()
     /*
       == Physical Plan ==
       AdaptiveSparkPlan isFinalPlan=false
       +- Project [type#18, ident#17, name#19, elevation_ft#20, continent#21, iso_country#22, iso_region#23, municipality#24, gps_code#25, iata_code#26, local_code#27, coordinates#28, count#231L]
          +- SortMergeJoin [type#18], [type#235], Inner
             :- Sort [type#18 ASC NULLS FIRST], false, 0
-            :  +- Exchange hashpartitioning(type#18, 200), ENSURE_REQUIREMENTS, [id=#266]
+            :  +- Exchange hashpartitioning(type#18, 200), ENSURE_REQUIREMENTS, [plan_id=266]
             :     +- Filter isnotnull(type#18)
-            :        +- FileScan csv [ident#17,type#18,name#19,elevation_ft#20,continent#21,iso_country#22,iso_region#23,municipality#24,gps_code#25,iata_code#26,local_code#27,coordinates#28] Batched: false, DataFilters: [isnotnull(type#18)], Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn_2/courses/spark/newprolab/spark_1/_repos/lectur..., PartitionFilters: [], PushedFilters: [IsNotNull(type)], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_country:string,...
+            :        +- FileScan csv [ident#17,type#18,name#19,elevation_ft#20,continent#21,iso_country#22,iso_region#23,municipality#24,gps_code#25,iata_code#26,local_code#27,coordinates#28] Batched: false, DataFilters: [isnotnull(type#18)], Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [IsNotNull(type)], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_country:string,...
             +- Sort [type#235 ASC NULLS FIRST], false, 0
                +- HashAggregate(keys=[type#235], functions=[count(1)])
-                  +- Exchange hashpartitioning(type#235, 200), ENSURE_REQUIREMENTS, [id=#262]
+                  +- Exchange hashpartitioning(type#235, 200), ENSURE_REQUIREMENTS, [plan_id=262]
                      +- HashAggregate(keys=[type#235], functions=[partial_count(1)])
                         +- Filter isnotnull(type#235)
-                           +- FileScan csv [type#235] Batched: false, DataFilters: [isnotnull(type#235)], Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn_2/courses/spark/newprolab/spark_1/_repos/lectur..., PartitionFilters: [], PushedFilters: [IsNotNull(type)], ReadSchema: struct<type:string>
+                           +- FileScan csv [type#235] Batched: false, DataFilters: [isnotnull(type#235)], Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [IsNotNull(type)], ReadSchema: struct<type:string>
      */
 
-    joined.count()
-  }  // 626 ms
+    /** План в SQL/DataFrame показан для joinedDf.count(), а не joinedDf */
+    joinedDf.count()
+  }  // 806 ms
+  println()
 
   spark.time {
     /**
-     * Экономия - Spark UI => SQL/Dataframe:
+     * Экономия - Spark UI => SQL/Dataframe и в  (в explain - разницы видно не будет):
      * -1 Scan csv - т.к. результат репартицирования это файлы на файловой системе воркеров (~cache DISK_ONLY) => второе чтение из источника не нужно
-     * -1 Exchange hashpartitioning - т.к. репартицирование было по ключу join
+     * -1 Exchange hashpartitioning - т.к. репартицирование по нужному ключу уже было
      *
      * skipped stage == ранее был шаффл, который подходит для продолжения выполнения графа
      */
-//    val airportsRepDf: Dataset[Row] = airportsDf.repartition(200, col("type"))  // 1008 ms
-    val airportsRepDf: Dataset[Row] = airportsDf.repartition(10, col("type"))  // 456 ms
+//    val airportsRepDf: Dataset[Row] = airportsDf.repartition(200, col("type"))  // 1299 ms
+    val airportsRepDf: Dataset[Row] = airportsDf.repartition(10, col("type"))  // 590 ms
 
     val leftDf: Dataset[Row] = airportsRepDf
 
@@ -240,28 +245,30 @@ object DataFrame_6 extends App {
         .groupBy($"type")
         .count()
 
-    val joined: DataFrame = leftDf.join(rightDf, Seq("type"))
+    val joinedDf: DataFrame = leftDf.join(rightDf, Seq("type"))
 
-//    joined.explain()
+//    joinedDf.explain()
     /*
       == Physical Plan ==
       AdaptiveSparkPlan isFinalPlan=false
-      +- Project [type#18, ident#17, name#19, elevation_ft#20, continent#21, iso_country#22, iso_region#23, municipality#24, gps_code#25, iata_code#26, local_code#27, coordinates#28, count#295L]
-         +- SortMergeJoin [type#18], [type#299], Inner
+      +- Project [type#18, ident#17, name#19, elevation_ft#20, continent#21, iso_country#22, iso_region#23, municipality#24, gps_code#25, iata_code#26, local_code#27, coordinates#28, count#293L]
+         +- SortMergeJoin [type#18], [type#297], Inner
             :- Sort [type#18 ASC NULLS FIRST], false, 0
-            :  +- Exchange hashpartitioning(type#18, 10), REPARTITION_BY_NUM, [id=#532]
+            :  +- Exchange hashpartitioning(type#18, 10), REPARTITION_BY_NUM, [plan_id=488]
             :     +- Filter isnotnull(type#18)
-            :        +- FileScan csv [ident#17,type#18,name#19,elevation_ft#20,continent#21,iso_country#22,iso_region#23,municipality#24,gps_code#25,iata_code#26,local_code#27,coordinates#28] Batched: false, DataFilters: [isnotnull(type#18)], Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn_2/courses/spark/newprolab/spark_1/_repos/lectur..., PartitionFilters: [], PushedFilters: [IsNotNull(type)], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_country:string,...
-            +- Sort [type#299 ASC NULLS FIRST], false, 0
-               +- HashAggregate(keys=[type#299], functions=[count(1)])
-                  +- HashAggregate(keys=[type#299], functions=[partial_count(1)])
-                     +- Exchange hashpartitioning(type#299, 10), REPARTITION_BY_NUM, [id=#533]
-                        +- Filter isnotnull(type#299)
-                           +- FileScan csv [type#299] Batched: false, DataFilters: [isnotnull(type#299)], Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn_2/courses/spark/newprolab/spark_1/_repos/lectur..., PartitionFilters: [], PushedFilters: [IsNotNull(type)], ReadSchema: struct<type:string>
+            :        +- FileScan csv [ident#17,type#18,name#19,elevation_ft#20,continent#21,iso_country#22,iso_region#23,municipality#24,gps_code#25,iata_code#26,local_code#27,coordinates#28] Batched: false, DataFilters: [isnotnull(type#18)], Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [IsNotNull(type)], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_country:string,...
+            +- Sort [type#297 ASC NULLS FIRST], false, 0
+               +- HashAggregate(keys=[type#297], functions=[count(1)])
+                  +- HashAggregate(keys=[type#297], functions=[partial_count(1)])
+                     +- Exchange hashpartitioning(type#297, 10), REPARTITION_BY_NUM, [plan_id=489]
+                        +- Filter isnotnull(type#297)
+                           +- FileScan csv [type#297] Batched: false, DataFilters: [isnotnull(type#297)], Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [IsNotNull(type)], ReadSchema: struct<type:string>
      */
 
-    joined.count()
-  }  // 1008/456 ms
+    /** План в SQL/DataFrame показан для joinedDf.count(), а не joinedDf */
+    joinedDf.count()
+  }  // 806/590 ms
+  println()
 
   println(sc.uiWebUrl)
   Thread.sleep(1000000)

@@ -161,7 +161,7 @@ object AntiPatterns extends App {
     +----------------+
    */
 
-  /** Int - скаловый тип => не может быть null. */
+  /** Int - скаловый тип => не может быть null */
   // err -  an expression of type Null is ineligible for implicit conversion
 //  val scalaInt: Int = null
 
@@ -182,8 +182,8 @@ object AntiPatterns extends App {
    */
 
   /**
-   * Решение - использовать java типы.
-   * Преобразование java.lang.Integer => Int - toInt (если null - будет исключение).
+   * Решение - использовать java типы
+   * Преобразование java.lang.Integer => Int - toInt (если null - будет исключение)
    */
   val mega_udf_javaType: UserDefinedFunction = udf { (left: java.lang.Integer, right: String) => "ok" }
 
@@ -203,7 +203,7 @@ object AntiPatterns extends App {
     +----------------+
    */
 
-  /** String может быть null. */
+  /** String может быть null */
   val javaString: java.lang.String = null
   println(javaString == null)
 
@@ -223,7 +223,7 @@ object AntiPatterns extends App {
     +----------------+
    */
 
-  /** 4.2 Применение udf к каждой колонке. */
+  /** 4.2 Применение udf к каждой колонке */
   case class Foo(first: Int, second: Int, third: Int)
 
   val mega_udf2: UserDefinedFunction = udf { () => Thread.sleep(1000); Foo(1, 2, 3) }
@@ -305,7 +305,7 @@ object AntiPatterns extends App {
   /** В Spark 2.х ~ 30 c. */
   println()
 
-  /** Решение - asNondeterministic. */
+  /** Решение - asNondeterministic */
   val mega_udf2_nd: UserDefinedFunction = udf { () => Thread.sleep(1000); Foo(1, 2, 3) }.asNondeterministic()
 
   spark.time {
@@ -353,7 +353,7 @@ object AntiPatterns extends App {
         .withColumn("foo", mega_udf2())
         .coalesce(1)
         /**
-         * Фактически преобразовывается в (несмотря на правильный физический план):
+         * Фактически преобразовывается (несмотря на правильный физический план) в :
          *
          * spark.
          *   .range(0, 10, 1, 2)

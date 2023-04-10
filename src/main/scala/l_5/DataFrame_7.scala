@@ -9,7 +9,7 @@ import org.apache.spark.sql.{Column, DataFrame, Dataset, Row, SparkSession}
 
 /** test: l_5 + org.apache.spark.sql  */
 object DataFrame_7 extends App {
-  // не работает в Spark 3.3.1
+  // не работает в Spark 3.3.2
 //  Logger
 //    .getLogger("org")
 //    .setLevel(Level.OFF)
@@ -35,18 +35,22 @@ object DataFrame_7 extends App {
       .csv("src/main/resources/l_3/airport-codes.csv")
 
   /** columns - получение списка колонок */
+  println()
   println(airportsDf.columns.toList)
   println()
 
   /**
    * schema - получение схемы DF
-   * !!! Поля в схеме ВСЕГДА УПОРЯДОЧЕНЫ */
+   * !!! Список полей в схеме (StructType) ВСЕГДА УПОРЯДОЧЕН
+   */
   val schema: StructType = airportsDf.schema
   println(schema)
   println()
 
   /** apply - получение поля структуры по имени/индексу */
-  val field: StructField = schema("ident")  // == schema(0)
+  val field: StructField = schema("ident")
+  // ==
+//  val field: StructField = schema(0)
   println(field)
   println()
 
@@ -55,10 +59,9 @@ object DataFrame_7 extends App {
   println(idx)
   println()
 
-  val name: String = field.name
-  println(name)
-
+  val fieldName: String = field.name
   val fieldType: DataType = field.dataType
+  println(fieldName)
   println(fieldType)
 
   fieldType match {
@@ -74,18 +77,19 @@ object DataFrame_7 extends App {
 
   /** schema.json/DataType.fromJson(schema) - удобно при необходимости сериализации и передачи схемы */
   val jsonSchema: String = schema.json
-  println(jsonSchema)
   val schemaFromJson: DataType = DataType.fromJson(jsonSchema)
+  println(jsonSchema)
   println(schemaFromJson)
   println()
 
   val ddlSchema: String = schema.toDDL
-  println(ddlSchema)
   val schemaFromDDL: DataType = DataType.fromDDL(ddlSchema)
+  println(ddlSchema)
   println(schemaFromDDL)
   println()
 
-  /** Создание схемы из кейс класса - v1 - через reflection */
+  /** Получение схемы из кейс класса */
+  /** v1 - reflection */
   case class Airport(
                       ident: String,
                       `type`: String,
@@ -109,7 +113,7 @@ object DataFrame_7 extends App {
 
   println(schemaFromCC)
 
-  /** Получение схемы из кейс класса - v2 - через ds */
+  /** v2 - через ds */
   val ds: Dataset[Airport] = spark.emptyDataset[Airport]
   println(ds.schema)
   println()
@@ -140,16 +144,20 @@ object DataFrame_7 extends App {
 
   /** Ручное создание схемы */
   val someSchema: StructType =
-    StructType(List(
-      StructField("foo", StringType),
-      StructField("bar", StringType),
-      StructField("boo",
-        StructType(List(
-          StructField("x", IntegerType),
-          StructField("y", BooleanType)
-        ))
+    StructType(
+      List(
+        StructField("foo", StringType),
+        StructField("bar", StringType),
+        StructField("boo",
+          StructType(
+            List(
+              StructField("x", IntegerType),
+              StructField("y", BooleanType)
+            )
+          )
+        )
       )
-    ))
+    )
 
   someSchema.printTreeString()
   println()
@@ -167,7 +175,7 @@ object DataFrame_7 extends App {
   println(s"row: $row")
   println()
 
-  /** cast - изменяет тип колонки, может возвращать null - при некорректном касте */
+  /** cast - изменяет тип колонки, возвращает null при некорректном касте */
   airportsDf
     .select($"elevation_ft".cast(StringType))  // StringType можно заменить на string
     .printSchema()
