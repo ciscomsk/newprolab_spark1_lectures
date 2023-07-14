@@ -11,7 +11,7 @@ import java.net.InetAddress
 import scala.util.{Failure, Success, Try}
 
 object DataFrame_4 extends App {
-  // не работает в Spark 3.3.2
+  // не работает в Spark 3.4.0
 //  Logger
 //    .getLogger("org")
 //    .setLevel(Level.OFF)
@@ -225,6 +225,7 @@ object DataFrame_4 extends App {
     )
     .sample(0.2)
     .show(20, truncate = false)
+
 
   println(sc.uiWebUrl)
   Thread.sleep(1000000)

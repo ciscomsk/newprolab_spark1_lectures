@@ -8,7 +8,7 @@ import org.apache.spark.sql.{Column, DataFrame, Dataset, Row, SparkSession}
 import java.lang
 
 object DataFrame_3 extends App {
-  // не работает в Spark 3.3.2
+  // не работает в Spark 3.4.0
 //  Logger
 //    .getLogger("org")
 //    .setLevel(Level.OFF)

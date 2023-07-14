@@ -10,17 +10,17 @@ import org.apache.spark.sql.{DataFrame, Dataset, Row, SaveMode, SparkSession}
 import java.lang
 
 object DataFrame_8 extends App {
-  // не работает в Spark 3.3.2
+  // не работает в Spark 3.4.0
 //  Logger
 //    .getLogger("org")
 //    .setLevel(Level.OFF)
 
   val spark: SparkSession =
     SparkSession
-      .builder
+      .builder()
       .master("local[*]")
       .appName("l_5")
-      .getOrCreate
+      .getOrCreate()
 
   val sc: SparkContext = spark.sparkContext
   sc.setLogLevel("ERROR")
@@ -42,12 +42,12 @@ object DataFrame_8 extends App {
 //    .mode(SaveMode.Overwrite)
 //    .save("src/main/resources/l_5/airports")
 
-//  airportsDf
-//    .write
-//    .format("json")
-//    .partitionBy("iso_country")
-//    .mode(SaveMode.Overwrite)
-//    .save("src/main/resources/l_5/airports_json")
+  airportsDf
+    .write
+    .format("json")
+    .partitionBy("iso_country")
+    .mode(SaveMode.Overwrite)
+    .save("src/main/resources/l_5/airports_json")
 
   val airportPartPqDf: DataFrame =
     spark
@@ -292,6 +292,7 @@ object DataFrame_8 extends App {
     *(1) Filter ((id#582L > 0) AND (NOT (id#582L = 5) AND (id#582L < 10)))
     +- *(1) Range (0, 10, step=1, splits=8)
    */
+
 
   println(sc.uiWebUrl)
   Thread.sleep(1000000)

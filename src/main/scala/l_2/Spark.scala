@@ -5,7 +5,7 @@ import org.apache.spark.SparkContext
 import org.apache.spark.sql.SparkSession
 
 object Spark extends App {
-//   не работает в Spark 3.3.2
+  // не работает в Spark 3.4.0
 //  Logger
 //    .getLogger("org")
 //    .setLevel(Level.ERROR)

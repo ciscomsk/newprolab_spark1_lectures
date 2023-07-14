@@ -12,7 +12,7 @@ import org.apache.spark.sql.execution.ExtendedMode
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 object DataFrame_5 extends App {
-  // не работает в Spark 3.3.2
+  // не работает в Spark 3.4.0
 //  Logger
 //    .getLogger("org")
 //    .setLevel(Level.OFF)
@@ -421,7 +421,7 @@ object DataFrame_5 extends App {
   def printCodeGen(ds: Dataset[_]): Unit = {
     val logicalPlan: LogicalPlan = ds.queryExecution.logical
 
-    /** !!! В Spark 3.3.2 - не работает => Found 0 WholeStageCodegen subtrees */
+    /** !!! В Spark 3+ - не работает - Found 0 WholeStageCodegen subtrees (?) */
     val codeGen: ExplainCommand =
       ExplainCommand(
         logicalPlan,
@@ -453,6 +453,7 @@ object DataFrame_5 extends App {
   printCodeGen(groupedDf)
 
   /** !!! PO ExchangeSinglePartition - снижает параллелизм до 1 партиции */
+
 
   println(sc.uiWebUrl)
   Thread.sleep(1000000)

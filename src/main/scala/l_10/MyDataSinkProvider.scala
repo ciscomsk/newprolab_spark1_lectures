@@ -11,13 +11,15 @@ import org.apache.spark.sql.types.{LongType, StringType, StructType, TimestampTy
 import org.apache.spark.unsafe.types.UTF8String
 
 class MyDataSinkProvider extends StreamSinkProvider with Logging {
-  /** Для работы логирования нужно добавить класс/package в log4j.properties */
+  /** Для работы логирования нужно добавить класс/package в log4j2.properties */
   log.info(s"${this.logName} has been created")
 
-  override def createSink(sqlContext: SQLContext, // ~SparkSession
-                          parameters: Map[String, String],  // то, что будет передано в writeStream.options
-                          partitionColumns: Seq[String],  // то, что будет передано в writeStream.partitionBy
-                          outputMode: OutputMode): Sink = {
+  override def createSink(
+                           sqlContext: SQLContext,  // ~SparkSession
+                           parameters: Map[String, String],  // то, что передается в writeStream.options
+                           partitionColumns: Seq[String],  // то, что передается в writeStream.partitionBy
+                           outputMode: OutputMode
+                         ): Sink = {
 
     log.info(s"parameters: ${parameters.mkString(" ")}")
     log.info(s"partitionColumns: ${partitionColumns.mkString(" ")}")
@@ -32,80 +34,94 @@ class MyDataSink extends Sink with Logging {
 
   override def addBatch(batchId: Long, data: DataFrame): Unit = {
     log.info(s"batchId: $batchId, data: $data")
-    log.info(s"df.isStreaming: ${data.isStreaming}")
 
-    /** err - org.apache.spark.sql.AnalysisException: Queries with streaming sources must be executed with writeStream.start(); */
-//    data.show() // exception т.к. датафрейм здесь стримовый
-//    log.info(s"${data.rdd.getNumPartitions}") // exception
+    /**
+     * err - MicroBatchExecution: Query [id = a03afb7b-61e3-4437-95bb-9465eea3c962, runId = 4c2c21d1-f004-450b-ac84-b43c301b98a5]
+     * terminated with error
+     * org.apache.spark.sql.AnalysisException: Queries with streaming sources must be executed with writeStream.start()
+     */
+//    data.show()
+//    log.info(s"data.rdd.getNumPartitions: ${data.rdd.getNumPartitions}")  // true
+
+    /** Ошибки при вызове show/getNumPartitions - говорят о том, что датафрейм стримовый  */
+//    log.info(s"df.isStreaming: ${data.isStreaming}")  // true
 
     val schema: StructType = data.schema
-    println(schema)  // StructType(StructField(timestamp,TimestampType,true), StructField(value,LongType,true))
-
-    val fieldNames: String = schema.map(_.name).mkString(", ")
-
+//    println(schema)  // StructType(StructField(timestamp,TimestampType,true),StructField(value,LongType,true))
     val rdd: RDD[InternalRow] = data.queryExecution.toRdd
 
     rdd.foreachPartition { partition =>
-
-      /** Итератор - ленивая коллекция. */
-      /**
-       * InternalRow - абстрактный класс, описывающий то, как хранятся данные в датафрейме под капотом.
-       * В отличие от Row, в InternalRow не инкапсулирована схема (нет схемы внутри).
-       *
-       * Имплементации InternalRow:
-       * 1. Generic Internal Row - on heap (массив объектов - Array[Any]).
-       * 2. Unsafe Row - off heap (java.nio.bytebuffer).
-       */
+      /** Итератор - это ленивая коллекция */
       val thisPartition: Iterator[InternalRow] = partition
 
-      while (thisPartition.hasNext) {
+      /**
+       * InternalRow - абстрактный класс, описывающий то, как хранятся данные в датафрейме "под капотом"
+       * В отличие от Row, в InternalRow не инкапсулирована схема (нет схемы внутри)
+       *
+       * Имплементации InternalRow:
+       * 1. Generic Internal Row - on heap - массив объектов - Array[Any]
+       * 2. Unsafe Row - off heap - java.nio.bytebuffer
+       */
+
+      /** Для v3 */
+      val fieldNames: String = schema.map(_.name).mkString(", ")
+
+      while(partition.hasNext) {
         val nextItem: InternalRow = thisPartition.next()
-        /** Получаем данные из InternalRow. Схема берется из датафрейма. */
+
+        /** Получаем данные из InternalRow - схема берется из датафрейма */
         val columns: Seq[Any] = nextItem.toSeq(schema)
-//        println(columns)  // WrappedArray(timestamp TimestampType == 1643202075307000, value LongType == 6)
+//        println(columns) // ArraySeq(1682502093947000, 61760)
 
         /**
-         * Здесь будет логика преобразования данных к формату, который потребляет синк.
-         * Что-то вроде INSERT INTO/Arrow/Protobuff/...
+         * Далее пишется логика преобразования данных к формату, который потребляет синк
+         * например - INSERT INTO для БД/преобразование в Arrow/Protobuf/...
          */
+
+        /** v1 - просто печать */
 //        columns
 //          .zip(schema)
 //          .foreach { case (item, field) =>
-////            println(s"fieldName: ${field.name}, fieldType: ${field.dataType.simpleString}, value: $item")
-//
+//            println(s"field: ${field.name}, type: ${field.dataType.simpleString}, value: $item")
+//          }
+
+        /** v2 - заготовка для записи в синк с матчингом по типу колонки */
+//        columns
+//          .zip(schema)
+//          .foreach { case (item, field) =>
 //            (item, field.dataType) match {
-//              case (v: java.lang.Long, LongType) =>
-//                println(s"fieldName: ${field.name}, fieldType: ${field.dataType.simpleString}, value: $v")
+//              case (value: java.lang.Long, LongType) =>
+//                println(s"name: ${field.name}, type: ${field.dataType.simpleString}, value: $value")
 //
-//              case (v: java.lang.Long, TimestampType) =>
-//                println(s"fieldName: ${field.name}, fieldType: ${field.dataType.simpleString}, value: $v")
+//              case (value: java.lang.Long, TimestampType) =>
+//                println(s"name: ${field.name}, type: ${field.dataType.simpleString}, value: $value")  // value: 1682502219947000
 //
-//              case (v: UTF8String, StringType) =>
-//                println(s"fieldName: ${field.name}, fieldType: ${field.dataType.simpleString}, value: $v")
+//              case (value: UTF8String, StringType) =>
+//                println(s"name: ${field.name}, type: ${field.dataType.simpleString}, value: $value")
 //
 //              case (value, fieldType) =>
-//                throw new UnsupportedOperationException(s"$value: of type: ${fieldType.simpleString} is not supported!")
+//                throw new UnsupportedOperationException(s"$value of type ${fieldType.simpleString} is not supported")
 //            }
 //          }
 
-        /** Пример с генерацией запроса для записи в БД: */
+        /** v3 - пример с генерацией запроса для записи в БД */
         val fieldValues: String =
           columns
             .zip(schema.map(_.dataType))
             .map {
-              case (item: java.lang.Long, LongType) =>
-                s"${item.toString}L"
+              case (value: java.lang.Long, LongType) =>
+                s"${value.toString}L"
 
-              case (item: java.lang.Long, TimestampType) =>
-                s"ts:${item.toString}"  // для простоты
+              case (value: java.lang.Long, TimestampType) =>
+                s"ts:${value.toString}"
 
-              case (item: UTF8String, StringType) =>
-                s""" '${item.toString}' """
+              case (value: UTF8String, StringType) =>
+                s"""'${value.toString}'"""
 
               /**
                * В случае сложных типов:
-               * 1. struct => item: InternalRow
-               * 2. array => item: ArrayData
+               * 1. struct => value: InternalRow
+               * 2. array => value: ArrayData
                */
             }
             .mkString(", ")
@@ -114,5 +130,6 @@ class MyDataSink extends Sink with Logging {
         println(insertQuery)
       }
     }
+
   }
 }

@@ -10,7 +10,7 @@ import org.apache.spark.util.LongAccumulator
 import scala.util.{Failure, Success, Try}
 
 object RDD extends App {
-  // не работает в Spark 3.3.2
+  // не работает в Spark 3.4.0
 //  Logger
 //    .getLogger("org")
 //    .setLevel(Level.ERROR)
@@ -691,6 +691,7 @@ object RDD extends App {
     .parallelize(0 to 100)
     .distinct()
     .count()
+
 
   Thread.sleep(1000000)
 

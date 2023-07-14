@@ -2,48 +2,21 @@ name := "lectures"
 
 version := "0.1"
 
-//scalaVersion := "2.12.17"
-scalaVersion := "2.13.10"
+scalaVersion := "2.13.11"
+val sparkVersion = "3.4.1"
 
 libraryDependencies ++= Seq(
-  "org.apache.spark" %% "spark-sql" % "3.3.2" % Provided,  // Provided - зависимость не будет включена при сборке fat jar (плагин assembly)
-//  "org.apache.spark" %% "spark-sql" % "2.4.8" % "provided",
+  "org.apache.spark" %% "spark-sql" % sparkVersion % Provided,  // Provided - зависимость не будет включена при сборке fat jar (плагин assembly)
+//  "org.apache.spark" %% "spark-repl" % "3.4.0" % Provided,  // для 11 лекции
 
-  // !!! works only with Spark 2.4.8
-//  "org.elasticsearch" %% "elasticsearch-spark-20" % "7.16.3",
+"org.elasticsearch" %% "elasticsearch-spark-30" % "8.8.2",
 
-  // err - with Spark3 (Java 11) - java.lang.NoClassDefFoundError: org/spark_project/guava/cache/CacheLoader
-  // err - 7.15.1 | 7.16.3
-//  "org.elasticsearch" %% "elasticsearch-spark-20" % "7.16.3",
+//  "com.datastax.spark" %% "spark-cassandra-connector" % "3.4.0" - нет под scala 2.13
+//  "joda-time" % "joda-time" % "2.12.5",  // для коннектора к cassandra
 
-  // err - with Spark3 (Java8/11)java.lang.NoClassDefFoundError: org/apache/spark/network/shuffle/RetryingBlockFetcher$BlockFetchStarter
-  // err - 7.15.1/2 | 7.16.0/1/2/3 | 8.0.0-rc1
-//  "org.elasticsearch" %% "elasticsearch-spark-30" % "7.16.3",
+  "org.postgresql" % "postgresql" % "42.6.0",
 
-//  "com.datastax.spark" %% "spark-cassandra-connector" % "3.2.0", // works only with joda-time + нет под scala 2.13
-//  "joda-time" % "joda-time" % "2.10.12",
-//  "joda-time" % "joda-time" % "2.10.13",  // новая версия - не тестировал
-  /** java.lang.NoClassDefFoundError: jnr/posix/POSIXHandler - и работает дальше. */
+  "org.apache.spark" %% "spark-sql-kafka-0-10" % sparkVersion,
 
-  /** Похоже нужен файл конфигурации - очень много логов. */
-//  "ch.qos.logback" % "logback-classic" % "1.2.6",
-
-  /**
-   * Без файла конфигурации:
-   * Пример: 21/10/27 14:08:38 INFO CassandraConnector: Connected to Cassandra cluster.
-   *
-   * С log4j.properties:
-   * Пример: 14:09:18,328 INFO  com.datastax.spark.connector.cql.CassandraConnector           - Connected to Cassandra cluster.
-   */
-//  "org.slf4j" % "slf4j-log4j12" % "1.7.33",
-//
-//  "org.postgresql" % "postgresql" % "42.3.1",
-//
-//  "org.apache.spark" %% "spark-sql-kafka-0-10" % "3.3.0",
-
-  // Scala 2.13
-//  "org.scala-lang.modules" %% "scala-parallel-collections" % "1.0.4",
-
-
-  "org.scalatest" %% "scalatest" % "3.2.15" % Test
+  "org.scalatest" %% "scalatest" % "3.2.16" % Test  // Test - зависимость будет присутствовать только в test
 )

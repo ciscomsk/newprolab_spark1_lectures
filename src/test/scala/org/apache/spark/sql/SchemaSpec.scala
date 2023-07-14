@@ -7,7 +7,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should
 
 class SchemaSpec extends AnyFlatSpec with should.Matchers {
-  // не работает в Spark 3.3.2
+  // не работает в Spark 3.4.0
 //  Logger
 //    .getLogger("org")
 //    .setLevel(Level.OFF)
@@ -51,9 +51,7 @@ class SchemaSpec extends AnyFlatSpec with should.Matchers {
         val res: Array[StructField] =
           s
             .fields
-            .map { field =>
-              StructField(field.name, recursion(field.dataType))
-            }
+            .map { field => StructField(field.name, recursion(field.dataType)) }
 
         StructType(res)
 
@@ -66,29 +64,28 @@ class SchemaSpec extends AnyFlatSpec with should.Matchers {
   "Schema recursion" should "work" in {
     val res: DataType = recursion(someSchema)
 
-    println()
     println(res)
+    println()
   }
 
-  /** sbt - testOnly org.apache.spark.sql.SchemaSpec */
-
+  /** sbt shell => testOnly org.apache.spark.sql.SchemaSpec */
   def toUpperCase(schema: StructType): StructType = {
     val upperCaseFields: Array[StructField] =
       schema
         .fields
         .map {
-          case st @ _ if !st.dataType.isInstanceOf[StructType] =>
-            StructField(st.name.toUpperCase, st.dataType, st.nullable, st.metadata)
-          case st @ _ if st.dataType.isInstanceOf[StructType] =>
-            val struct: StructType = st.dataType.asInstanceOf[StructType]
-            StructField(st.name.toUpperCase, toUpperCase(struct), st.nullable, st.metadata)
+          case sf if !sf.dataType.isInstanceOf[StructType] =>
+            StructField(sf.name.toUpperCase, sf.dataType, sf.nullable, sf.metadata)
+          case sf if sf.dataType.isInstanceOf[StructType] =>
+            val struct: StructType = sf.dataType.asInstanceOf[StructType]
+            StructField(sf.name.toUpperCase, toUpperCase(struct), sf.nullable, sf.metadata)
         }
 
     StructType(upperCaseFields.toSeq)
   }
 
   "Schema uppercase" should "work" in {
-    val res: DataType = toUpperCase(someSchema)
+    val res: StructType = toUpperCase(someSchema)
 
     println(someSchema)
     println(res)

@@ -9,7 +9,7 @@ import org.apache.spark.sql.{Column, DataFrame, Dataset, Row, SaveMode, SparkSes
 import java.lang
 
 object DataFrame_1 extends App {
-  // не работает в Spark 3.3.2
+  // не работает в Spark 3.4.0
 //  Logger
 //    .getLogger("org")
 //    .setLevel(Level.OFF)
@@ -425,6 +425,7 @@ object DataFrame_1 extends App {
   println(constColExprJson)
   // == [{"class":"org.apache.spark.sql.catalyst.expressions.Literal","num-children":0,"value":"3","dataType":"integer"}]
   println()
+
 
   println(sc.uiWebUrl)
   Thread.sleep(1000000)

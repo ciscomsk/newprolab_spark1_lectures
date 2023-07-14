@@ -5,9 +5,10 @@ import org.apache.spark.SparkContext
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 object SparkUI extends App {
-  Logger
-    .getLogger("org")
-    .setLevel(Level.ERROR)
+  // не работает в Spark 3.4.0
+//  Logger
+//    .getLogger("org")
+//    .setLevel(Level.ERROR)
 
   val spark: SparkSession =
     SparkSession
@@ -17,14 +18,15 @@ object SparkUI extends App {
       .getOrCreate()
 
   val sc: SparkContext = spark.sparkContext
+  sc.setLogLevel("ERROR")
 
   import spark.implicits._
 
   val sparkUiUrl: Option[String] = sc.uiWebUrl
-  println(sparkUiUrl)
-
   val appId: String = sc.applicationId
+  println(sparkUiUrl)
   println(appId)
+  println()
 
   val csvOptions: Map[String, String] = Map("header" -> "true", "inferSchema" -> "true")
 
@@ -50,26 +52,34 @@ object SparkUI extends App {
   /*
     == Physical Plan ==
     AdaptiveSparkPlan isFinalPlan=false
-    +- HashAggregate(keys=[type#17], functions=[count(1)])
-       +- Exchange hashpartitioning(type#17, 200), ENSURE_REQUIREMENTS, [id=#107]
-          +- HashAggregate(keys=[type#17], functions=[partial_count(1)])
-             +- FileScan csv [type#17] Batched: false, DataFilters: [], Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/repos/newprolab/spark_1/lectures/src/main/resou..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<type:string>
+    +- HashAggregate(keys=[type#18], functions=[count(1)])
+       +- Exchange hashpartitioning(type#18, 200), ENSURE_REQUIREMENTS, [plan_id=107]
+          +- HashAggregate(keys=[type#18], functions=[partial_count(1)])
+             +- FileScan csv [type#18] Batched: false, DataFilters: [], Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<type:string>
    */
 
   airportsDf
     /**
      * Проекция колонки type будет вынесена на уровень чтения источника
-     * (1) Scan csv  - ReadSchema: struct<type:string>
+     * (1) Scan csv - ReadSchema: struct<type:string>
      */
     .groupBy($"type")
     .count()
     .count()
 
-  airportsDf.cache()  // кэширование - ленивая операция
-//  airportsDf.show()  // !!! partial caching - закэшируется только 1 партиция
+  /** !!! Кэширование - ленивая операция, выполняется после первого action */
+  airportsDf.cache()
+
+  /** !!! Partial caching - закэшируется только 1 партиция */
+//  airportsDf.show()
+
   airportsDf.count()
 
-  airportsDf.unpersist()
+//  airportsDf.unpersist()
 
-  Thread.sleep(10000000)
+
+  println(sc.uiWebUrl)
+  Thread.sleep(1000000)
+
+  spark.stop()
 }

@@ -12,10 +12,10 @@ object SaveModeSpec extends App {
 
   val spark: SparkSession =
     SparkSession
-    .builder()
-    .master("local[*]")
-    .appName("l_5")
-    .getOrCreate()
+      .builder()
+      .master("local[*]")
+      .appName("l_5")
+      .getOrCreate()
 
   val sc: SparkContext = spark.sparkContext
   sc.setLogLevel("ERROR")

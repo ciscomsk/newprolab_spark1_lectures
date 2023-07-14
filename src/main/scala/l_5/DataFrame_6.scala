@@ -8,7 +8,7 @@ import org.apache.spark.sql.functions.{broadcast, expr, udf, col}
 import org.apache.spark.sql.{Column, DataFrame, Dataset, Row, SparkSession}
 
 object DataFrame_6 extends App {
-  // не работает в Spark 3.3.2
+  // не работает в Spark 3.4.0
 //  Logger
 //    .getLogger("org")
 //    .setLevel(Level.OFF)
@@ -269,6 +269,7 @@ object DataFrame_6 extends App {
     joinedDf.count()
   }  // 806/590 ms
   println()
+
 
   println(sc.uiWebUrl)
   Thread.sleep(1000000)

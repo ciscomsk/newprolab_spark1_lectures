@@ -6,7 +6,7 @@ import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 import org.apache.spark.sql.functions.{col, collect_list, count, struct, sum, to_json}
 
 object DataFrame_2 extends App {
-  // не работает в Spark 3.3.2
+  // не работает в Spark 3.4.0
 //  Logger
 //    .getLogger("org")
 //    .setLevel(Level.OFF)
