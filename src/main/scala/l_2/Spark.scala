@@ -5,10 +5,9 @@ import org.apache.spark.SparkContext
 import org.apache.spark.sql.SparkSession
 
 object Spark extends App {
-  // не работает в Spark 3.4.0
-//  Logger
-//    .getLogger("org")
-//    .setLevel(Level.ERROR)
+  Logger
+    .getLogger("org")
+    .setLevel(Level.ERROR)
 
   val spark: SparkSession =
     SparkSession
@@ -17,8 +16,8 @@ object Spark extends App {
       .appName("l_2")
       .getOrCreate()
 
-  val sc: SparkContext = spark.sparkContext
-  sc.setLogLevel("ERROR")
+//  val sc: SparkContext = spark.sparkContext
+//  sc.setLogLevel("ERROR")
 
   spark
     .sql("select 1")

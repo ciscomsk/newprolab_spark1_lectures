@@ -426,7 +426,6 @@ object DataFrame_1 extends App {
   // == [{"class":"org.apache.spark.sql.catalyst.expressions.Literal","num-children":0,"value":"3","dataType":"integer"}]
   println()
 
-
   println(sc.uiWebUrl)
   Thread.sleep(1000000)
 

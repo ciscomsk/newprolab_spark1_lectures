@@ -11,9 +11,9 @@ import scala.util.{Failure, Success, Try}
 
 object RDD extends App {
   // не работает в Spark 3.4.0
-//  Logger
-//    .getLogger("org")
-//    .setLevel(Level.ERROR)
+  Logger
+    .getLogger("org")
+    .setLevel(Level.ERROR)
 
   val spark: SparkSession =
     SparkSession
@@ -23,7 +23,7 @@ object RDD extends App {
       .getOrCreate()
 
   val sc: SparkContext = spark.sparkContext
-  sc.setLogLevel("ERROR")
+//  sc.setLogLevel("ERROR")
 
   val cities: Vector[String] = Vector("Moscow", "Paris", "Madrid", "London", "New York")
   println(cities)

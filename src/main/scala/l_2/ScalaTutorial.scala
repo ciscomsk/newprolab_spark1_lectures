@@ -16,42 +16,43 @@ object ScalaTutorial extends App {
   val expr2: String = "Some" ++ " words"
 
   /**
-   * 1. Значение блока == значение последнего выражения в блоке
+   * 1. значение блока == значение последнего выражения в блоке
    * 2. return - не используется
    */
   val c: Int = {
     val a: Int = 11
     a + 42
   }
+  println(s"c: $c")
 
-  /** Тип выражения, которое не возвращает значение - Unit () == Java void */
+  /** тип выражения, которое не возвращает значение - Unit () == Java void */
   def printer(s: String): Unit = println(s)
 
   /** val == value - Immutable */
   val thisIsVal: Int = 1
-//  thisIsVal = 2  // err - reassignment to val
+//  thisIsVal = 2 // err - reassignment to val
 
   /** var == variable - Mutable */
   var thisIsVar: Int = 1
-  thisIsVar = 2  // ok
+  thisIsVar = 2 // ok
 
 
-  /** В Scala все операторы являются методами */
+  /** в Scala все операторы являются методами */
 
   val v1: String = "Some words".toUpperCase()
   println(v1)
 
   /** Постфиксная нотация - используется только для методов без аргументов */
-  /** Без ";" не работает (т.к. считает println(v2) - аргументом) => test.sc */
-  val v2: String = "Some words" toUpperCase;  // постфиксная нотация
+  /** без ";" не работает (т.к. считает println(v2) - аргументом) => test.sc */
+  val v2: String = "Some words" toUpperCase; // постфиксная нотация
   println(v2)
   println()
 
   /**
    * Инфиксная нотация - используется только для методов с 1-м аргументом
-   * Инфиксная нотация полезна при написании dsl => select * from table1 == select.(*).from(table1)
+   * инфиксная нотация полезна при написании dsl => select * from table1 == select.(*).from(table1)
    */
-  val v3: String = "Some" concat " words"  // инфиксная нотация
+  val v3: String = "Some" concat " words" // инфиксная нотация
   println(v3)
   // ==
   val v4: String = "Some" ++ " words"
@@ -98,21 +99,21 @@ object ScalaTutorial extends App {
   println()
 
 
-  /**
-   * def == define - выполняется при каждом вызове
-   * val - вычисляется 1 раз при появлении в области видимости
-   * lazy val - вычисляется 1 раз при первом обращении к нему
-   */
-
-  /** Функции могут быть определены как def или val */
+  /** функции могут быть определены как def или val */
   def foo(): String = "foo"
   // ==
   val bar: () => String = () => "bar"
   println(s"foo:${foo()} bar:${bar()}")
   println()
 
+  /**
+   * val - вычисляется 1 раз при появлении в области видимости
+   * lazy val - вычисляется 1 раз при первом обращении к нему
+   * def == define - выполняется при каждом вызове
+   */
+
   class TestClass {
-    val rg: Random = new Random()
+    val rnd: Random = new Random()
 
     val `val`: Int = callWrapper("val")
     lazy val lazyVal: Int = callWrapper("lazy val")
@@ -120,31 +121,34 @@ object ScalaTutorial extends App {
 
     def callWrapper(objName: String): Int = {
       println(s">> '$objName' Init")
-      rg.nextInt()
+      rnd.nextInt()
     }
   }
 
-  val t: TestClass = new TestClass
+  val test: TestClass = new TestClass
   println(">> t created")
   println()
 
   /** Call by value - аргумент будет рассчитан 1 раз перед вызовом функцию */
   def repeatByValue(obj: Int): Unit = (1 to 3).foreach(_ => println(obj))
-  println("call by name:")
-  repeatByValue(t.`val`)
-  repeatByValue(t.lazyVal)
-  repeatByValue(t.`def`())
+  println("call by value:")
+  repeatByValue(test.`val`)
+  repeatByValue(test.lazyVal)
+  repeatByValue(test.`def`())
   println()
 
   /** Call by name - аргумент будет рассчитываться каждый раз при обращении к нему в теле функции */
   def repeatByName(obj: => Int): Unit = (1 to 3).foreach(_ => println(obj))
-  println("call by value:")
-  repeatByName(t.`val`)
-  repeatByName(t.lazyVal)
-  repeatByName(t.`def`())
+  println("call by name:")
+  repeatByName(test.`val`)
+  repeatByName(test.lazyVal)
+  repeatByName(test.`def`())
   println()
 
-  /** Short circuit семантика: если a == false, b - можно не рассчитывать (b: => Boolean) => оптимизация */
+  /**
+   * Short circuit семантика:
+   * если a == false, b - можно не рассчитывать (b: => Boolean) => оптимизация
+   */
   def and(a: Boolean, b: => Boolean): Boolean = {
     if (!a) false
     else a && b
@@ -153,7 +157,7 @@ object ScalaTutorial extends App {
 
   /** Управляющие конструкции **/
 
-  /** If - это выражение => возвращает значение */
+  /** if - это выражение => возвращает значение */
   val x: Int = 1
   val res7: Unit = if (x < 20) println("This is if statement")
 
@@ -174,10 +178,14 @@ object ScalaTutorial extends App {
   println()
 
   /** for - обход коллекций */
-  for (a <- 1 to 3) println(s"Value of a: $a")
+  // v1
+//  for (a <- 1 to 3) println(s"Value of a: $a")
+
+  // v2
+  (1 to 3).foreach(el => println(s"Value of el: $el"))
   println()
 
-  val range: Range.Inclusive = 1 to 3  // 1 to 3 == 1.to(3) - пример инфиксной нотации
+  val range: Range.Inclusive = 1 to 3 // 1 to 3 == 1.to(3) - пример инфиксной нотации
   for (x <- range) {
     println(x + 2)
   }
@@ -186,16 +194,14 @@ object ScalaTutorial extends App {
   /** for-comprehension */
   val res8: Seq[Int] =
     for {
-      a <- 1 to 5  // коллекция 1
-      b <- 1 to 5  // коллекция 2
-      if a + b < 6  // условие
-    } yield a + b  // генератор
+      a <- 1 to 5 // коллекция 1
+      b <- 1 to 5 // коллекция 2
+      if a + b < 6 // условие
+    } yield a + b // генератор
   // ==
   (1 to 5)
-    .flatMap { a =>
-      (1 to 5)
-        .withFilter(b => a + b < 6)
-        .map(b => a + b)
+    .flatMap {
+      a => (1 to 5).withFilter(b => a + b < 6).map(b => a + b)
     }
   println(s"for-comprehension: $res8")
   println()
@@ -215,8 +221,8 @@ object ScalaTutorial extends App {
 
   def test(val1: Int, val2: Int): (Int, Int) = (val1, val2)
 
-  /** Работает с помощью unapply */
-  val (a, b) = test(1, 1)
+  /** работает с помощью unapply */
+  val (a, b) = test(1, 2)
   println(s"a == $a, b == $b")
   println()
 
@@ -229,7 +235,7 @@ object ScalaTutorial extends App {
   val fruits1: List[String] = List("apple", "banana", "pear")
   println(fruits1)
   // ==
-  val fruits2: List[String] = "apple" :: ("banana" :: ("pear" :: Nil))  // скобки только для удобства
+  val fruits2: List[String] = "apple" :: ("banana" :: ("pear" :: Nil)) // скобки только для удобства понимания
   // :: - правоассоциативный метод => "pear" :: Nil == Nil.::("pear")
   println(fruits2)
   println()
@@ -289,7 +295,7 @@ object ScalaTutorial extends App {
 
   val intList2: List[Int] = List(1, 7, 5, 9, 3)
 
-  val reduce: Int = intList2.reduce((el1, el2) => if (el1 > el2) el1 else el2)  // == max
+  val reduce: Int = intList2.reduce { (el1, el2) => if (el1 > el2) el1 else el2 } // == Math.max
   println(s"reduce: $reduce")
 
   val reduceOption: Option[Int] = List.empty[Int].reduceOption(_ + _)
@@ -297,7 +303,7 @@ object ScalaTutorial extends App {
 
   val fold: (Double, Int) = intList2.foldLeft(0.0, 0) { (acc, el) => (acc._1 + el, acc._2 + 1) }
   println(s"fold: $fold")
-  println(fold._1 / fold._2)  // mean
+  println(fold._1 / fold._2) // mean
   println()
 
   /** map: A => B */
@@ -309,7 +315,7 @@ object ScalaTutorial extends App {
   println(emptyList)
   println()
 
-  /** flatten: G[F[A]] => G[A] - распаковывает внутреннюю коллекцию (монаду) */
+  /** flatten: G[F[A]] => G[A] - распаковывает внутренние коллекции (монады) */
   println("_flatten_: G[F[A]] => G[A]")
 
   val flatten: List[Int] = List(List(1), List(2, 3), List(4, 5), Nil).flatten
@@ -324,7 +330,7 @@ object ScalaTutorial extends App {
 
   val flatMap: List[Int] = intList.flatMap(el => List(el, el, el))
   println(flatMap)
-  //==
+  // ==
   val mapFlatten: List[Int] = intList.map(el => List(el, el, el)).flatten
   println(mapFlatten)
   println()
@@ -339,25 +345,26 @@ object ScalaTutorial extends App {
   /** Map */
   println("__Map__")
 
-  val fruits: Map[String, Int] = Map("apple" -> 2, "banana" -> 1, "pear" -> 10)
-  println(fruits)
+  val fruitsMap: Map[String, Int] = Map("apple" -> 2, "banana" -> 1, "pear" -> 10)
+  println(fruitsMap)
 
   /** Unsafe get value */
-//  val unsafeValue: Int = fruits("peach")  // err - key not found
+//  val unsafeValue: Int = fruits("peach") // err - key not found
 
   /** Safe get value - v1 - getOrElse: A */
-  val safeValue1: Int = fruits.getOrElse("peach", 10)
+  val safeValue1: Int = fruitsMap.getOrElse("peach", 10)
   println(safeValue1)
 
   /** Safe get value - v2 - get: Option[A] */
-  val safeValue2: Option[Int] = fruits.get("peach")
+  val safeValue2: Option[Int] = fruitsMap.get("peach")
   println(safeValue2)
   println()
 
-  val map2List: List[(String, Int)] = fruits.toList
+  val map2List: List[(String, Int)] = fruitsMap.toList
   println(s"map2List: $map2List")
 
-  val list2Map: Map[String, Int] = List("apple" -> 2, "banana" -> 1, "pear" -> 10).toMap  // "apple" -> 2 == ("apple", 2)
+  // "apple" -> 2 - сахар для кортежа == ("apple", 2)
+  val list2Map: Map[String, Int] = List("apple" -> 2, "banana" -> 1, "pear" -> 10).toMap
   println(s"list2Map: $list2Map")
   println()
 
@@ -401,8 +408,8 @@ object ScalaTutorial extends App {
 
   var tNull: (Int, String, Double) = null
   println(s"tNull: $tNull")
-//  tNull = (1, 2, 3.0)  // err - type mismatch
-  tNull = (1, 2.toString, 3.0)  // ok
+//  tNull = (1, 2, 3.0) // err - type mismatch
+  tNull = (1, 2.toString, 3.0) // ok
   println(s"tNull: $tNull")
   println()
 
@@ -412,39 +419,36 @@ object ScalaTutorial extends App {
 
   val optSome: Option[Int] = Some(3)
   println(s"optSome: $optSome")
-  val someList: List[Int] = Some(3).toList
-  println(s"someList: $someList")
-
-  val optNone: Option[Int] = None  // == Option.empty[Int]
+  val optNone: Option[Int] = None // == Option.empty[Int]
   println(s"optNone: $optNone")
-  val noneList: List[Int] = None.toList
-  println(s"noneList: $noneList")
   println()
 
-  val aVal: Int = null.asInstanceOf[Int]  // == 0 - в Scala numeric классы не могут принимать значение null
+  val aVal: Int = null.asInstanceOf[Int] // == 0 - в Scala numeric классы не могут принимать значение null
   println(s"aVal: $aVal")
 
-  val bVal: java.lang.Integer = null  // == null - в Java numeric классы могут принимать значение null, примитивы - не могут
+  val bVal: java.lang.Integer = null // == null - в Java numeric классы могут принимать значение null, примитивы - не могут
   println(s"bVal: $bVal")
 
   val cVal: Int = aVal + bVal
-  println(s"cVal: $cVal")  // == 0
+  println(s"cVal: $cVal") // == 0
   println()
 
   val d1Val: Int = bVal
-  println(s"d1Val: $d1Val")  // == 0
+  println(s"d1Val: $d1Val") // == 0
 
   val d2Val: java.lang.Integer = bVal
-  println(s"d2Val: $d2Val")  // == null
+  println(s"d2Val: $d2Val") // == null
   println()
 
   val nonEmptyOption: Option[Int] = Some(5)
   println(s"nonEmptyOption.getOrElse(10): ${nonEmptyOption.getOrElse(10)}")
   println(s"nonEmptyOption.map(_ + 1): ${nonEmptyOption.map(_ + 1)}")
+  println(s"nonEmptyOption.toList: ${nonEmptyOption.toList}")
 
   val emptyOption: Option[Int] = None
   println(s"emptyOption.getOrElse(10): ${emptyOption.getOrElse(10)}")
   println(s"emptyOption.map(_ + 1): ${emptyOption.map(_ + 1)}")
+  println(s"emptyOption.toList: ${emptyOption.toList}")
   println()
 
   val listWithOption: List[Option[Int]] = List(Some(1), None, Some(2))
@@ -462,17 +466,19 @@ object ScalaTutorial extends App {
   println(iHopeItsNumbers)
   println()
 
-  // toInt - это java.lang.Integer.parseInt()
+
   /** try - Scala style - v1 */
+  // toInt - это java.lang.Integer.parseInt()
   def toOptInt(in: String): Option[Int] = Try(in.trim.toInt).toOption
 
-  //  val err: Int = "a".toInt  // err - NumberFormatException
+  //  val err: Int = "a".toInt // err - NumberFormatException
   /** try - Java style - v2 */
   def toOptIntJava(in: String): Option[Int] = {
     try {
-      Some(in.toInt)
+      Some(in.trim.toInt)
     } catch {
       case _: NumberFormatException => None
+      case _: Throwable => None // Throwable - перехват всех ошибок
     }
   }
 
@@ -483,7 +489,7 @@ object ScalaTutorial extends App {
   println(s"iHopeItsNumbers.flatMap(toOptInt): $res11")
 
   val res12: Int = res11.sum
-  println("res12")
+  println(res12)
   println()
 
   val try1: AnyVal =
@@ -492,7 +498,7 @@ object ScalaTutorial extends App {
       5 / 0
     } catch {
       case _: NumberFormatException => println("Bad input string")
-      case e: Throwable => println(e.toString)  // Throwable == перехват всех ошибок
+      case e: Throwable => println(e.toString) // Throwable == перехват всех ошибок
       case _ => println("something is wrong")
     }
   println(s"try1: $try1")
@@ -519,12 +525,12 @@ object ScalaTutorial extends App {
   /** Class */
   println("__Class__")
 
-  class Point(xc: Int, yc: Int) {  // (xc: Int, yc: Int) - конструктор по умолчанию
-    /** Поля == атрибуты */
+  class Point(xc: Int, yc: Int) { // (xc: Int, yc: Int) - конструктор по умолчанию
+    /** поля == атрибуты */
     var x: Int = xc
     var y: Int = yc
 
-    /** Методы */
+    /** методы */
     def move(dx: Int, dy: Int): Unit = {
       x = x + dx
       y = y + dy
@@ -534,21 +540,21 @@ object ScalaTutorial extends App {
     }
   }
 
-  val pt: Point = new Point(10, 20)
+  val pt: Point = new Point(1, 1)
   pt.move(10, 10)
   println()
 
-  class LinkedList() {  // конструктор по умолчанию
+  class LinkedList() { // конструктор по умолчанию
     var head: java.lang.Integer = null
     var tail: List[Int] = null
 
     def isEmpty: Boolean = tail != null
 
-    def this(head: Int) = { this(); this.head = head }  // дополнительный конструктор 1
-    def this(head: Int, tail: List[Int]) = { this(head); this.tail = tail }  // дополнительный конструктор 2
+    def this(head: Int) = { this(); this.head = head } // дополнительный конструктор 1
+    def this(head: Int, tail: List[Int]) = { this(head); this.tail = tail } // дополнительный конструктор 2
   }
 
-  class P(var s: String = "") {
+  class P1(var s: String = "") {
     def pp(): Unit = println(s)
   }
 
@@ -569,16 +575,26 @@ object ScalaTutorial extends App {
   val bob: Person = Person("Bob", 32)
   val charlie: Person = Person("Charlie", 32)
 
-  for (person <- List(alice, bob, charlie)) {
-    person match {
-      case Person("Alice", _) => println("Hi Alice!")
-      case Person("Bob", 32) => println("Hi Bob!")
-      case Person(name, age) => println(s"Age: $age years, name: $name")
-    }
+  val personsList: Seq[Person] = List(alice, bob, charlie)
+
+  // v1
+//  for (person <- personsList) {
+//    person match {
+//      case Person("Alice", _) => println("Hi Alice!")
+//      case Person("Bob", 32) => println("Hi Bob!")
+//      case Person(name, age) => println(s"Age: $age years, name: $name")
+//    }
+//  }
+
+  // v2
+  personsList.foreach {
+    case Person("Alice", _) => println("Hi Alice!")
+    case Person("Bob", 32) => println("Hi Bob!")
+    case Person(name, age) => println(s"Age: $age years, name: $name")
   }
   println()
 
-  println("unapply:")
+  println("_unapply_:")
   val personBob: Person = Person("Bob", 32)
   val Person(name, age) = personBob
   println(s"name: $name, age: $age")
@@ -606,8 +622,8 @@ object ScalaTutorial extends App {
   }
 
   object MyString {
-    def apply(base: String): MyString = new MyString(base)  // фабричный метод 1
-    def apply(base: String, extras: String): MyString = {  // фабричный метод 2
+    def apply(base: String): MyString = new MyString(base) // фабричный метод 1
+    def apply(base: String, extras: String): MyString = { // фабричный метод 2
       val s: MyString = new MyString(base)
       s.extraData = extras
 
@@ -679,7 +695,7 @@ object ScalaTutorial extends App {
 
     def newMethod():Unit = printName()
   }
-  apple2.printName()
+  apple2.printName() // == It's apple
   println()
 
 
@@ -700,8 +716,8 @@ object ScalaTutorial extends App {
   class D extends B with C
 
   val d: D = new D
-  println(d.message)
-  println(d.loudMessage)
+  println(d.message) // == I'm an instance of class B
+  println(d.loudMessage) // == I'M AN INSTANCE OF CLASS B
   println()
 
   class Complex(real: Double, imaginary: Double) {
@@ -731,8 +747,8 @@ object ScalaTutorial extends App {
   val intStack: Stack[Int] = new Stack[Int]
   intStack.push(1)
   intStack.push(2)
-  println(intStack.pop())
-  println(intStack.pop())
+  println(intStack.pop()) // == 2
+  println(intStack.pop()) // == 1
   println()
 
   class Fruit
@@ -748,8 +764,8 @@ object ScalaTutorial extends App {
   val banana: Fruit = new Banana
   fruitStack.push(apple)
   fruitStack.push(banana)
-  println(fruitStack.pop())
-  println(fruitStack.pop())
+  println(fruitStack.pop()) // == Banana
+  println(fruitStack.pop()) // == Apple
   println()
 
 
@@ -781,10 +797,10 @@ object ScalaTutorial extends App {
   println("__Implicit conversion__")
 
   val flag: Boolean = true
-//  val sum1: Int = flag + 1  // err - type mismatch
+//  val sum1: Int = flag + 1 // err - type mismatch
 
   implicit def bool2Int(b: Boolean): Int = if (b) 1 else 0
-  val sum2: Int = flag + 1  // == bool2Int(flag) + 1
+  val sum2: Int = flag + 1 // == bool2Int(flag) + 1
   println(sum2)
   println()
 
@@ -793,7 +809,7 @@ object ScalaTutorial extends App {
   println("__Implicit parameter__")
 
   def usd2Rub(quantity: Double)(implicit rub2UsdRate: Double): Double = quantity * rub2UsdRate
-  implicit val rub2UsdRate: Double = 75
+  implicit val rub2UsdRate: Double = 90
 
   println(usd2Rub(10.0))
   println()
@@ -802,16 +818,12 @@ object ScalaTutorial extends App {
   /** Misc */
   println("__Misc__")
 
-  val conv1: Long = 2.asInstanceOf[Long]  // bad
-  val conv2: Long = 2.toLong  // good
+  val conv1: Long = 2.asInstanceOf[Long] // bad
+  val conv2: Long = 2.toLong // good
 
   var counter: Int = 0
   while (counter < 5) {
     println(counter)
     counter += 1
-  }
-
-  class P1(var s: String = "") {
-    def pp(): Unit = println(s)
   }
 }

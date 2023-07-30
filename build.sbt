@@ -9,7 +9,7 @@ libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-sql" % sparkVersion % Provided,  // Provided - зависимость не будет включена при сборке fat jar (плагин assembly)
 //  "org.apache.spark" %% "spark-repl" % "3.4.0" % Provided,  // для 11 лекции
 
-"org.elasticsearch" %% "elasticsearch-spark-30" % "8.8.2",
+"org.elasticsearch" %% "elasticsearch-spark-30" % "8.9.0",
 
 //  "com.datastax.spark" %% "spark-cassandra-connector" % "3.4.0" - нет под scala 2.13
 //  "joda-time" % "joda-time" % "2.12.5",  // для коннектора к cassandra
