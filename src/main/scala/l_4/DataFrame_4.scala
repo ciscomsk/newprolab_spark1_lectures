@@ -11,10 +11,9 @@ import java.net.InetAddress
 import scala.util.{Failure, Success, Try}
 
 object DataFrame_4 extends App {
-  // не работает в Spark 3.4.0
-//  Logger
-//    .getLogger("org")
-//    .setLevel(Level.OFF)
+  Logger
+    .getLogger("org")
+    .setLevel(Level.OFF)
 
   val spark: SparkSession =
     SparkSession
@@ -24,7 +23,7 @@ object DataFrame_4 extends App {
       .getOrCreate()
 
   val sc: SparkContext = spark.sparkContext
-  sc.setLogLevel("ERROR")
+//  sc.setLogLevel("ERROR")
 
   import spark.implicits._
 
@@ -48,9 +47,9 @@ object DataFrame_4 extends App {
 
   /**
    * User-defined functions
-   * При написании udf можно использовать монады - Try[T]/Option[T]
+   * при написании udf можно использовать монады - Option[T]/Try[T]
    *
-   * При необходимости работать с DB/IO в udf - @transient lazy val pattern
+   * при необходимости работать с DB/IO в udf - @transient lazy val pattern
    */
   val plusOne: UserDefinedFunction = udf { (value: Long) => value + 1 }
 
@@ -64,6 +63,7 @@ object DataFrame_4 extends App {
     .withColumn("hostname", hostname())
     .show(10, truncate = false)
 
+  // None => null в DF
   val divideTwoBy: UserDefinedFunction = udf { (inputValue: Long) => Try(2L / inputValue).toOption }
 
   val resultDf: DataFrame = df.withColumn("divideTwoBy", divideTwoBy(col("id")))
@@ -98,7 +98,7 @@ object DataFrame_4 extends App {
 
   val innerJoinDf: DataFrame =
     aggTypeCountryDf
-      .join(aggCountryDf, Seq("iso_country"), "inner")  // inner join - default
+      .join(aggCountryDf, Seq("iso_country"), "inner") // inner join - default
       .select(
         $"iso_country",
         $"type",
@@ -148,8 +148,8 @@ object DataFrame_4 extends App {
 
   leftDf.as("left")
     .join(rightDf.as("right"), joinConditionExpr, "inner")
-    .drop($"right.id")  // v1
-//    .select($"id", leftDf("foo").as("left_foo"))  // v2
+    .drop($"right.id") // v1
+//    .select($"id", leftDf("foo").as("left_foo")) // v2
     .show()
 
 
@@ -174,7 +174,7 @@ object DataFrame_4 extends App {
             +- Sort [iso_country#95 ASC NULLS FIRST, type#91 ASC NULLS FIRST], false, 0
                +- Window [count(1) windowspecdefinition(iso_country#95, specifiedwindowframe(RowFrame, unboundedpreceding$(), unboundedfollowing$())) AS cnt_country#322L], [iso_country#95]
                   +- Sort [iso_country#95 ASC NULLS FIRST], false, 0
-                     +- Exchange hashpartitioning(iso_country#95, 200), ENSURE_REQUIREMENTS, [plan_id=746]
+                     +- Exchange hashpartitioning(iso_country#95, 200), ENSURE_REQUIREMENTS, [plan_id=751]
                         +- FileScan csv [ident#90,type#91,name#92,elevation_ft#93,continent#94,iso_country#95,iso_region#96,municipality#97,gps_code#98,iata_code#99,local_code#100,coordinates#101] Batched: false, DataFilters: [], Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_country:string,...
      */
 
@@ -202,13 +202,14 @@ object DataFrame_4 extends App {
        +- Window [row_number() windowspecdefinition(ident#90 ASC NULLS FIRST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS rn#396], [ident#90 ASC NULLS FIRST]
           +- Sort [ident#90 ASC NULLS FIRST], false, 0
              // !!! Exchange SinglePartition - все сливается в 1 партицию
-             +- Exchange SinglePartition, ENSURE_REQUIREMENTS, [plan_id=883]
+             +- Exchange SinglePartition, ENSURE_REQUIREMENTS, [plan_id=888]
                 +- FileScan csv [ident#90] Batched: false, DataFilters: [], Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<ident:string>
    */
 
   /**
-   * Колонки оторваны от реальных данных,
-   * привязка происходит на этапе формирования физического плана/кодогенерации (unresolved attribute)
+   * колонки оторваны от реальных данных
+   * привязка происходит на этапе формирования физического плана/кодогенерации
+   * до этого имеют статус - unresolved attribute
    */
   val cntCountry: Column = count("*").over(windowCountry).alias("cnt_country")
   val cntCountryType: Column = count("*").over(windowTypeCountry).alias("cnt_country_type")

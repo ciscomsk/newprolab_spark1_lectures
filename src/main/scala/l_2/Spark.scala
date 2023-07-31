@@ -1,7 +1,6 @@
 package l_2
 
 import org.apache.log4j.{Level, Logger}
-import org.apache.spark.SparkContext
 import org.apache.spark.sql.SparkSession
 
 object Spark extends App {

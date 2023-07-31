@@ -2,16 +2,16 @@ package l_4
 
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
-import org.apache.spark.sql.functions.{col, lit, pmod, rand, round, sum, when}
+import org.apache.spark.sql.functions.{col, concat, expr, hash, lit, pmod, rand, round, sum, when}
+import org.apache.spark.sql.types.{IntegerType, StringType}
 import org.apache.spark.sql.{Column, DataFrame, Dataset, Row, SparkSession}
 
 import java.lang
 
 object DataFrame_3 extends App {
-  // не работает в Spark 3.4.0
-//  Logger
-//    .getLogger("org")
-//    .setLevel(Level.OFF)
+  Logger
+    .getLogger("org")
+    .setLevel(Level.OFF)
 
   val spark: SparkSession =
     SparkSession
@@ -21,7 +21,7 @@ object DataFrame_3 extends App {
       .getOrCreate()
 
   val sc: SparkContext = spark.sparkContext
-  sc.setLogLevel("ERROR")
+//  sc.setLogLevel("ERROR")
 
 //  spark.conf.set("spark.sql.adaptive.enabled", true)
 //  spark.conf.set("spark.sql.adaptive.coalescePartitions.enabled", true)
@@ -48,7 +48,7 @@ object DataFrame_3 extends App {
   val onlyRuAndHighDs: Dataset[Row] = airportsDf.filter($"iso_country" === "RU" and $"elevation_ft" > 1000)
 
   /**
-   * !!! Несмотря на то, что onlyRuAndHighDs является общим для всех действий ниже,
+   * !!! несмотря на то, что onlyRuAndHighDs является общим для всех действий ниже
    * весь граф по его расчету будет выполняться при вызове каждого действия
    *
    * onlyRuAndHighDs в нашем случае будет рассчитан 4 раза - count/show/collect/groupBy->show
@@ -66,18 +66,18 @@ object DataFrame_3 extends App {
     .show()
 
   val end1: Long = System.currentTimeMillis()
-  println(s"time1: ${(end1.toDouble - start1) / 1000}")  // 1.766s
+  println(s"time1: ${(end1.toDouble - start1) / 1000}") // 1.526s
   println()
 
   /**
    * !!! cache/persist - ленивые операции
    * => best practice - после cache/persist выполнять count - т.к. будут рассчитаны все партиции => все партиции попадут в кэш
    *
-   * !!! Если после cache/persist будет show => рассчитана будет только 1 партиция => 1 партиция будет помещена в кэш
-   * Т.е. часть данных будет в виде снэпшота в кэше, часть в источнике (csv-файл)
-   * => при обновлении данных в источнике - теряется консистентность == partial caching (антипаттерн)
+   * !!! если после cache/persist будет show => рассчитана будет только 1 партиция => 1 партиция будет помещена в кэш
+   * т.е. часть данных будет в виде снэпшота в кэше, часть в источнике (csv-файл)
+   * => при обновлении данных в источнике теряется консистентность => partial caching (антипаттерн)
    *
-   * После окончания работы с закешированными данными необходимо выполнить unpersist - для очистки памяти
+   * после окончания работы с закешированными данными необходимо выполнить unpersist - для очистки памяти
    */
   onlyRuAndHighDs.cache()
   val start2: Long = System.currentTimeMillis()
@@ -93,17 +93,18 @@ object DataFrame_3 extends App {
     .show()
 
   val end2: Long = System.currentTimeMillis()
-  println(s"time2: ${(end2.toDouble - start2) / 1000}")  // 0.719s
+  println(s"time2: ${(end2.toDouble - start2) / 1000}") // 0.709s
   onlyRuAndHighDs.unpersist()
   println()
 
   /**
    * localcheckpoint ~= cache/persist
    *
-   * Отличия localcheckpoint от cache/persist:
+   * отличия localcheckpoint от cache/persist:
    * 1. localcheckpoint - неленивая операция (по умолчанию)
-   * 2. после localcheckpoint требуется очистка - Spark сам будет принимать решение о времени очистки кэша (не всегда эффективно)
-   * 3. localcheckpoint  - стирает граф выполнения до localcheckpoint
+   * 2. использует стандартную систему кеширования Spark
+   * 3. после localcheckpoint требуется очистка - Spark сам будет принимать решение о времени очистки кэша (не всегда эффективно)
+   * 4. localcheckpoint  - стирает граф выполнения до localcheckpoint
    */
 
   /**
@@ -115,11 +116,11 @@ object DataFrame_3 extends App {
    */
 
   /**
-   * Память, выделенная экзекьютору, делится области:
+   * память, выделенная экзекьютору, делится области:
    * 1. хип - для внутренних объектов Spark
    * 2. storage - для кэша (max 50%)
    *
-   * Распределение памяти по областям является динамическим
+   * распределение памяти по областям является динамическим
    */
 
 
@@ -128,7 +129,7 @@ object DataFrame_3 extends App {
 
   val skewDs: Dataset[lang.Long] =
     spark
-      .range(0, 1000)  // col("id")
+      .range(0, 1000) // col("id")
       // будет 2 непустых партиции c 900 и 100 элементами => датасет с перекосом данных
       .repartition(10, skewColumn)
 
@@ -137,7 +138,7 @@ object DataFrame_3 extends App {
   /*
     == Physical Plan ==
     AdaptiveSparkPlan isFinalPlan=false
-    +- Exchange hashpartitioning(CASE WHEN (id#1247L < 900) THEN 0 ELSE 1 END, 10), REPARTITION_BY_NUM, [plan_id=286]
+    +- Exchange hashpartitioning(CASE WHEN (id#1247L < 900) THEN 0 ELSE 1 END, 10), REPARTITION_BY_NUM, [plan_id=298]
        +- Range (0, 1000, step=1, splits=8)
    */
 
@@ -148,7 +149,7 @@ object DataFrame_3 extends App {
   def printItemPerPartition[T](ds: Dataset[T]): Unit = {
     val resDf: DataFrame =
       ds
-        .mapPartitions { partition => Iterator(partition.length) }  // col("value")
+        .mapPartitions { partition => Iterator(partition.length) } // col("value")
         .withColumnRenamed("value", "itemPerPartition")
 
     resDf.show(50, truncate = false)
@@ -160,17 +161,17 @@ object DataFrame_3 extends App {
   println()
 
   /**
-   * Любые операции со skewDs будет работать медленно, т.к.:
-   * 1. Если суммарное количество ядер на всех экзекьюторах больше 10, то в один момент времени работать будут максимум 10,
+   * любые операции со skewDs будет работать медленно, т.к.:
+   * 1. если суммарное количество ядер на всех экзекьюторах больше 10, то в один момент времени работать будут максимум 10,
    * остальные будут простаивать
-   * 2. Из 10 партиций только в 2-х есть данные => только 2 ядра будут обрабатывать данные,
+   * 2. из 10 партиций только в 2-х есть данные => только 2 ядра будут обрабатывать данные,
    * при этом из-за перекоса данных между ними (900 vs 100) первый станет bottleneck'ом
    */
 
   /**
    * 1. RoundRobinRepartitioning - равномерное случайное перераспределение
-   * Решает задачу равномерного распределения данных между партициями
-   * Позволяет снизить количество партиций перед записью в базу/файл
+   * решает задачу равномерного распределения данных между партициями
+   * позволяет снизить количество партиций перед записью в базу/файл
    */
   val repartitionedDf1: Dataset[lang.Long] = skewDs.repartition(20)
   println("printItemPerPartition[java.lang.Long](repartitionedDf1): ")
@@ -181,14 +182,14 @@ object DataFrame_3 extends App {
   /*
     == Physical Plan ==
     AdaptiveSparkPlan isFinalPlan=false
-    +- Exchange RoundRobinPartitioning(20), REPARTITION_BY_NUM, [plan_id=636]
+    +- Exchange RoundRobinPartitioning(20), REPARTITION_BY_NUM, [plan_id=656]
        +- Range (0, 1000, step=1, splits=8)
    */
 
   /**
    * 2. HashPartitioning - распределение по ключам заданных колонок
-   * Позволяет оптимизировать граф вычислений
-   * Пример - при репартицировании по полям, по которым в дальнейшем будет производиться группировка => повторного репартицирования не будет
+   * позволяет оптимизировать граф вычислений
+   * пример - при репартицировании по полям, по которым в дальнейшем будет производиться группировка => повторного репартицирования не будет
    */
   val repartitionedDf2: Dataset[lang.Long] = skewDs.repartition(20, col("id"))
   println("printItemPerPartition[java.lang.Long](repartitionedDf2): ")
@@ -199,7 +200,7 @@ object DataFrame_3 extends App {
   /*
     == Physical Plan ==
     AdaptiveSparkPlan isFinalPlan=false
-    +- Exchange hashpartitioning(id#1247L, 20), REPARTITION_BY_NUM, [plan_id=768]
+    +- Exchange hashpartitioning(id#1247L, 20), REPARTITION_BY_NUM, [plan_id=788]
        +- Range (0, 1000, step=1, splits=8)
    */
 
@@ -219,7 +220,7 @@ object DataFrame_3 extends App {
     == Physical Plan ==
     AdaptiveSparkPlan isFinalPlan=false
     +- Sort [count#1315L DESC NULLS LAST], true, 0
-       +- Exchange rangepartitioning(count#1315L DESC NULLS LAST, 200), ENSURE_REQUIREMENTS, [plan_id=836]
+       +- Exchange rangepartitioning(count#1315L DESC NULLS LAST, 200), ENSURE_REQUIREMENTS, [plan_id=848]
           +- Scan ExistingRDD[municipality#24,count#1315L]
    */
 
@@ -246,7 +247,7 @@ object DataFrame_3 extends App {
     == Physical Plan ==
     AdaptiveSparkPlan isFinalPlan=false
     +- Coalesce 3
-       +- Exchange hashpartitioning(CASE WHEN (id#1247L < 900) THEN 0 ELSE 1 END, 10), REPARTITION_BY_NUM, [plan_id=919]
+       +- Exchange hashpartitioning(CASE WHEN (id#1247L < 900) THEN 0 ELSE 1 END, 10), REPARTITION_BY_NUM, [plan_id=999]
           +- Range (0, 1000, step=1, splits=8)
    */
 
@@ -264,8 +265,8 @@ object DataFrame_3 extends App {
     .show()
 
   /** Key salting */
-  // saltModTen == 0 - 9
-  val saltModTen: Column = pmod(round(rand() * 100, 0), lit(10)).cast("int")
+  // saltModTen == [0 - 9]
+  val saltModTen: Column = pmod(round(rand() * 100, 0), lit(10)).cast(IntegerType)
 
   val saltedDf: DataFrame = airportsDf.withColumn("salt", saltModTen)
   println("saltedDf: ")
@@ -285,17 +286,17 @@ object DataFrame_3 extends App {
   println(s"firstStepDf partitions: ${firstStepDf.rdd.getNumPartitions}")
   println()
 
-  /** 2-й этап - финальная агрегация - суммирование */
-  val secondStep: DataFrame =
+  /** 2-й этап - финальная агрегация (в этом конкретном случае - суммирование) */
+  val secondStepDf: DataFrame =
     firstStepDf
       .groupBy($"type")
       .agg(sum("count").alias("count"))
 
   /**
-   * Несмотря на то, что мы сделали 2 группировки вместо 1, распределение данных по воркерам стало более равномерным,
-   * что позволило избежать OOM на воркерах
+   * несмотря на то, что мы выполнили 2 группировки вместо 1, распределение данных по экзекьюторам стало более равномерным,
+   * что позволило избежать OOM на экзекьюторах
    */
-  secondStep
+  secondStepDf
     .orderBy($"count".desc)
     .show(200, truncate = false)
 

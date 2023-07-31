@@ -9,10 +9,9 @@ import org.apache.spark.sql.{Column, DataFrame, Dataset, Row, SaveMode, SparkSes
 import java.lang
 
 object DataFrame_1 extends App {
-  // не работает в Spark 3.4.0
-//  Logger
-//    .getLogger("org")
-//    .setLevel(Level.OFF)
+  Logger
+    .getLogger("org")
+    .setLevel(Level.OFF)
 
   val spark: SparkSession =
     SparkSession
@@ -22,12 +21,12 @@ object DataFrame_1 extends App {
       .getOrCreate()
 
   val sc: SparkContext = spark.sparkContext
-  sc.setLogLevel("ERROR")
+//  sc.setLogLevel("ERROR")
 
   import spark.implicits._
 
   val cityList: Vector[String] = Vector("Moscow", "Paris", "Madrid", "London", "New York")
-  val df: DataFrame = cityList.toDF()  // toDF - import spark.implicits._
+  val df: DataFrame = cityList.toDF() // toDF - import spark.implicits._
   df.printSchema()
   /*
     root
@@ -36,11 +35,12 @@ object DataFrame_1 extends App {
 
   /** df.show работает аналогично rdd.take - пытается взять данные из минимального количества партиций => оптимизация */
   df.show()
-  df.show(numRows = 20, truncate = 100, vertical = true)  // вертикальная ориентация удобна при большом количестве колонок или длинной строке в колонке
+  // vertical = true - вертикальная ориентация удобна при большом количестве колонок или длинной строке в колонке
+  df.show(numRows = 20, truncate = 100, vertical = true)
 
 
   /**
-   * Алгоритм работы df.count:
+   * алгоритм работы df.count:
    * 1. рассчитывается количество элементов в каждой партиции
    * 2. агрегированные данные пересылаются в одну партицию (Exchange single partition) - где производится финальный reduce
    * 3. результат передается на драйвер
@@ -50,13 +50,13 @@ object DataFrame_1 extends App {
 
   /**
    * filter == СРЕЗ (PO Filter)
-   * В отличии от RDD - может принимать SQL выражение
+   * в отличии от RDD API - может принимать SQL выражение
    *
    * def filter(condition: Column): Dataset[T]
    */
 
 
-  /** Обращение к объекту Column */
+  /** обращение к объекту Column */
   /**
    * v1 - $
    * $ также позволяет указывать колонки внутри структур
@@ -82,7 +82,7 @@ object DataFrame_1 extends App {
     .show()
 
   df3
-    .select($"foo.*")  // * - выбрать все элементы структуры
+    .select($"foo.*") // foo.* - выбрать все элементы структуры foo
     .show()
 
   println("df3.toJSON.show():")
@@ -103,7 +103,7 @@ object DataFrame_1 extends App {
 
   /**
    * v3 - DML в SQL-like формате
-   * легко ошибиться + ошибка обнаружится только в рантайме
+   * !!! легко ошибиться + ошибка обнаружится только в рантайме
    */
   df
     .filter("value = 'Moscow'")
@@ -127,7 +127,10 @@ object DataFrame_1 extends App {
     +- *(1) Scan ExistingRDD[value#1]
    */
 
-  /** Каталист парсит выражение и создает план, состоящий из физических операторов => план передается в тангстен для кодогенерации */
+  /**
+   * Catalyst парсит выражение и создает план, состоящий из физических операторов
+   * => план передается в Thungsten для кодогенерации
+   */
 
 
   /** withColumn/select/drop == ПРОЕКЦИЯ (PO Project) */
@@ -154,7 +157,7 @@ object DataFrame_1 extends App {
   /**
    * select - может использоваться не только для выборки существующих колонок, но и для СОЗДАНИЯ новых
    *
-   * select(col(*)) - позволяет получить DF со всеми колонками - полезно, когда список всех колонок не известен,
+   * select(col(*)) - позволяет получить DF со всеми колонками - полезно, когда список всех колонок не известен
    * и нужно выбрать все существующие + добавить новые колонки
    *
    * в select можно передать список колонок, используя обычные строки
@@ -173,7 +176,12 @@ object DataFrame_1 extends App {
    */
 
   val myCols: List[Column] =
-    List(col("value"), lit("foo"), lit(false), struct(col("value").alias("woo")).alias("moo"))
+    List(
+      col("value"),
+      lit("foo"),
+      lit(false),
+      struct(col("value").alias("woo")).alias("moo")
+    )
 
   df
     .select(myCols: _*)
@@ -240,7 +248,7 @@ object DataFrame_1 extends App {
 
   /** and/or/between/isin filter conditions */
   df
-    .filter($"value" === "Moscow" or $"value" === "Paris")  // == $"value".===("Moscow").or($"value".===("Paris"))
+    .filter($"value" === "Moscow" or $"value" === "Paris") // == $"value".===("Moscow").or($"value".===("Paris"))
     .show()
 
   df
@@ -311,26 +319,26 @@ object DataFrame_1 extends App {
 
   val cleanDataDs: Dataset[Row] =
     df4
-      .drop(col("_corrupt_record"))  // drop - это проекция
+      .drop(col("_corrupt_record")) // drop - это проекция
       /**
        * .na.drop("all") - удаляются строки, где все колонки == null
        * .na.drop("any") - удаляются строки, где хотя бы одна колонка == null
        * можно указать на какие колонки будет распространяться это поведение (all/any)
        * */
-      .na.drop("all")  // na.drop - это срез
-      .na.fill(fillData)  // na.fill - это срез
-      .na.replace("country", replaceData)  // na.replace - это срез
+      .na.drop("all") // na.drop - это срез
+      .na.fill(fillData) // na.fill - это проекция
+      .na.replace("country", replaceData) // na.replace - это проекция
       /**
        * dropDuplicates без аргументов == distinct
        * dropDuplicates неявно запускает шафл
        */
       .dropDuplicates("continent", "country")
 
-  cleanDataDs
-    .repartition(1)
-    .write
-    .mode(SaveMode.Overwrite)
-    .save("src/main/resources/l_4/cleandata")
+//  cleanDataDs
+//    .repartition(1)
+//    .write
+//    .mode(SaveMode.Overwrite)
+//    .save("src/main/resources/l_4/cleandata")
 
   cleanDataDs.show()
 
@@ -385,12 +393,12 @@ object DataFrame_1 extends App {
   /*
     == Physical Plan ==
     AdaptiveSparkPlan isFinalPlan=false
-    // Удаление дубликатов внутри каждой партиции после репартиционирования
+    // удаление дубликатов внутри каждой партиции после репартиционирования
     +- SortAggregate(key=[continent#426, country#436], functions=[first(name#217, false), first(population#427L, false)])
        +- Sort [continent#426 ASC NULLS FIRST, country#436 ASC NULLS FIRST], false, 0
-          // Репартиционирование по ключу continent + country на 200 партиций
-          +- Exchange hashpartitioning(continent#426, country#436, 200), ENSURE_REQUIREMENTS, [plan_id=506]
-             // Удаление дубликатов внутри каждой партиции
+          // репартиционирование по ключам continent + country на 200 партиций
+          +- Exchange hashpartitioning(continent#426, country#436, 200), ENSURE_REQUIREMENTS, [plan_id=528]
+             // удаление дубликатов внутри каждой партиции
              +- SortAggregate(key=[continent#426, country#436], functions=[partial_first(name#217, false), partial_first(population#427L, false)])
                 +- Sort [continent#426 ASC NULLS FIRST, country#436 ASC NULLS FIRST], false, 0
                    +- Project [coalesce(continent#215, Undefined) AS continent#426, CASE WHEN (country#216 = Rossiya) THEN Russia ELSE country#216 END AS country#436, name#217, coalesce(population#218L, 0) AS population#427L]
@@ -419,12 +427,13 @@ object DataFrame_1 extends App {
 
   val constCol: Column = lit(3)
   val constColExpr: Expression = constCol.expr
-  println(constColExpr)
-  // == 3
+  println(constColExpr) // == 3
+
   val constColExprJson: String = constCol.expr.toJSON
   println(constColExprJson)
   // == [{"class":"org.apache.spark.sql.catalyst.expressions.Literal","num-children":0,"value":"3","dataType":"integer"}]
   println()
+
 
   println(sc.uiWebUrl)
   Thread.sleep(1000000)

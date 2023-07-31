@@ -76,3 +76,40 @@ object hw extends App {
 
   println(doExperiment())
 }
+
+
+//val fields: Array[String] = secondStepDf.schema.fields.map(_.name)
+////  fields.foldLeft(lit("")) { (acc, el) => concat(acc, col(el)) }
+////
+//val colFields: Array[Column] = fields.map(el => col(el))
+////  secondStepDf.select(colFields: _*)
+////  secondStepDf.select(fields.map(col): _*)
+////
+////  secondStepDf.select(mod(col("1"), col("2")))
+////  secondStepDf.select(expr("mod(2, 3)")).show()
+//secondStepDf.select(lit("2").mod(lit("3")).cast(IntegerType)).show()
+//
+//val cols = IndexedSeq("type", "count")
+//cols.mkString(", ")
+//
+//secondStepDf
+//  .withColumn("hash1", expr("hash(type)"))
+//  .withColumn("hash2", expr("hash(count)"))
+//  //    .withColumn("hashall1", expr("hash(type, count)"))
+//  //    .withColumn("hashall2", expr(s"hash(${cols.mkString(", ")})"))
+//  .withColumn("hashall2", hash(cols.map(col): _*))
+//  .show()
+
+//import spark.implicits._
+//
+//val df =
+//  Seq[(String, String)](
+//    ("some1", null),
+//    ("some2", "some2"),
+//    ("some1", "some1"),
+//    ("some1", null)
+//  ).toDF
+//
+//df.show()
+//
+//df.withColumn("hash", hash(col("_1"), col("_2"))).show()
