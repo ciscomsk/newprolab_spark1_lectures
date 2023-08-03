@@ -113,3 +113,29 @@ object hw extends App {
 //df.show()
 //
 //df.withColumn("hash", hash(col("_1"), col("_2"))).show()
+
+
+//import spark.implicits._
+//
+//spark.conf.set("spark.sql.autoBroadcastJoinThreshold", "-1")
+//
+//val csvOptions: Map[String, String] = Map("header" -> "true", "inferSchema" -> "true")
+//
+//val airportsDf: DataFrame =
+//  spark
+//    .read
+//    .options(csvOptions)
+//    .csv("src/main/resources/l_3/airport-codes.csv")
+//
+////  val leftDf: DataFrame = airportsDf.select($"type", $"ident", $"iso_country").repartition(400, col("type"))
+//val leftDf: DataFrame = airportsDf.select($"type", $"ident", $"iso_country")
+//
+//val rightDf: DataFrame =
+//  airportsDf
+//    .groupBy($"type")
+//    .count()
+////      .repartition(400, col("type"))
+//
+////  val resDf: DataFrame = leftDf.join(rightDf, Seq("type"), "inner")
+//val resDf: DataFrame = leftDf.join(broadcast(rightDf), Seq("type"), "inner")
+//resDf.explain()

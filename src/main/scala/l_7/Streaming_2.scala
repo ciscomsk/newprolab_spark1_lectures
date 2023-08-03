@@ -49,7 +49,7 @@ object Streaming_2 extends App {
     .schema(StructType.fromDDL("timestamp TIMESTAMP,value BIGINT,ident STRING"))
     // v2
 //    .schema(DataType.fromJson(someJson)))
-    /** сколько файлов будет вычитано за микробатч */
+    /** количество файлов, которое будет вычитано за микробатч */
     .option("maxFilesPerTrigger", "1")
     /** можно указать вложенные директории - с помощью "*" */
     .option("path", "src/main/resources/l_7/s2.parquet")

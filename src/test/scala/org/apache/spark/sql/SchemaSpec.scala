@@ -7,10 +7,9 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should
 
 class SchemaSpec extends AnyFlatSpec with should.Matchers {
-  // не работает в Spark 3.4.0
-//  Logger
-//    .getLogger("org")
-//    .setLevel(Level.OFF)
+  Logger
+    .getLogger("org")
+    .setLevel(Level.OFF)
 
   val spark: SparkSession =
     SparkSession
@@ -20,7 +19,7 @@ class SchemaSpec extends AnyFlatSpec with should.Matchers {
       .getOrCreate()
 
   val sc: SparkContext = spark.sparkContext
-  sc.setLogLevel("ERROR")
+//  sc.setLogLevel("ERROR")
 
   val someSchema: StructType =
     StructType(
@@ -41,7 +40,7 @@ class SchemaSpec extends AnyFlatSpec with should.Matchers {
   def recursion(schema: DataType): DataType = {
     schema match {
       /** !!! AtomicType/FractionalType/IntegralType - доступны только в org.apache.spark.sql */
-      case a: AtomicType =>  // FractionalType/IntegralType
+      case a: AtomicType =>
         println(s"This is atomic type of type ${a.simpleString}")
         a
 

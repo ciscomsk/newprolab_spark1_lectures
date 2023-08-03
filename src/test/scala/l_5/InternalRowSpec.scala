@@ -12,10 +12,9 @@ import org.scalatest.matchers.should
 import java.lang
 
 class InternalRowSpec extends AnyFlatSpec with should.Matchers {
-  // не работает в Spark 3.3.1
-//  Logger
-//    .getLogger("org")
-//    .setLevel(Level.OFF)
+  Logger
+    .getLogger("org")
+    .setLevel(Level.OFF)
 
   val spark: SparkSession =
     SparkSession
@@ -25,7 +24,7 @@ class InternalRowSpec extends AnyFlatSpec with should.Matchers {
       .getOrCreate()
 
   val sc: SparkContext = spark.sparkContext
-  sc.setLogLevel("ERROR")
+//  sc.setLogLevel("ERROR")
 
   val df: Dataset[lang.Long] = spark.range(0, 100)
   val schema: StructType = df.schema

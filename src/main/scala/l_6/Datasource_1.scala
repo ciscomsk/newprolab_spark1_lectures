@@ -45,7 +45,7 @@ object Datasource_1 extends App {
 //    .mode(SaveMode.Overwrite)
 //    .csv("src/main/resources/l_6/airports-2.csv")
   /**
-   * !!! Т.к. запись распределенная - Spark удалит заголовок из csv файла
+   * !!! т.к. запись распределенная - Spark удалит заголовок из csv файла
    * при попытке чтения ("header" -> "true") таких данных - в качестве схемы Spark возьмет одну из строк, содержащую данные
    * схему можно сохранить (например в БД)
    */
@@ -94,17 +94,17 @@ object Datasource_1 extends App {
   println(firstLineWritedDf)
   println()
 
-  /** Сохранять схему удобно в json */
+  /** сохранять схему удобно в json */
   val airportDfSchemaJson: String = airportsDf.schema.json
   println(airportDfSchemaJson)
   println()
 
-  /** Импорт схемы */
+  /** импорт схемы */
   val importedSchema: DataType = DataType.fromJson(airportDfSchemaJson)
   println(importedSchema)
   println()
 
-  /** Чтение со схемой */
+  /** чтение со схемой */
   val csvOptions2: Map[String, String] = Map("header" -> "false", "inferSchema" -> "false")
 
   val airportsDf2: DataFrame =
@@ -119,7 +119,7 @@ object Datasource_1 extends App {
   println(s"airportsDf2.rdd.getNumPartitions: ${airportsDf2.rdd.getNumPartitions}")
   println()
 
-  /** Получение схемы из шапки csv c помощью scala.io */
+  /** получение схемы из шапки csv c помощью scala.io */
   val originalCsv: BufferedSource = fromFile("src/main/resources/l_3/airport-codes.csv")
   val firstLineOriginalCsv: String = originalCsv.getLines.next()
   println(firstLineOriginalCsv)
@@ -134,7 +134,7 @@ object Datasource_1 extends App {
   println(processedSchema)
   println()
 
-  /** Запись с компрессией gzip */
+  /** запись с компрессией gzip */
 //  airportsDf2
 //    .repartition(1)
 //    .write
@@ -149,11 +149,11 @@ object Datasource_1 extends App {
       .options(csvOptions2)
       .csv("src/main/resources/l_6/airports-3.csv.gz")
 
-  /** !!! Сжатый файл при чтении превращается ровно в 1 партицию - антипаттерн */
+  /** !!! сжатый файл при чтении превращается ровно в 1 партицию - антипаттерн */
   println(s"compressedDf.rdd.getNumPartitions: ${compressedDf.rdd.getNumPartitions}")
   println()
 
-  /** Запись с партицированием - долго записывается т.к. много файлов ~ 42k */
+  /** запись с партицированием - долго записывается т.к. много файлов ~ 42k */
 //  airportsDf
 //    .repartition(2)
 //    .write
@@ -173,16 +173,16 @@ object Datasource_1 extends App {
   println()
 
   /**
-   * !!! Отключение записи _SUCCESS файлов
+   * !!! отключение записи _SUCCESS файлов
    * sc.hadoopConfiguration.set("mapreduce.fileoutputcommitter.marksuccessfuljobs", "false")
    *
-   * Получение файловой системы с которой работает Spark
+   * получение файловой системы с которой работает Spark
    * sc.hadoopConfiguration.get("fs.defaultFS") => file:///... | hdfs://cluster-name/...
    *
    * ФС для записи можно указывать вручную => file:///... | hdfs://cluster-name/...
-   * В случае HDFS - cluster-name должно резолвится в нейм-ноду
+   * в случае HDFS - cluster-name должно резолвится в нейм-ноду
    *
-   * В случае запуска на ярне - запись на локальную файловую систему работать не будет (каждый воркер будет считать
+   * в случае запуска на ярне - запись на локальную файловую систему работать не будет (каждый воркер будет считать
    * локальной свою файловую систему)
    */
 
@@ -196,7 +196,7 @@ object Datasource_1 extends App {
   println(sc.hadoopConfiguration.get("fs.defaultFS"))
   println()
 
-  /** Сохранение датасета в text - датафрейм должен содержать 1 StringType колонку */
+  /** сохранение датасета в text - датафрейм должен содержать 1 StringType колонку */
 //  airportsDf
 //    // err - Text data source supports only a single column, and you have 12 columns
 //    .withColumn("elevation_ft", $"elevation_ft".cast(StringType))

@@ -4,16 +4,15 @@ import l_5.DataFrame_5.printPhysicalPlan
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.functions.{col, lit}
-import org.apache.spark.sql.types.LongType
+import org.apache.spark.sql.types.{IntegerType, LongType}
 import org.apache.spark.sql.{DataFrame, Dataset, Row, SaveMode, SparkSession}
 
 import java.lang
 
 object DataFrame_8 extends App {
-  // не работает в Spark 3.4.0
-//  Logger
-//    .getLogger("org")
-//    .setLevel(Level.OFF)
+  Logger
+    .getLogger("org")
+    .setLevel(Level.OFF)
 
   val spark: SparkSession =
     SparkSession
@@ -23,7 +22,7 @@ object DataFrame_8 extends App {
       .getOrCreate()
 
   val sc: SparkContext = spark.sparkContext
-  sc.setLogLevel("ERROR")
+//  sc.setLogLevel("ERROR")
 
   import spark.implicits._
 
@@ -42,12 +41,12 @@ object DataFrame_8 extends App {
 //    .mode(SaveMode.Overwrite)
 //    .save("src/main/resources/l_5/airports")
 
-  airportsDf
-    .write
-    .format("json")
-    .partitionBy("iso_country")
-    .mode(SaveMode.Overwrite)
-    .save("src/main/resources/l_5/airports_json")
+//  airportsDf
+//    .write
+//    .format("json")
+//    .partitionBy("iso_country")
+//    .mode(SaveMode.Overwrite)
+//    .save("src/main/resources/l_5/airports_json")
 
   val airportPartPqDf: DataFrame =
     spark
@@ -68,13 +67,14 @@ object DataFrame_8 extends App {
 
     printPhysicalPlan(selectedDf)
     /*
-      *(1) Project [ident#67]
+      *(1) Project [ident#92]
       +- *(1) ColumnarToRow
          // cache - в кэш будет помещена только эта колонка
          // ReadSchema: struct<ident:string> - будет вычитана только колонка ident
-         +- FileScan parquet [ident#67,iso_country#78] Batched: true, DataFilters: [], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<ident:string>
+         +- FileScan parquet [ident#92,iso_country#103] Batched: true, DataFilters: [], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<ident:string>
      */
-  }  // 1115 ms
+
+  } // 1125 ms
   println()
 
   spark.time {
@@ -87,12 +87,12 @@ object DataFrame_8 extends App {
     printPhysicalPlan(selectedDf)
     /*
       *(1) ColumnarToRow
-      +- FileScan parquet [ident#67,type#68,name#69,elevation_ft#70,continent#71,iso_region#72,municipality#73,gps_code#74,iata_code#75,local_code#76,coordinates#77,iso_country#78] Batched: true, DataFilters: [], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_region:string,m...
+      +- FileScan parquet [ident#92,type#93,name#94,elevation_ft#95,continent#96,iso_region#97,municipality#98,gps_code#99,iata_code#100,local_code#101,coordinates#102,iso_country#103] Batched: true, DataFilters: [], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_region:string,m...
      */
-  }  // 901 ms
+  } // 844 ms
   println()
 
-  /** !!! Для текстовых форматов (например - json) - ReadSchema будет указан в плане выполнения, но работать оптимизация не будет */
+  /** !!! для текстовых форматов (например json) - ReadSchema будет указан в плане выполнения, но работать оптимизация не будет */
   spark
     .read
     .json("src/main/resources/l_5/airports_json")
@@ -120,7 +120,7 @@ object DataFrame_8 extends App {
       // PartitionFilters: [isnotnull(iso_country#52), (iso_country#52 = RU)] => будет прочитан только каталог RU
       +- FileScan parquet [ident#41,type#42,name#43,elevation_ft#44,continent#45,iso_region#46,municipality#47,gps_code#48,iata_code#49,local_code#50,coordinates#51,iso_country#52] Batched: true, DataFilters: [], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [isnotnull(iso_country#52), (iso_country#52 = RU)], PushedFilters: [], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_region:string,m...
      */
-  }  // 112 ms
+  } // 104 ms
   println()
 
   spark.time {
@@ -133,7 +133,7 @@ object DataFrame_8 extends App {
       // PartitionFilters: []
       +- FileScan parquet [ident#41,type#42,name#43,elevation_ft#44,continent#45,iso_region#46,municipality#47,gps_code#48,iata_code#49,local_code#50,coordinates#51,iso_country#52] Batched: true, DataFilters: [], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_region:string,m...
      */
-  }  // 278 ms
+  } // 304 ms
   println()
 
 
@@ -152,7 +152,7 @@ object DataFrame_8 extends App {
          // PushedFilters: [IsNotNull(iso_region), EqualTo(iso_region,RU)]
          +- FileScan parquet [ident#41,type#42,name#43,elevation_ft#44,continent#45,iso_region#46,municipality#47,gps_code#48,iata_code#49,local_code#50,coordinates#51,iso_country#52] Batched: true, DataFilters: [isnotnull(iso_region#46), (iso_region#46 = RU)], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [IsNotNull(iso_region), EqualTo(iso_region,RU)], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_region:string,m...
      */
-  }  // 398 ms
+  } // 395 ms
   println()
 
 
@@ -192,7 +192,7 @@ object DataFrame_8 extends App {
   val resDf2: DataFrame =
     spark
       .range(0, 10)
-      .select($"id".cast("int").cast("long"))
+      .select($"id".cast(IntegerType).cast(LongType))
 
   printPhysicalPlan(resDf2)
   /*
@@ -256,7 +256,7 @@ object DataFrame_8 extends App {
     spark
       .range(0, 10)
       .filter($"id" > 0)
-      /** Проекция не мешает объединению фильтров */
+      /** проекция не мешает объединению фильтров */
       .select(col("*"))
       .filter($"id" =!= 5)
       .filter($"id" < 10)

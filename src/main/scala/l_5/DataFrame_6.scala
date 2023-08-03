@@ -8,10 +8,9 @@ import org.apache.spark.sql.functions.{broadcast, expr, udf, col}
 import org.apache.spark.sql.{Column, DataFrame, Dataset, Row, SparkSession}
 
 object DataFrame_6 extends App {
-  // не работает в Spark 3.4.0
-//  Logger
-//    .getLogger("org")
-//    .setLevel(Level.OFF)
+  Logger
+    .getLogger("org")
+    .setLevel(Level.OFF)
 
   val spark: SparkSession =
     SparkSession
@@ -21,7 +20,7 @@ object DataFrame_6 extends App {
       .getOrCreate()
 
   val sc: SparkContext = spark.sparkContext
-  sc.setLogLevel("ERROR")
+//  sc.setLogLevel("ERROR")
 
   import spark.implicits._
 
@@ -33,7 +32,7 @@ object DataFrame_6 extends App {
       .options(csvOptions)
       .csv("src/main/resources/l_3/airport-codes.csv")
 
-  /** Оптимизация соединений и группировок */
+  /** оптимизация соединений и группировок */
   val leftDf: DataFrame = airportsDf.select($"type", $"ident", $"iso_country")
 
   val rightDf: DataFrame =
@@ -77,9 +76,9 @@ object DataFrame_6 extends App {
   val resDf2: DataFrame = leftDf2.join(broadcast(rightDf2), Seq("type"), "inner")
 
   printPhysicalPlan(resDf2)
-  /** BroadcastHashJoin - PO BroadcastExchange_HashedRelationBroadcastMode */
+  /** BroadcastHashJoin - PO BroadcastHashJoin + BroadcastExchange_HashedRelationBroadcastMode */
 
-  /** Более читаемый план с localCheckpoint */
+  /** более читаемый план с localCheckpoint */
   /*
     AdaptiveSparkPlan isFinalPlan=false
     +- Project [type#18, ident#17, iso_country#22, count#111L]
@@ -87,7 +86,6 @@ object DataFrame_6 extends App {
           // null c null не джойнятся
           :- Filter isnotnull(type#18)
           :  +- Scan ExistingRDD[type#18,ident#17,iso_country#22]
-          // HashedRelationBroadcastMode
           +- BroadcastExchange HashedRelationBroadcastMode(List(input[0, string, false]),false), [plan_id=128]
              // null c null не джойнятся
              +- Filter isnotnull(type#110)
@@ -97,16 +95,16 @@ object DataFrame_6 extends App {
   leftDf2.printSchema()
   rightDf2.printSchema()
 
-  /** Примеры equ-join: */
+  /** примеры equ-join: */
   leftDf2.join(rightDf2, Seq("type"), "inner")
   leftDf2.as("left").join(rightDf2.as("right"), expr("left.iso_country = right.type"))
 
-  /** Примеры non-equ join: */
+  /** примеры non-equ join: */
   leftDf2.as("left").join(rightDf2.as("right"), expr("left.iso_country < right.type"))
   // ==
   leftDf2.as("left").join(rightDf2.as("right"), expr("(left.iso_country < right.type) == true"))
 
-  /** Автоматическое вычисление объема данных в датафрейме - часто работает некорректно => лучше отключить */
+  /** автоматическое вычисление объема данных в датафрейме - часто работает некорректно => лучше отключить */
   spark.conf.set("spark.sql.autoBroadcastJoinThreshold", "-1")
 
 
@@ -129,8 +127,8 @@ object DataFrame_6 extends App {
                    +- Scan ExistingRDD[type#158,count#159L]
    */
 
-  /** Проблема джоина с перекошенными партициями - решается разделением датасета на более мелкие - их джоинами и последующим юнионом */
-  /** Вариант с партицированными данными: */
+  /** проблема джоина с перекошенными партициями - решается разделением датасета на более мелкие - их джоинами и последующим юнионом */
+  /** вариант с партицированными данными: */
   /*
     leftDf - partitionBy - y/m/d
     rightDf - partitionBy - y/m/d
@@ -149,10 +147,10 @@ object DataFrame_6 extends App {
 
   /** BroadcastNestedLoop Join */
   /**
-   * Несмотря на то, что udf проверяет на равенство два ключа (т.е. фактически equ-join), Spark ничего не знает про логику udf
+   * несмотря на то, что udf проверяет на равенство два ключа (т.е. фактически equ-join), Spark ничего не знает про логику udf
    * и не может применить BroadcastHashJoin/SortMergeJoin => применится BroadcastNestedLoopJoin/CartesianProduct
    *
-   * Через udf можно сделать null-safe join
+   * через udf можно сделать null-safe join
    */
   val compareUdf: UserDefinedFunction = udf { (leftVal: String, rightVal: String) => leftVal == rightVal }
 
@@ -160,9 +158,9 @@ object DataFrame_6 extends App {
 
   val resDf4: DataFrame = leftDf2.as("left").join(broadcast(rightDf2).as("right"), joinExpr, "inner")
   printPhysicalPlan(resDf4)
-  /** BroadcastNestedLoopJoin - PO BroadcastExchange_IdentityBroadcastMode */
+  /** BroadcastNestedLoopJoin - PO BroadcastNestedLoopJoin + BroadcastExchange_IdentityBroadcastMode */
   /*
-    // Нет ни срезов ни проекций т.к. используется udf
+    // нет ни срезов ни проекций т.к. используется udf
     AdaptiveSparkPlan isFinalPlan=false
     +- BroadcastNestedLoopJoin BuildRight, Inner, UDF(type#18, type#167)
        :- Scan ExistingRDD[type#18,ident#17,iso_country#22]
@@ -182,16 +180,16 @@ object DataFrame_6 extends App {
 
   println(
     s"""Partition summary:
-       |left2=${leftDf2.rdd.getNumPartitions}
-       |right3=${rightDf2.rdd.getNumPartitions}
-       |resDf5=${resDf5.rdd.getNumPartitions}
+       |left=${leftDf2.rdd.getNumPartitions}
+       |right=${rightDf2.rdd.getNumPartitions}
+       |result=${resDf5.rdd.getNumPartitions}
        |""".stripMargin)
     // cartesian product num partitions == left num partitions * right num partitions
 
   /**
-   * Снижение объема shuffle
+   * cнижение объема shuffle
    *
-   * Предварительное репартиционирование по ключам имеет смысл делать если после него идет
+   * предварительное репартиционирование по ключам имеет смысл делать если после него идет
    * несколько операций требующих репартицирования по одинаковым ключам (Exchange hashpartitioning)
    */
   spark.time {
@@ -204,7 +202,7 @@ object DataFrame_6 extends App {
 
     val joinedDf: DataFrame = leftDf.join(rightDf, Seq("type"))
 
-//    joinedDf.explain()
+    joinedDf.explain()
     /*
       == Physical Plan ==
       AdaptiveSparkPlan isFinalPlan=false
@@ -222,21 +220,22 @@ object DataFrame_6 extends App {
                            +- FileScan csv [type#235] Batched: false, DataFilters: [isnotnull(type#235)], Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [IsNotNull(type)], ReadSchema: struct<type:string>
      */
 
-    /** План в SQL/DataFrame показан для joinedDf.count(), а не joinedDf */
+    /** план в SQL/DataFrame показан для joinedDf.count(), а не joinedDf */
     joinedDf.count()
-  }  // 806 ms
+  }  // 811 ms
   println()
 
   spark.time {
     /**
-     * Экономия - Spark UI => SQL/Dataframe и в  (в explain - разницы видно не будет):
-     * -1 Scan csv - т.к. результат репартицирования это файлы на файловой системе воркеров (~cache DISK_ONLY) => второе чтение из источника не нужно
+     * экономия видна в Spark UI в физическом плане SQL/Dataframe(++) и на графе выполнения в Jobs(+) (df.explain - разницы не покажет)
+     * -1 Scan csv - т.к. результат репартицирования это файлы на файловой системе воркеров (~persist DISK_ONLY) => второе чтение из источника не нужно
      * -1 Exchange hashpartitioning - т.к. репартицирование по нужному ключу уже было
      *
      * skipped stage == ранее был шаффл, который подходит для продолжения выполнения графа
      */
-//    val airportsRepDf: Dataset[Row] = airportsDf.repartition(200, col("type"))  // 1299 ms
-    val airportsRepDf: Dataset[Row] = airportsDf.repartition(10, col("type"))  // 590 ms
+
+//    val airportsRepDf: Dataset[Row] = airportsDf.repartition(200, col("type"))  // 1656 ms
+    val airportsRepDf: Dataset[Row] = airportsDf.repartition(10, col("type"))  // 691 ms
 
     val leftDf: Dataset[Row] = airportsRepDf
 
@@ -247,7 +246,7 @@ object DataFrame_6 extends App {
 
     val joinedDf: DataFrame = leftDf.join(rightDf, Seq("type"))
 
-//    joinedDf.explain()
+    joinedDf.explain()
     /*
       == Physical Plan ==
       AdaptiveSparkPlan isFinalPlan=false
@@ -258,8 +257,9 @@ object DataFrame_6 extends App {
             :     +- Filter isnotnull(type#18)
             :        +- FileScan csv [ident#17,type#18,name#19,elevation_ft#20,continent#21,iso_country#22,iso_region#23,municipality#24,gps_code#25,iata_code#26,local_code#27,coordinates#28] Batched: false, DataFilters: [isnotnull(type#18)], Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [IsNotNull(type)], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_country:string,...
             +- Sort [type#297 ASC NULLS FIRST], false, 0
+               // !!! HashAggregate partial_count(1)] + HashAggregate count(1) - выполняются без Exchange hashpartitioning
                +- HashAggregate(keys=[type#297], functions=[count(1)])
-                  +- HashAggregate(keys=[type#297], functions=[partial_count(1)])
+                  +- HashAggregate(keys=[type#297], functions=[)
                      +- Exchange hashpartitioning(type#297, 10), REPARTITION_BY_NUM, [plan_id=489]
                         +- Filter isnotnull(type#297)
                            +- FileScan csv [type#297] Batched: false, DataFilters: [isnotnull(type#297)], Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [IsNotNull(type)], ReadSchema: struct<type:string>
