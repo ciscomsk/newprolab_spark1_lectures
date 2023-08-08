@@ -6,10 +6,9 @@ import org.apache.spark.sql.functions.{current_date, current_timestamp, lit}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 object Datasource_3 extends App {
-  // не работает в Spark 3.4.0
-//  Logger
-//    .getLogger("org")
-//    .setLevel(Level.OFF)
+  Logger
+    .getLogger("org")
+    .setLevel(Level.OFF)
 
   val spark: SparkSession =
     SparkSession
@@ -19,7 +18,7 @@ object Datasource_3 extends App {
       .getOrCreate()
 
   val sc: SparkContext = spark.sparkContext
-  sc.setLogLevel("ERROR")
+//  sc.setLogLevel("ERROR")
 
   import spark.implicits._
 
@@ -32,45 +31,51 @@ object Datasource_3 extends App {
       .csv("src/main/resources/l_3/airport-codes.csv")
 
   /**
-   * Запуск в докере:
+   * запуск в докере:
    *
    * // Elastic + Kibana
+   * // https://hub.docker.com/_/elasticsearch/tags
+   * // https://stackoverflow.com/questions/73307726/elasticsearch-error-elasticsearch-exited-unexpectedly-when-trying-to-start-e
+   *
+   * // https://www.digitalocean.com/community/tutorials/how-to-remove-docker-images-containers-and-volumes
+   *
    * docker network create elastic
-   * docker pull elasticsearch:8.7.0
-   * docker run --name es-node01 --net elastic -p 9200:9200 -p 9300:9300 -e xpack.security.enabled=false -e discovery.type=single-node elasticsearch:8.7.0
+   * docker pull elasticsearch:8.8.1
+   * docker run --name es-node01 --net elastic -m 16GB -p 9200:9200 -p 9300:9300 -e xpack.security.enabled=false -e discovery.type=single-node elasticsearch:8.8.1
    * docker start es-node01
    * -d
    *
-   * docker pull kibana:8.7.0
-   * docker run --name kib-01 --net elastic -p 5601:5601 -e ELASTICSEARCH_HOSTS=http://es-node01:9200 kibana:8.7.0
+   * // !!! не работает - Unable to connect to Elasticsearch
+   * docker pull kibana:8.8.1
+   * docker run --name kib-01 --net elastic -p 5601:5601 -e ELASTICSEARCH_HOSTS=http://es-node01:9200 kibana:8.8.1
    * -d - optional
    *
    *
    * // Elastic only
-   * docker pull elasticsearch:8.7.0
-   * docker run -p 9200:9200 -p 9300:9300 -e xpack.security.enabled=false -e discovery.type=single-node elasticsearch:8.7.0
+   * docker pull elasticsearch:8.8.1
+   * docker run -p 9200:9200 -p 9300:9300 -e xpack.security.enabled=false -e discovery.type=single-node elasticsearch:8.8.1
    *
    *
    * docker ps
-   * docker stop <containder_id>
-   * docker rm <containder_id>
+   * docker stop 'containder_id'
+   * docker rm 'containder_id'
    */
 
   val esOptions: Map[String, String] =
     Map(
-      /** Адрес ноды для подключения */
+      /** адрес ноды для подключения */
       "es.nodes" -> "localhost:9200",
-      /** !!! Для быстрой записи (меньше загружает cpu на дата нодах) - использовать всегда */
+      /** !!! для быстрой записи (меньше загружает cpu на дата нодах) - использовать всегда */
       "es.batch.write.refresh" -> "false",
       /**
-       * Не использовать дискавери (поиск) других узлов кластера - писать только в указанную ноду
-       * !!! Использовать только для тестов - не для продового кластера
+       * не использовать дискавери (поиск) других узлов кластера - писать только в указанную ноду
+       * !!! использовать только для тестов - не для продового кластера
        */
       "es.nodes.wan.only" -> "true"
     )
 
 //  airportsDf
-    /** Колонка ts из elastic template */
+    /** колонка ts из elastic template */
 //    .withColumn("ts", current_timestamp)
     /** date - будет использована как часть имени индекса => airports-{date} */
 //    .withColumn("date", current_date)
@@ -86,7 +91,7 @@ object Datasource_3 extends App {
     .read
     .format("es")
     .options(esOptions)
-    /** Паттерн для чтения определенных индексов */
+    /** паттерн для чтения определенных индексов */
     .load("airports-*")
 
   println()
@@ -94,15 +99,15 @@ object Datasource_3 extends App {
   esDf.show(1, 200, vertical = true)
 
   /**
-   * Количество партиций DF совпадает с общим числом шардов индексов, которые указаны в load
-   * у нас 1 индекс и 1 шард => 1 партиция
+   * количество партиций DF совпадает с общим числом шардов индексов, которые указаны в load
+   * у нас индекс состоит из 1 шарда => 1 партиция
    */
   println(esDf.rdd.getNumPartitions)
   println()
 
-  /** К применяемым фильтрам применяется оптимизация filter pushdown */
+  /** к применяемым фильтрам применяется оптимизация filter pushdown */
   esDf
-    .filter($"iso_region" contains "RU")  // contains - полнотекстовый поиск
+    .filter($"iso_region" contains "RU") // contains - полнотекстовый поиск
     .explain(true)
   /*
     == Parsed Logical Plan ==

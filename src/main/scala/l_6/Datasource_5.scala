@@ -6,19 +6,19 @@ import org.apache.spark.sql.functions.{monotonically_increasing_id, rand, round,
 import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 
 object Datasource_5 extends App {
-  // не работает в Spark 3.4.0
-//  Logger
-//    .getLogger("org")
-//    .setLevel(Level.OFF)
+  Logger
+    .getLogger("org")
+    .setLevel(Level.OFF)
 
-  val spark: SparkSession = SparkSession
+  val spark: SparkSession =
+    SparkSession
     .builder()
     .master("local[*]")
     .appName("l_6")
     .getOrCreate()
 
   val sc: SparkContext = spark.sparkContext
-  sc.setLogLevel("ERROR")
+//  sc.setLogLevel("ERROR")
 
   val csvOption: Map[String, String] = Map("header" -> "true", "inferSchema" -> "true")
 
@@ -29,11 +29,11 @@ object Datasource_5 extends App {
       .csv("src/main/resources/l_3/airport-codes.csv")
 
   /**
-   * Запуск в докере:
-   * docker run --rm -p 5432:5432 --name test_postgre -e POSTGRES_PASSWORD=12345 postgres:latest
+   * запуск в докере:
+   * docker run --rm -p 5432:5432 --name test_postgres -e POSTGRES_PASSWORD=12345 postgres:latest
    *
-   * Подключение с помощью psql:
-   * docker exec -it test_postgre psql -U postgres
+   * подключение с помощью psql:
+   * docker exec -it test_postgres psql -U postgres
    *
    * CREATE DATABASE airports;
    * \c airports; - подключиться к БД airports
@@ -41,6 +41,7 @@ object Datasource_5 extends App {
    * SELECT * from codes;
    *
    * CREATE TABLE IF NOT EXISTS codes_x (ident VARCHAR (100) PRIMARY KEY,type VARCHAR (100),name VARCHAR (100),elevation_ft INTEGER,continent VARCHAR (100),iso_country VARCHAR (100),iso_region VARCHAR (100),municipality VARCHAR (100),gps_code VARCHAR (100),iata_code VARCHAR (100),local_code VARCHAR (100),coordinates VARCHAR (100),id INTEGER);
+   * SELECT * from codes_x;
    */
 
   val typesMap: Map[String, String] = Map("string" -> "VARCHAR (100)", "int" -> "INTEGER")
@@ -88,7 +89,7 @@ object Datasource_5 extends App {
   println()
 
 
-  /** Чтение в несколько партиций */
+  /** чтение в несколько партиций */
   val ddlColumnPart: String = s"$ddlColumns,id INTEGER"
   val ddlQueryPart = s"CREATE TABLE IF NOT EXISTS codes_x ($ddlColumnPart);"
   println(ddlQueryPart)
@@ -110,11 +111,11 @@ object Datasource_5 extends App {
       .format("jdbc")
       .option("url", jdbcUrl)
       .option("dbtable", "codes_x")
-      /** Колонка партиционирования */
+      /** колонка партиционирования */
       .option("partitionColumn", "id")
       /** lowerBound/upperBound - задаются вручную */
       .option("lowerBound", "0")
-      /** Если ошибиться в этом параметре - данные в полученном датафрейме будут перекошены */
+      /** если ошибиться в этом параметре - данные в полученном датафрейме будут перекошены */
       .option("upperBound", "10000")
 //      .option("upperBound", "100000")
       .option("numPartitions", "200")
@@ -125,14 +126,14 @@ object Datasource_5 extends App {
   println(postgresPartDf.rdd.getNumPartitions)
   println()
 
-  /** Проверка распределение данных по партициям */
+  /** проверка распределение данных по партициям */
   postgresPartDf
     .groupBy(spark_partition_id())
     .count()
     .show(200, truncate = false)
 
   /**
-   * Метод генерирует монотонно возрастающий счетчик
+   * monotonically_increasing_id - генерирует монотонно возрастающий счетчик
    * cчетчик неразрывен в пределах каждой партиции, между партициями - большие разрывы
    */
   monotonically_increasing_id()

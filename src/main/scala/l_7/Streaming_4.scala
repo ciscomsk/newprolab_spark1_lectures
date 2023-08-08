@@ -8,10 +8,9 @@ import org.apache.spark.sql.types.{DataType, DataTypes, StringType}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 
 object Streaming_4 extends App {
-  // не работает в Spark 3.4.0
-//  Logger
-//    .getLogger("org")
-//    .setLevel(Level.ERROR)
+  Logger
+    .getLogger("org")
+    .setLevel(Level.ERROR)
 
   val spark: SparkSession =
     SparkSession
@@ -21,7 +20,7 @@ object Streaming_4 extends App {
       .getOrCreate()
 
   val sc: SparkContext = spark.sparkContext
-  sc.setLogLevel("ERROR")
+//  sc.setLogLevel("ERROR")
   println(sc.uiWebUrl)
   println()
 
@@ -36,7 +35,7 @@ object Streaming_4 extends App {
       .option("numRows", "20")
 
   /**
-   * Запуск в докере:
+   * запуск в докере:
    * docker run --rm -p 2181:2181 --name=test_zoo -e ZOOKEEPER_CLIENT_PORT=2181 confluentinc/cp-zookeeper
    * docker inspect test_zoo --format='{{ .NetworkSettings.IPAddress }}'
    *
@@ -51,9 +50,12 @@ object Streaming_4 extends App {
       "kafka.bootstrap.servers" -> "localhost:9092",
       "subscribe" -> "test_topic0",
       "startingOffsets" -> "earliest",
-      /** !!! Лимит вычитывания сообщений - по всем партициям */
+      /** !!! maxOffsetsPerTrigger - лимит вычитывания сообщений - по всем партициям */
       "maxOffsetsPerTrigger" -> "5",
-      /** !!! Позволяет дробить партиции на более мелкие части - воркеры буду читать партицию в несколько потоков (по разным диапазонам оффсетов) */
+      /**
+       * !!! minPartitions - позволяет дробить партиции на более мелкие части
+       * воркеры буду читать партицию в несколько потоков (по разным диапазонам оффсетов)
+       */
       "minPartitions" -> "20"
     )
 
@@ -69,6 +71,12 @@ object Streaming_4 extends App {
 
   val parsedStreamingDf: DataFrame =
     streamingDf
+      /*
+        без .cast(StringType) - [DATATYPE_MISMATCH.UNEXPECTED_INPUT_TYPE]
+        Cannot resolve "from_json(value)" due to data type mismatch:
+        Parameter 1 requires the "STRING" type, however "value" has the type "BINARY"
+       */
+//      .withColumn("value", from_json($"value", schema))
       .withColumn("value", from_json($"value".cast(StringType), schema))
       .select(
         $"topic",
@@ -86,7 +94,7 @@ object Streaming_4 extends App {
        +- StreamingRelation kafka, [key#7, value#8, topic#9, partition#10, offset#11L, timestamp#12, timestampType#13]
    */
 
-  /** Если батч пустой - запустить Streaming_3 => writeKafka("test_topic0", identParquetDf) */
+  /** если батч пустой - запустить Streaming_3 => writeKafka("test_topic0", identParquetDf) */
   val sink: DataStreamWriter[Row] = createConsoleSink(parsedStreamingDf)
 //  val streamingQuery: StreamingQuery = sink.start()
 
@@ -95,7 +103,7 @@ object Streaming_4 extends App {
       .writeStream
       .format("console")
       .trigger(Trigger.ProcessingTime("10 seconds"))
-      /** !!! Без опции checkpointLocation при каждом перезапуске стрима будут вычитываться все данные */
+      /** !!! без checkpointLocation - при перезапуске стрима топик будет вычитываться с начала*/
       .option("checkpointLocation", s"src/main/resources/l_7/chk/$chkName")
       .option("truncate", "false")
       .option("numRows", "20")
@@ -110,28 +118,29 @@ object Streaming_4 extends App {
       .format("rate")
       .load()
 
-  val testStreamingQuery: StreamingQuery =
+  val gracefulSink: DataStreamWriter[Row] =
     testStreamingDf
       .writeStream
       .format("console")
-      .start()
+
+//  val streamingQuery: StreamingQuery = gracefulSink.start()
 
   // isTriggerActive будет false, как только батч будет полностью обработан (т.е. произведена запись в sink)
-  while (testStreamingQuery.status.isTriggerActive) {
-    println("processing is active")
-  }
-  println("waiting for next trigger")
+//  while (streamingQuery.status.isTriggerActive) {
+//    println("processing is active")
+//  }
+//  println("waiting for next trigger")
   /** как только isTriggerActive станет false - останавливаем стрим */
-//  testStreamingQuery.stop()
+//  streamingQuery.stop()
 
-  /** Пример с маркер-файлом */
-  val isStopFile: Boolean = true
-  while (testStreamingQuery.status.isTriggerActive || !isStopFile) {
-    testStreamingQuery.awaitTermination(10000)
-  }
-//  testStreamingQuery.stop()
+  /** пример с маркер-файлом */
+//  val isStopFile: Boolean = true
+//  while (testStreamingQuery.status.isTriggerActive || !isStopFile) {
+//    streamingQuery.awaitTermination(10000)
+//  }
+//  streamingQuery.stop()
 
-  /** Еще более безопасно можно останавливать стрим с помощью foreachBatch - описание алгоритма с 2-50-00 */
+  /** более безопасно можно останавливать стрим с помощью foreachBatch - описание алгоритма с 2-50-00 */
 
 
   Thread.sleep(1000000)

@@ -8,10 +8,9 @@ import org.apache.spark.sql.functions.{col, struct, to_json}
 import org.apache.spark.sql.{DataFrame, Dataset, Row, SaveMode, SparkSession}
 
 object Datasource_2 extends App {
-  // не работает в Spark 3.4.0
-//  Logger
-//    .getLogger("org")
-//    .setLevel(Level.OFF)
+  Logger
+    .getLogger("org")
+    .setLevel(Level.OFF)
 
   val spark: SparkSession =
     SparkSession
@@ -21,7 +20,7 @@ object Datasource_2 extends App {
       .getOrCreate()
 
   val sc: SparkContext = spark.sparkContext
-  sc.setLogLevel("ERROR")
+//  sc.setLogLevel("ERROR")
 
   import spark.implicits._
 
@@ -38,7 +37,7 @@ object Datasource_2 extends App {
   println(airportsDf.count())
   println()
 
-  /** !!! Отключение записи crc файлов  */
+  /** !!! отключение записи crc файлов  */
   val hadoopConf: Configuration = sc.hadoopConfiguration
   FileSystem.get(hadoopConf).setWriteChecksum(false)
 
@@ -58,7 +57,7 @@ object Datasource_2 extends App {
   println()
 
   /**
-   *  В каждой row group для каждой колонки рассчитываются min/max значения =>
+   *  в каждой row group для каждой колонки рассчитываются min/max значения =>
    *  фильтр будет спущен в PushedFilters.
    */
   parquetDf
@@ -89,27 +88,34 @@ object Datasource_2 extends App {
 //    .parquet("src/main/resources/l_6/apples-9")
 
   /**
-   * !!! Несмотря на то, что файлы имеют разную схему - Spark ВОЗМОЖНО корректно прочитает файлы, используя обобщенную схему
-   * читается 1 произвольный паркет файл - и из него выводится схема (в нашем случае могли потерять колонку price)
+   * !!! несмотря на то, что файлы имеют разную схему - Spark ВОЗМОЖНО корректно прочитает файлы, используя обобщенную схему
+   * читается 1 произвольный паркет файл - и из него выводится схема (в нашем случае можно потерять колонку price)
    *
-   * Это работает только при ДОБАВЛЕНИИ в схему новых колонок
+   * это работает только при ДОБАВЛЕНИИ в схему новых колонок
    */
-  val applesDf: DataFrame =
+  val applesDfNoMerge: DataFrame =
     spark
       .read
       .parquet("src/main/resources/l_6/apples-9")
 
-  applesDf.show()
+  applesDfNoMerge.show()
 
   /**
-   * !!! Читает все паркет файл и выводит объединенную схему
+   * !!! spark.sql.parquet.mergeSchema == true - читает все паркет файл и выводит объединенную схему
    * без этой опции - будет прочитан 1 случайный паркет файл и из него будет выведена схема
    */
   spark.conf.set("spark.sql.parquet.mergeSchema", "true")
 
+  val applesDfMerge: DataFrame =
+    spark
+      .read
+      .parquet("src/main/resources/l_6/apples-9")
 
-  /** Если записать новый файл, ИЗМЕНИВ тип уже существующей колонки - получим ошибку */
-//  case class AppleBase(size: Int, color: String)
+  applesDfMerge.show()
+
+
+  /** если записать новый файл, ИЗМЕНИВ тип уже существующей колонки - получим ошибку */
+  /* case class AppleBase(size: Int, color: String) */
   case class AppleChanged(size: Double)
 
 //  List(AppleBase(1, "green"))
@@ -124,46 +130,52 @@ object Datasource_2 extends App {
 //    .mode(SaveMode.Append)
 //    .parquet("src/main/resources/l_6/apples-10")
 
-  // err - Failed merging schema. Failed to merge fields 'size' and 'size'. Failed to merge incompatible data types int and double
+  // err - Failed merging schema. [CANNOT_MERGE_INCOMPATIBLE_DATA_TYPE] Failed to merge incompatible data types "INT" and "DOUBLE"
 //  val changedParquetDf: DataFrame =
 //    spark
 //      .read
 //      .parquet("src/main/resources/l_6/apples-10")
 
-  /** !!! Вывод всех доступных опций для parquet */
+  /** !!! печать всех доступных опций для parquet */
   val optionDf: Dataset[Row] =
     spark
       .sql("SET -v")
       .filter($"key" contains "parquet")
 
-  optionDf.show(false)
+  optionDf.show(200, truncate = false)
 
 
-  /** Сравнение скорости записи + обработки запросов для разных форматов */
-  spark.time {
-    1 to 40 foreach { _ =>
+  /** сравнение скорости записи + обработки запросов для разных форматов */
+//  spark.time {
+//    1 to 40 foreach { _ =>
 //      airportsDf
 //        .repartition(1)
 //        .write
 //        .mode(SaveMode.Append)
 //        .parquet("src/main/resources/l_6/speed-test-11/parquet")
-      // 15938 ms
+//    }
+//  } // 16258 ms
 
+//  spark.time {
+//    1 to 40 foreach { _ =>
 //      airportsDf
 //        .repartition(1)
 //        .write
 //        .mode(SaveMode.Append)
 //        .orc("src/main/resources/l_6/speed-test-11/orc")
-      // 15371 ms
+//    }
+//  } // 16208 ms
 
+//  spark.time {
+//    1 to 40 foreach { _ =>
 //      airportsDf
 //        .repartition(1)
 //        .write
 //        .mode(SaveMode.Append)
 //        .json("src/main/resources/l_6/speed-test-11/json")
-      // 11429 ms
-    }
-  }
+//    }
+//  } // 11048 ms
+
   println()
 
   case class DatasetFormat[T](ds: Dataset[T], format: String)
@@ -192,15 +204,15 @@ object Datasource_2 extends App {
   /*
     Running parquet:
     16400
-    Time taken: 299 ms
+    Time taken: 514 ms
 
     Running orc:
     16400
-    Time taken: 463 ms
+    Time taken: 582 ms
 
     Running json:
     16810
-    Time taken: 982 ms
+    Time taken: 1573 ms
    */
 
   datasets.foreach { el =>
@@ -210,21 +222,28 @@ object Datasource_2 extends App {
   }
   /*
     Running parquet
-    Time taken: 98 ms
+    Time taken: 160 ms
 
     Running orc
-    Time taken: 86 ms
+    Time taken: 154 ms
 
     Running json
-    Time taken: 828 ms
+    Time taken: 1165 ms
    */
 
   /** json лучше хранить в паркете */
-  airportsDf
-    .select(to_json(struct(col("*"))).alias("value"))
-    .write
-    .mode(SaveMode.Overwrite)
+//  airportsDf
+//    .select(to_json(struct(col("*"))).alias("value"))
+//    .write
+//    .mode(SaveMode.Overwrite)
+//    .parquet("src/main/resources/l_6/json2parquet-12")
+
+  val parquetWithJsonDf: DataFrame =
+  spark
+    .read
     .parquet("src/main/resources/l_6/json2parquet-12")
+
+  parquetWithJsonDf.show(3, truncate = false)
 
 
   println(sc.uiWebUrl)

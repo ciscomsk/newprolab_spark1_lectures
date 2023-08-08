@@ -2,17 +2,17 @@ package l_7
 
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
-import org.apache.spark.sql.functions.{array, input_file_name, lit, shuffle}
+import org.apache.spark.sql.functions.{array, input_file_name, lit, log, shuffle}
 import org.apache.spark.sql.streaming.{DataStreamWriter, StreamingQuery, Trigger}
-import org.apache.spark.sql.{DataFrame, Row, SparkSession}
+import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
 
-import scala.util.{Failure, Try, Success}
+import scala.annotation.tailrec
+import scala.util.{Failure, Success, Try}
 
 object Streaming_1 extends App {
-  // не работает в Spark 3.4.0
-//  Logger
-//    .getLogger("org")
-//    .setLevel(Level.OFF)
+  Logger
+    .getLogger("org")
+    .setLevel(Level.OFF)
 
   val spark: SparkSession =
     SparkSession
@@ -22,18 +22,18 @@ object Streaming_1 extends App {
       .getOrCreate()
 
   val sc: SparkContext = spark.sparkContext
-  sc.setLogLevel("ERROR")
+//  sc.setLogLevel("ERROR")
   println(sc.uiWebUrl)
   println()
 
   import spark.implicits._
 
-  /** Стрим - выполняет запись в консоль */
+  /** стрим - выполняет запись в консоль */
   def createConsoleSink(df: DataFrame): DataStreamWriter[Row] =
     df
       .writeStream
       .format("console")
-      /** Как часто будут читаться/обрабатываться данные */
+      /** trigger - задает периодичность чтения/обработки новых данных */
       .trigger(Trigger.ProcessingTime("10 seconds"))
       .option("truncate", "false")
       .option("numRows", "20")
@@ -44,11 +44,11 @@ object Streaming_1 extends App {
       .format("rate")
       .load()
 
-  println(rateStreamDf.isStreaming)
+  println(s"rateStreamDf.isStreaming: ${rateStreamDf.isStreaming}")
   println()
 
   /** err - Queries with streaming sources must be executed with writeStream.start() */
-//  println(streamDf.rdd.getNumPartitions)
+//  println(rateStreamDf.rdd.getNumPartitions)
   rateStreamDf.printSchema()
   /*
     root
@@ -59,14 +59,14 @@ object Streaming_1 extends App {
   rateStreamDf.explain(true)
   /*
     == Parsed Logical Plan ==
-    StreamingRelationV2 org.apache.spark.sql.execution.streaming.sources.RateStreamProvider@36fe83d, rate, org.apache.spark.sql.execution.streaming.sources.RateStreamTable@5cb6abc8, [], [timestamp#0, value#1L]
+    StreamingRelationV2 org.apache.spark.sql.execution.streaming.sources.RateStreamProvider@42c9b1ee, rate, org.apache.spark.sql.execution.streaming.sources.RateStreamTable@306cfb8a, [], [timestamp#0, value#1L]
 
     == Analyzed Logical Plan ==
     timestamp: timestamp, value: bigint
-    StreamingRelationV2 org.apache.spark.sql.execution.streaming.sources.RateStreamProvider@36fe83d, rate, org.apache.spark.sql.execution.streaming.sources.RateStreamTable@5cb6abc8, [], [timestamp#0, value#1L]
+    StreamingRelationV2 org.apache.spark.sql.execution.streaming.sources.RateStreamProvider@42c9b1ee, rate, org.apache.spark.sql.execution.streaming.sources.RateStreamTable@306cfb8a, [], [timestamp#0, value#1L]
 
     == Optimized Logical Plan ==
-    StreamingRelationV2 org.apache.spark.sql.execution.streaming.sources.RateStreamProvider@36fe83d, rate, org.apache.spark.sql.execution.streaming.sources.RateStreamTable@5cb6abc8, [], [timestamp#0, value#1L]
+    StreamingRelationV2 org.apache.spark.sql.execution.streaming.sources.RateStreamProvider@42c9b1ee, rate, org.apache.spark.sql.execution.streaming.sources.RateStreamTable@306cfb8a, [], [timestamp#0, value#1L]
 
     == Physical Plan ==
     StreamingRelation rate, [timestamp#0, value#1L]
@@ -85,33 +85,60 @@ object Streaming_1 extends App {
 //  println(s"streamIsStopped: $streamIsStopped")
 //  println()
 
+
 //  if (!streamIsStopped) {
+//    println("stop streaming")
 //    /**
 //     * останавливаем стрим
-//     * stop - позволяет остановить(возобновить - нельзя), т.е. "убить" стрим
+//     * stop - позволяет остановить (возобновить - нельзя), т.е. фактически "убить" стрим
 //     */
-//    println("stop streaming")
 //    streamingQuery.stop()
 //
-//    /** продолжаем блокировать поток */
+//
 //    println("continue streaming")
+//
+//    /** продолжаем блокировать поток */
 //    streamingQuery.awaitTermination()
+//  }
+
+//  @tailrec
+//  def endlessAwaitTermination(sq: StreamingQuery): Unit = {
+//    sq.awaitTermination(5000)
+//    endlessAwaitTermination(sq)
+//  }
+
+//  @tailrec
+//  def streamErrorRecovery[T](dsw: DataStreamWriter[T]): Unit = {
+//    Try {
+//      val sq: StreamingQuery = dsw.start()
+//      sq.awaitTermination(5000)
+//    } match {
+//      case Failure(ex) =>
+//        streamErrorRecovery(dsw)
+//
+//      case Success(value) =>
+//        endlessAwaitTermination()
+//    }
 //  }
 
 //  while (true) {
 //    Try {
 //      streamingQuery.awaitTermination(5000)
 //    } match {
-//      case Failure(exception) => ???
-//      case Success(value) => ???
+//      case Failure(ex) =>
+//        val sq = consoleSink.start()
+//        sq.awaitTermination(5000)
+//
+//      case Success(value) =>
 //    }
 //  }
 
 
   /**
-   * Остановка всех стримов
-   * !!! Это жесткая остановка - если попасть в момент записи батча (например в БД) - часть данных записана не будет
-   * Чтобы погасить стрим gracefully - надо писать код - конец Streaming_4
+   * остановка всех стримов
+   * !!! это жесткая остановка - если попасть в момент записи батча (например в БД) - часть данных записана не будет
+   *
+   * чтобы погасить стрим gracefully - надо писать код - конец Streaming_4
    */
   def killAllStream(): Unit =
     SparkSession
@@ -132,71 +159,71 @@ object Streaming_1 extends App {
 
     val sdf = spark.readStream.format("rate").load()
     val sq = sdf.writeStream.format("console").start()
-    // Поток не блокируется - 3.4.0
+    // поток не блокируется
     System.exit(0)
 
     spark.conf.set("spark.sql.streaming.forceDeleteTempCheckpointLocation", "true")
-    val sq = sdf.writeStream.format("console").start; System.exit(0) // - запустит стрим и выйдет
+    val sdf = spark.readStream.format("rate").load()
+    val sq = sdf.writeStream.format("console").start(); System.exit(0) // - запустит стрим и выйдет
 
 
     val sdf = spark.readStream.format("rate").load()
-    val sink = sdf.writeStream.format("console")
-    val sq = sink.start(); sq.awaitTermination()
-    // sq.awaitTermination() - поток блокируется - 3.4.0
-    // System.exit(0) - реакции не будет
+    val sq = sdf.writeStream.format("console").start(); sq.awaitTermination()
+    // sq.awaitTermination() - поток блокируется
+    System.exit(0) // реакции не будет
 
-    val sq = sink.start(); val sqRes = sq.awaitTermination(5000); println(s"sqRes: $sqRes")
+    val sdf = spark.readStream.format("rate").load()
+    val sq = sdf.writeStream.format("console").start(); val sqRes = sq.awaitTermination(5000); println(s"sqRes: $sqRes")
    */
 
-  /** Стрим - выполняет запись в parquet */
+  /** стрим - выполняет запись в parquet */
   def createParquetSink(df: DataFrame, fileName: String): DataStreamWriter[Row] =
     df
       .writeStream
       .queryName("rate-parquet")
       .format("parquet")
       .option("path", s"src/main/resources/l_7/$fileName")
-      /** без - err: AnalysisException: checkpointLocation must be specified */
+      /** без checkpointLocation - err: AnalysisException: checkpointLocation must be specified */
       .option("checkpointLocation", s"src/main/resources/l_7/chk/$fileName")
       .trigger(Trigger.ProcessingTime("10 seconds"))
 
-  val parquetSink: DataStreamWriter[Row] = createParquetSink(rateStreamDf, "s1.parquet")
-//  val parquetSink: DataStreamWriter[Row] = createParquetSink(rateStreamDf.repartition(1), "s1.parquet")
+//  val parquetSink: DataStreamWriter[Row] = createParquetSink(rateStreamDf, "s1.parquet")
+  val parquetSink: DataStreamWriter[Row] = createParquetSink(rateStreamDf.repartition(1), "s1.parquet")
 //  val streamingQuery2: StreamingQuery = parquetSink.start()
 //  streamingQuery2.awaitTermination(15000)
 //  println(s"streamingQuery2.isActive: ${streamingQuery2.isActive}")
 //  println(s"streamingQuery2.name: ${streamingQuery2.name}")
-//  println()
+  println()
 
-//  println(s"streamingQuery2.lastProgress: ")
-//  println(streamingQuery2.lastProgress)
+//  println(s"streamingQuery2.lastProgress: \n${streamingQuery2.lastProgress}")
   /*
     {
-      "id" : "a7f65da5-5105-4c28-8556-f56dfc54338a",
-      "runId" : "dcb839ac-a3ff-4854-bc8d-82080f9da55d",
+      "id" : "fbaf8cb8-b5f4-414e-9bd2-c046d9045b2a",
+      "runId" : "06e66a01-d015-4eba-ad48-24f3445dd2e0",
       "name" : "rate-parquet",
-      "timestamp" : "2023-04-16T13:36:20.000Z",
+      "timestamp" : "2023-08-05T11:00:20.000Z",
       "batchId" : 7,
-      "numInputRows" : 9,
-      "inputRowsPerSecond" : 1.0034563496487903,
-      "processedRowsPerSecond" : 51.13636363636364,
+      "numInputRows" : 7,
+      "inputRowsPerSecond" : 1.0117068940598353,
+      "processedRowsPerSecond" : 27.237354085603112,
       "durationMs" : {
-        "addBatch" : 118,
-        "commitOffsets" : 17,
+        "addBatch" : 163,
+        "commitOffsets" : 35,
         "getBatch" : 0,
         "latestOffset" : 0,
-        "queryPlanning" : 8,
-        "triggerExecution" : 176,
-        "walCommit" : 29
+        "queryPlanning" : 7,
+        "triggerExecution" : 257,
+        "walCommit" : 47
       },
       "stateOperators" : [ ],
       "sources" : [ {
         "description" : "RateStreamV2[rowsPerSecond=1, rampUpTimeSeconds=0, numPartitions=default",
-        "startOffset" : 189,
-        "endOffset" : 198,
-        "latestOffset" : 198,
-        "numInputRows" : 9,
-        "inputRowsPerSecond" : 1.0034563496487903,
-        "processedRowsPerSecond" : 51.13636363636364
+        "startOffset" : 185,
+        "endOffset" : 192,
+        "latestOffset" : 192,
+        "numInputRows" : 7,
+        "inputRowsPerSecond" : 1.0117068940598353,
+        "processedRowsPerSecond" : 27.237354085603112
       } ],
       "sink" : {
         "description" : "FileSink[src/main/resources/l_7/s1.parquet]",
@@ -211,64 +238,64 @@ object Streaming_1 extends App {
 //  println(streamingQuery2.recentProgress.mkString("Array(", ", ", ")"))
   /*
     Array({
-      "id" : "a7f65da5-5105-4c28-8556-f56dfc54338a",
-      "runId" : "2a70e96f-bd09-4ce2-b792-bfefe31b03fd",
+      "id" : "fbaf8cb8-b5f4-414e-9bd2-c046d9045b2a",
+      "runId" : "06e66a01-d015-4eba-ad48-24f3445dd2e0",
       "name" : "rate-parquet",
-      "timestamp" : "2023-04-16T13:41:14.037Z",
-      "batchId" : 36,
-      "numInputRows" : 14,
+      "timestamp" : "2023-08-05T11:00:13.081Z",
+      "batchId" : 6,
+      "numInputRows" : 63,
       "inputRowsPerSecond" : 0.0,
-      "processedRowsPerSecond" : 8.588957055214724,
+      "processedRowsPerSecond" : 42.33870967741935,
       "durationMs" : {
-        "addBatch" : 1457,
-        "commitOffsets" : 17,
+        "addBatch" : 1331,
+        "commitOffsets" : 29,
         "getBatch" : 2,
         "latestOffset" : 0,
-        "queryPlanning" : 28,
-        "triggerExecution" : 1629,
-        "walCommit" : 44
+        "queryPlanning" : 29,
+        "triggerExecution" : 1484,
+        "walCommit" : 27
       },
       "stateOperators" : [ ],
       "sources" : [ {
         "description" : "RateStreamV2[rowsPerSecond=1, rampUpTimeSeconds=0, numPartitions=default",
-        "startOffset" : 478,
-        "endOffset" : 492,
-        "latestOffset" : 492,
-        "numInputRows" : 14,
+        "startOffset" : 122,
+        "endOffset" : 185,
+        "latestOffset" : 185,
+        "numInputRows" : 63,
         "inputRowsPerSecond" : 0.0,
-        "processedRowsPerSecond" : 8.588957055214724
+        "processedRowsPerSecond" : 42.33870967741935
       } ],
       "sink" : {
         "description" : "FileSink[src/main/resources/l_7/s1.parquet]",
         "numOutputRows" : -1
       }
     }, {
-      "id" : "a7f65da5-5105-4c28-8556-f56dfc54338a",
-      "runId" : "2a70e96f-bd09-4ce2-b792-bfefe31b03fd",
+      "id" : "fbaf8cb8-b5f4-414e-9bd2-c046d9045b2a",
+      "runId" : "06e66a01-d015-4eba-ad48-24f3445dd2e0",
       "name" : "rate-parquet",
-      "timestamp" : "2023-04-16T13:41:20.000Z",
-      "batchId" : 37,
-      "numInputRows" : 6,
-      "inputRowsPerSecond" : 1.006204930404159,
-      "processedRowsPerSecond" : 20.833333333333336,
+      "timestamp" : "2023-08-05T11:00:20.000Z",
+      "batchId" : 7,
+      "numInputRows" : 7,
+      "inputRowsPerSecond" : 1.0117068940598353,
+      "processedRowsPerSecond" : 27.237354085603112,
       "durationMs" : {
-        "addBatch" : 180,
-        "commitOffsets" : 29,
+        "addBatch" : 163,
+        "commitOffsets" : 35,
         "getBatch" : 0,
         "latestOffset" : 0,
-        "queryPlanning" : 16,
-        "triggerExecution" : 288,
-        "walCommit" : 57
+        "queryPlanning" : 7,
+        "triggerExecution" : 257,
+        "walCommit" : 47
       },
       "stateOperators" : [ ],
       "sources" : [ {
         "description" : "RateStreamV2[rowsPerSecond=1, rampUpTimeSeconds=0, numPartitions=default",
-        "startOffset" : 492,
-        "endOffset" : 498,
-        "latestOffset" : 498,
-        "numInputRows" : 6,
-        "inputRowsPerSecond" : 1.006204930404159,
-        "processedRowsPerSecond" : 20.833333333333336
+        "startOffset" : 185,
+        "endOffset" : 192,
+        "latestOffset" : 192,
+        "numInputRows" : 7,
+        "inputRowsPerSecond" : 1.0117068940598353,
+        "processedRowsPerSecond" : 27.237354085603112
       } ],
       "sink" : {
         "description" : "FileSink[src/main/resources/l_7/s1.parquet]",
@@ -278,8 +305,7 @@ object Streaming_1 extends App {
    */
   println()
 
-//  println(s"streamingQuery2.status: ")
-//  println(streamingQuery2.status)
+//  println(s"streamingQuery2.status: \n${streamingQuery2.status}")
   /*
     {
       "message" : "Waiting for next trigger",
@@ -289,19 +315,22 @@ object Streaming_1 extends App {
    */
   println()
 
-//  val parquetStreamDf: DataFrame = spark.read.load("src/main/resources/l_7/s1.parquet")
-//  println(parquetStreamDf.count())
-//  println()
-//
-//  parquetStreamDf.printSchema()
-//  parquetStreamDf.show(5, truncate = false)
+  val parquetStreamDf: DataFrame = spark.read.load("src/main/resources/l_7/s1.parquet")
+  println(parquetStreamDf.count())
+  println()
+
+  parquetStreamDf.printSchema()
+  parquetStreamDf.show(5, truncate = false)
 
   /** input_file_name() - позволяет просмотреть файлы, являющиеся источниками датафрейма */
-//  parquetStreamDf
-//    .select(input_file_name())
-//    .distinct()
-////    .count()
-//    .show(20, truncate = false)
+  val uniqFilesDs: Dataset[Row] =
+    parquetStreamDf
+      .select(input_file_name())
+      .distinct()
+
+  uniqFilesDs.show(20, truncate = false)
+  println(uniqFilesDs.count())
+  println()
 
   val csvOptions: Map[String, String] = Map("header" -> "true", "inferSchema" -> "true")
 
@@ -311,8 +340,9 @@ object Streaming_1 extends App {
       .options(csvOptions)
       .csv("src/main/resources/l_3/airport-codes.csv")
 
-//  airportsDf.printSchema()
-//  airportsDf.show(numRows = 1, truncate = 100, vertical = true)
+  airportsDf.printSchema()
+  airportsDf.show(numRows = 1, truncate = 100, vertical = true)
+  println()
 
   val idents: Array[String] =
     airportsDf
@@ -327,20 +357,20 @@ object Streaming_1 extends App {
 
   /**
    * shuffle - перемешивает массив
-   * shuffle(array)(0) - берет первый элемент массива
+   * shuffle(array)(0) - берет первый элемент случайно перемешанного массива
     */
   val identStreamDf: DataFrame = rateStreamDf.withColumn("ident", shuffle(array(idents.map(lit): _*))(0))
 
   val identParquetSink: DataStreamWriter[Row] = createParquetSink(identStreamDf, "s2.parquet")
-//  val identStreamQuery: StreamingQuery = identParquetSink.start()
-//  identStreamQuery.awaitTermination(15000)
+  val identStreamQuery: StreamingQuery = identParquetSink.start()
+  identStreamQuery.awaitTermination(15000)
 
   val identParquetDf: DataFrame =
     spark
       .read
       .parquet("src/main/resources/l_7/s2.parquet")
 
-  println(identParquetDf.count())
+  println(s"identParquetDf.count(): ${identParquetDf.count()}")
   println()
 
   identParquetDf.printSchema()
