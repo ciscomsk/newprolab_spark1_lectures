@@ -16,7 +16,7 @@ object ScalaTutorial extends App {
   val expr2: String = "Some" ++ " words"
 
   /**
-   * 1. значение блока == значение последнего выражения в блоке
+   * 1. значение блока равно значению последнего выражения в блоке
    * 2. return - не используется
    */
   val c: Int = {
@@ -55,7 +55,7 @@ object ScalaTutorial extends App {
   val v3: String = "Some" concat " words" // инфиксная нотация
   println(v3)
   // ==
-  val v4: String = "Some" ++ " words"
+  val v4: String = "Some" ++ " words" // инфиксная нотация
   println(v4)
   // ==
   val v5: String = "Some".++(" words")
@@ -125,24 +125,28 @@ object ScalaTutorial extends App {
     }
   }
 
-  val test: TestClass = new TestClass
-  println(">> t created")
+  val test1: TestClass = new TestClass
+  println(">> test1 created")
   println()
 
   /** Call by value - аргумент будет рассчитан 1 раз перед вызовом функцию */
   def repeatByValue(obj: Int): Unit = (1 to 3).foreach(_ => println(obj))
-  println("call by value:")
-  repeatByValue(test.`val`)
-  repeatByValue(test.lazyVal)
-  repeatByValue(test.`def`())
+  println("Call by Value:")
+  repeatByValue(test1.`val`)
+  repeatByValue(test1.lazyVal)
+  repeatByValue(test1.`def`())
+  println()
+
+  val test2: TestClass = new TestClass
+  println(">> test2 created")
   println()
 
   /** Call by name - аргумент будет рассчитываться каждый раз при обращении к нему в теле функции */
   def repeatByName(obj: => Int): Unit = (1 to 3).foreach(_ => println(obj))
-  println("call by name:")
-  repeatByName(test.`val`)
-  repeatByName(test.lazyVal)
-  repeatByName(test.`def`())
+  println("Call by Name:")
+  repeatByName(test2.`val`)
+  repeatByName(test2.lazyVal)
+  repeatByName(test2.`def`())
   println()
 
   /**
@@ -200,14 +204,16 @@ object ScalaTutorial extends App {
     } yield a + b // генератор
   // ==
   (1 to 5)
-    .flatMap {
-      a => (1 to 5).withFilter(b => a + b < 6).map(b => a + b)
+    .flatMap { a =>
+      (1 to 5)
+        .withFilter(b => a + b < 6)
+        .map(b => a + b)
     }
   println(s"for-comprehension: $res8")
   println()
 
 
-  /** Pattern matching == switch на "стероидах" */
+  /** Pattern matching - switch на "стероидах" */
   val any: Any = 10
 
   val res9: Any =
@@ -318,8 +324,10 @@ object ScalaTutorial extends App {
   /** flatten: G[F[A]] => G[A] - распаковывает внутренние коллекции (монады) */
   println("_flatten_: G[F[A]] => G[A]")
 
-  val flatten: List[Int] = List(List(1), List(2, 3), List(4, 5), Nil).flatten
-  println(flatten)
+  val originalList: List[List[Int]] = List(List(1), List(2, 3), List(4, 5), Nil)
+  val flattenedList: List[Int] = originalList.flatten
+  println(s"originalList: $originalList")
+  println(s"flattenedList: $flattenedList")
   println()
 
   /**
@@ -376,12 +384,16 @@ object ScalaTutorial extends App {
 
   // Immutable map - updateD, result type == Map
   val colorsImmutable: Map[String, String] = colors.updated("black", "#000000")
+  println(s"colors before updated: $colors")
   println(s"colorsImmutable: $colorsImmutable")
+  println(s"colors after updated: $colors")
+  println()
 
   // Mutable map - update_, result type == Unit
   val colorsMutable: mutable.Map[String, String] = mutable.Map("red" -> "#FF0000", "azure" -> "#F0FFFF")
+  println(s"colorsMutable original: $colorsMutable")
   val _: Unit = colorsMutable.update("black", "#000000")
-  println(s"colorsMutable: $colorsMutable")
+  println(s"colorsMutable after update: $colorsMutable")
   println()
 
 
@@ -409,7 +421,7 @@ object ScalaTutorial extends App {
   var tNull: (Int, String, Double) = null
   println(s"tNull: $tNull")
 //  tNull = (1, 2, 3.0) // err - type mismatch
-  tNull = (1, 2.toString, 3.0) // ok
+  tNull = (1, "2", 3.0) // ok
   println(s"tNull: $tNull")
   println()
 
@@ -454,12 +466,12 @@ object ScalaTutorial extends App {
   val listWithOption: List[Option[Int]] = List(Some(1), None, Some(2))
   println(s"listWithOption: $listWithOption")
 
-  val flattenedListWithOption: List[Int] = listWithOption.flatten
-  println(s"flattenedListWithOption: $flattenedListWithOption")
+  val flattenedListWithOptions: List[Int] = listWithOption.flatten
+  println(s"flattenedListWithOption: $flattenedListWithOptions")
   println()
 
 
-  /** Try == Success(value)/Failure(exception) - эффект возможного появления ошибки - коллекция с 0/1 элементом */
+  /** Try == Success(value)/Failure(exception) - эффект возможной ошибки - коллекция с 0/1 элементом */
   println("__Try__")
 
   val iHopeItsNumbers: List[String] = List("1", "2", "banana", "4")
@@ -532,8 +544,8 @@ object ScalaTutorial extends App {
 
     /** методы */
     def move(dx: Int, dy: Int): Unit = {
-      x = x + dx
-      y = y + dy
+      x += dx
+      y += dy
 
       println(s"Point x location: $x")
       println(s"Point y location: $y")
@@ -626,12 +638,11 @@ object ScalaTutorial extends App {
     def apply(base: String, extras: String): MyString = { // фабричный метод 2
       val s: MyString = new MyString(base)
       s.extraData = extras
-
       s
     }
   }
-  println(MyString("hello", " world"))
   println(MyString("hello"))
+  println(MyString("hello", " world"))
   println()
 
 

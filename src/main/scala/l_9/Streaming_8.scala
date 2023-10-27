@@ -8,10 +8,9 @@ import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{Column, DataFrame, Dataset, Row, SaveMode, SparkSession}
 
 object Streaming_8 extends App {
-  // не работает в Spark 3.4.0
-//  Logger
-//    .getLogger("org")
-//    .setLevel(Level.ERROR)
+  Logger
+    .getLogger("org")
+    .setLevel(Level.ERROR)
 
   val spark: SparkSession =
     SparkSession
@@ -21,7 +20,7 @@ object Streaming_8 extends App {
       .getOrCreate()
 
   val sc: SparkContext = spark.sparkContext
-  sc.setLogLevel("ERROR")
+//  sc.setLogLevel("ERROR")
   println(sc.uiWebUrl)
   println()
 
@@ -33,7 +32,7 @@ object Streaming_8 extends App {
       .writeStream
 //      .queryName(queryName)
       .format("console")
-      /** Триггер определяется на уровне sink */
+      /** триггер определяется на уровне sink */
       .trigger(Trigger.ProcessingTime("10 seconds"))
       .option("checkpointLocation", s"src/main/resources/l_9/chk/$chkName")
       .option("truncate", "false")
@@ -60,7 +59,7 @@ object Streaming_8 extends App {
       .csv("src/main/resources/l_3/airport-codes.csv")
   }
 
-  def getRandomIdent(): Column = {
+  def getRandomIdent: Column = {
     val idents: Array[String] =
       airportsDf()
         .select($"ident")
@@ -81,18 +80,25 @@ object Streaming_8 extends App {
       .readStream
       .format("rate")
       .load()
-      .withColumn("ident", getRandomIdent())
+      .withColumn("ident", getRandomIdent)
 
 //  createConsoleSink("state1", myStreamDf).start()
 
   /**
-   * !!! Стримы на основе одного датафрейма - не могут быть синхронизированы (т.к. не могут использовать общий чекпоинт)
+   * !!! стримы на основе одного источника данных - не могут быть синхронизированы (т.к. не могут использовать общий чекпоинт)
+   * если попробовать запустить два стрима с одинаковым чекпоинтом - второй не запустится
    *
+   * c queryName:
    * err - Cannot start query with name <name> as a query with that name is already active in this SparkSession
    * появляется, если стримы имеют одинаковый queryName
    *
-   * Если попробовать запустить два стрима с одинаковым чекпоинтом - второй не запустится
+   *
+   * без queryName:
+   * WARN StreamingQueryManager:
+   * Stopping existing streaming query [id=bff1f8c2-bb1a-423b-bc32-42e92f0042db, runId=287c8153-8aa6-4f8b-b1f5-807c78f00da8],
+   * as a new run is being started
    */
+//  Thread.sleep(3000)
 //  createConsoleSink("state1", myStreamDf).start()
 
 //  Thread.sleep(3000)
@@ -115,8 +121,8 @@ object Streaming_8 extends App {
 //    .start()
 
   /**
-   * !!! Стримовый датафрейм кэшировать нельзя
-   * В foreachBatch - можно
+   * !!! стримовый датафрейм кэшировать нельзя
+   * в foreachBatch - датафрейм является статическим => можно
    */
   createSink("state4", myStreamDf) { (df, id) =>
     df.cache()
@@ -128,11 +134,11 @@ object Streaming_8 extends App {
   }
 //    .start()
 
-  /** Запись каждого микробатча в паркет */
+  /** запись каждого микробатча в паркет */
   createSink("state5", myStreamDf) { (df, id) =>
     df.cache()
     val count: Long = df.count()
-    val schema = df.schema
+    val schema: StructType = df.schema
 
     println(schema.simpleString)
     println(s"Count: $count")
@@ -156,7 +162,7 @@ object Streaming_8 extends App {
 //  println(parquetDf.count())
 //  parquetDf.show(20, truncate = false)
 
-  /** Запись в паркет в зависимости от 3-го символа ident */
+  /** запись в паркет в зависимости от 3-го символа ident */
   case class Category(name: String, count: Long)
 
   createSink("state6", myStreamDf) { (df, id) =>
@@ -182,33 +188,77 @@ object Streaming_8 extends App {
         .collect()
 
     categories.foreach { category =>
-      val cName: String = category.name
-      val cCount: Long = category.count
-      println(s"cName: $cName")
-      println(s"cCount: $cCount")
+      val categoryName: String = category.name
+      val categoryCount: Long = category.count
+      println(s"categoryName: $categoryName")
+      println(s"categoryCount: $categoryCount")
       println()
 
-      val filteredDf: Dataset[Row] = withSymbolDf.filter($"name" === cName)
+      val filteredDf: Dataset[Row] = withSymbolDf.filter($"name" === categoryName)
 
       filteredDf
         .write
         .mode(SaveMode.Append)
-        .parquet(s"src/main/resources/l_9/state6.parquet/$cName")
+        .parquet(s"src/main/resources/l_9/state6.parquet/$categoryName")
     }
 
     withSymbolDf.unpersist()
   }
 //    .start()
 
-  val parquetDf2: DataFrame =
-    spark
-      .read
-      .parquet("src/main/resources/l_9/state6.parquet/*")
+//  val parquetDf2: DataFrame =
+//    spark
+//      .read
+//      .parquet("src/main/resources/l_9/state6.parquet/*")
+//
+//  println(parquetDf2.count())
+//  parquetDf2.show(20, truncate = false)
 
-  println(parquetDf2.count())
-  parquetDf2.show(20, truncate = false)
+  createSink("state6-coalesce", myStreamDf) { (df, id) =>
+    df.cache()
+    val count: Long = df.count()
+    val schema: StructType = df.schema
 
-  /** Продолжение с coalesce в Streaming_9 */
+    println(schema.simpleString)
+    println(s"Count: $count")
+    println(s"BatchId: $id")
+    println()
+
+    val withSymbolDf: DataFrame = df.withColumn("name", split($"ident", "")(2))
+    withSymbolDf.cache()
+    withSymbolDf.count()
+    df.unpersist()
+
+    val categories: Array[Category] =
+      withSymbolDf
+        .groupBy($"name")
+        .count()
+        .as[Category]
+        .collect()
+
+    val coalescedDf: Dataset[Row] = withSymbolDf.coalesce(1)
+    coalescedDf.cache()
+    coalescedDf.count()
+    withSymbolDf.unpersist()
+
+    categories.foreach { category =>
+      val categoryName: String = category.name
+      val categoryCount: Long = category.count
+      println(s"categoryName: $categoryName")
+      println(s"categoryCount: $categoryCount")
+      println()
+
+      val filteredDf: Dataset[Row] = coalescedDf.filter($"name" === categoryName)
+
+      filteredDf
+        .write
+        .mode(SaveMode.Append)
+        .parquet(s"src/main/resources/l_9/state6-coalesce.parquet/$categoryName")
+    }
+
+    coalescedDf.unpersist()
+  }
+    .start()
 
 
   Thread.sleep(1000000)

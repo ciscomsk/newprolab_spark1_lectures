@@ -8,10 +8,9 @@ import org.apache.spark.sql.types.{LongType, TimestampType}
 import org.apache.spark.sql.{Column, DataFrame, Dataset, Row, SparkSession}
 
 object Streaming_5 extends App {
-  // не работает в Spark 3.4.0
-//  Logger
-//    .getLogger("org")
-//    .setLevel(Level.ERROR)
+  Logger
+    .getLogger("org")
+    .setLevel(Level.ERROR)
 
   val spark: SparkSession =
     SparkSession
@@ -21,7 +20,7 @@ object Streaming_5 extends App {
       .getOrCreate()
 
   val sc: SparkContext = spark.sparkContext
-  sc.setLogLevel("ERROR")
+//  sc.setLogLevel("ERROR")
   println(sc.uiWebUrl)
   println()
 
@@ -77,7 +76,7 @@ object Streaming_5 extends App {
     shuffledArray(0)
   }
 
-  /** Удаление дубликатов */
+  /** удаление дубликатов */
 
   /** v1 - без использования watermark */
   val streamDfWithDuplicates: DataFrame =
@@ -97,7 +96,7 @@ object Streaming_5 extends App {
       .withColumn("ident", getRandomIdent)
       .dropDuplicates(Seq("ident"))
 
-//  createConsoleSink("state2_WithoutDuplicates", streamingDfWithoutDuplicates).start()
+  createConsoleSink("state2_WithoutDuplicates", streamingDfWithoutDuplicates).start()
 
   /** v2 - с использованием watermark */
   val streamingDfWithoutDuplicatesWatermark: Dataset[Row] =
@@ -116,12 +115,12 @@ object Streaming_5 extends App {
        * + удаляет хэши от старых событий (которые точно уже не подойдут по watermark)
        */
       .dropDuplicates(Seq("ident", "timestamp"))
-//      /** !!! Удаления дубликатов в этом конкретном примере не происходит т.к. timestamp всегда уникален */
+      /** !!! удаления дубликатов в этом конкретном примере не происходит т.к. timestamp всегда уникален */
 
 //  createConsoleSink("state3_WithoutDuplicatesWatermark", streamingDfWithoutDuplicatesWatermark).start()
 
   /**
-   * Если требуется удалять дубликаты в каком-либо временном диапазоне -
+   * если требуется удалять дубликаты в каком-либо временном диапазоне -
    * нужно округлять timestamp до необходимого значения
    */
   val streamingDfWithoutDuplicatesWatermarkRounded: Dataset[Row] =
@@ -131,7 +130,7 @@ object Streaming_5 extends App {
       .load()
       .withColumn("ident", getRandomIdent)
       /**
-       * Удаление дубликатов в рамках 1-й минуты
+       * удаление дубликатов в рамках 1-й минуты
        * cast(LongType) - для удаления дробной части
        */
       .withColumn("timestamp",

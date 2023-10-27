@@ -11,10 +11,9 @@ import org.apache.spark.sql.{Column, DataFrame, Dataset, Row, SaveMode, SparkSes
 import scala.collection.parallel.CollectionConverters._
 
 object Streaming_9 extends App {
-  // не работает в Spark 3.4.0
-//  Logger
-//    .getLogger("org")
-//    .setLevel(Level.ERROR)
+  Logger
+    .getLogger("org")
+    .setLevel(Level.ERROR)
 
   val spark: SparkSession =
     SparkSession
@@ -24,7 +23,7 @@ object Streaming_9 extends App {
       .getOrCreate()
 
   val sc: SparkContext = spark.sparkContext
-  sc.setLogLevel("ERROR")
+//  sc.setLogLevel("ERROR")
   println(sc.uiWebUrl)
   println()
 
@@ -33,53 +32,22 @@ object Streaming_9 extends App {
   case class Category(name: String, count: Long)
 
   def airportsDf(): DataFrame = {
-    /** !!! inferSchema добавляет 2 джобы по выводу схемы в даг */
     val csvOptions: Map[String, String] = Map("header" -> "true", "inferSchema" -> "true")
 
-    val testSchema: StructType =
-      StructType.fromDDL("ident STRING,type STRING,name STRING,elevation_ft INT,continent STRING,iso_country STRING,iso_region STRING,municipality STRING,gps_code STRING,iata_code STRING,local_code STRING,coordinates STRING")
-
-    val csvDf: DataFrame =
-      spark
-        .read
-//        .schema(testSchema)
-        .options(csvOptions)
-        .csv("src/main/resources/l_3/airport-codes.csv")
-
-//    csvDf.explain()
-    /*
-      == Physical Plan ==
-      FileScan csv [ident#21,type#22,name#23,elevation_ft#24,continent#25,iso_country#26,iso_region#27,municipality#28,gps_code#29,iata_code#30,local_code#31,coordinates#32] Batched: false, DataFilters: [], Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_country:string,...
-     */
-
-//    println(csvDf.schema.toDDL)
-    csvDf
+    spark
+      .read
+      .options(csvOptions)
+      .csv("src/main/resources/l_3/airport-codes.csv")
   }
 
-//  val testDf: DataFrame = airportsDf()
-//  Thread.sleep(100000)
-
-  def getRandomIdent(): Column = {
-    val identsDs: Dataset[String] =
+  def getRandomIdent: Column = {
+    val idents: Array[String] =
       airportsDf()
         .select($"ident")
         .limit(20)
-        .distinct
+        .distinct()
         .as[String]
-
-//    identsDs.explain()
-    /*
-      == Physical Plan ==
-      AdaptiveSparkPlan isFinalPlan=false
-      +- HashAggregate(keys=[ident#21], functions=[])
-         +- HashAggregate(keys=[ident#21], functions=[])
-            +- GlobalLimit 20, 0
-               +- Exchange SinglePartition, ENSURE_REQUIREMENTS, [plan_id=41]
-                  +- LocalLimit 20
-                     +- FileScan csv [ident#21] Batched: false, DataFilters: [], Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<ident:string>
-     */
-
-    val idents: Array[String] = identsDs.collect()
+        .collect()
 
     val columnArray: Array[Column] = idents.map(lit)
     val sparkArray: Column = array(columnArray: _*)
@@ -101,14 +69,8 @@ object Streaming_9 extends App {
       .readStream
       .format("rate")
       .load()
-      .withColumn("ident", getRandomIdent())
+      .withColumn("ident", getRandomIdent)
 
-//  myStreamDf.explain()
-  /*
-    == Physical Plan ==
-    *(1) Project [timestamp#0, value#1L, shuffle([00A,00AA,00AK,00AL,00AR,00AS,00AZ,00CA,00CL,00CN,00CO,00FA,00FD,00FL,00GA,00GE,00HI,00ID,00IG,00II], Some(-512346443606943889))[0] AS ident#51]
-    +- StreamingRelation rate, [timestamp#0, value#1L]
-   */
 
   val udf_wait: UserDefinedFunction = udf { () => Thread.sleep(1000); true }
 
@@ -163,7 +125,10 @@ object Streaming_9 extends App {
 
     val categories: Array[Category] = categoriesDs.collect()
 
-    /** Объединим датафрейм в 1 партицию - чтобы в categories.foreach записывалось по 1 файлу для каждой категории => снижаем нагрузку на hdfs */
+    /**
+     * объединяем датафрейм в 1 партицию
+     * чтобы в categories.foreach записывалось по 1 файлу для каждой категории => снижаем нагрузку на hdfs
+     */
     val coalescedDf: Dataset[Row] = withSymbolDf.coalesce(1)
 
 //    coalescedDf.explain()
@@ -207,8 +172,8 @@ object Streaming_9 extends App {
        */
 
       /**
-       * !!! Запись выполняется последовательно в 1 ПОТОК (т.к. coalesce(1)) и является БЛОКИРУЮЩЕЙ операцией (остальные ядра в этот момент простаивают)
-       * !!! Пока не закончится запись определенный ident - запись следующего не начнется
+       * !!! запись выполняется последовательно в 1 ПОТОК (т.к. coalesce(1)) и является БЛОКИРУЮЩЕЙ операцией (остальные ядра в этот момент простаивают)
+       * !!! пока не закончится запись определенный ident - запись следующего не начнется
        * Spark UI => Executors => Cores/Active Tasks
        */
       resDf
@@ -268,7 +233,7 @@ object Streaming_9 extends App {
 
     coalescedDf.unpersist()
   }
-    .start()
+//    .start()
 
 
   Thread.sleep(1000000)

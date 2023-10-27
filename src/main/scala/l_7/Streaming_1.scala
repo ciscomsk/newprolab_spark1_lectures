@@ -188,7 +188,7 @@ object Streaming_1 extends App {
       .trigger(Trigger.ProcessingTime("10 seconds"))
 
 //  val parquetSink: DataStreamWriter[Row] = createParquetSink(rateStreamDf, "s1.parquet")
-  val parquetSink: DataStreamWriter[Row] = createParquetSink(rateStreamDf.repartition(1), "s1.parquet")
+//  val parquetSink: DataStreamWriter[Row] = createParquetSink(rateStreamDf.repartition(1), "s1.parquet")
 //  val streamingQuery2: StreamingQuery = parquetSink.start()
 //  streamingQuery2.awaitTermination(15000)
 //  println(s"streamingQuery2.isActive: ${streamingQuery2.isActive}")
