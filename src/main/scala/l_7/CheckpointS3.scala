@@ -6,10 +6,6 @@ import org.apache.spark.sql.streaming.Trigger
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 object CheckpointS3 extends App {
-  Logger
-    .getLogger("org")
-    .setLevel(Level.OFF)
-
   val spark: SparkSession =
     SparkSession
       .builder()
@@ -18,6 +14,7 @@ object CheckpointS3 extends App {
       .getOrCreate()
 
   val sc: SparkContext = spark.sparkContext
+//  sc.setLogLevel("ERROR")
 
   sc.hadoopConfiguration.set("fs.s3a.access.key", "admin")
   sc.hadoopConfiguration.set("fs.s3a.secret.key", "adminsecretkey")
@@ -40,5 +37,4 @@ object CheckpointS3 extends App {
     .awaitTermination(15000)
 
   println("done")
-
 }

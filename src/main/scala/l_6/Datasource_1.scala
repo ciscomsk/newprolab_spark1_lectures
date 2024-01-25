@@ -5,14 +5,9 @@ import org.apache.spark.SparkContext
 import org.apache.spark.sql.types.{DataType, StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 
-import scala.io.BufferedSource
-import scala.io.Source.fromFile
+import scala.util.{Try, Using}
 
 object Datasource_1 extends App {
-  Logger
-    .getLogger("org")
-    .setLevel(Level.OFF)
-
   val spark: SparkSession =
     SparkSession
       .builder()
@@ -57,7 +52,6 @@ object Datasource_1 extends App {
       .csv("src/main/resources/l_6/airports-2.csv")
 
   airportsReadDf.printSchema()
-  airportsReadDf.show(numRows = 1, truncate = 100, vertical = true)
   /*
     root
      |-- 00A0: string (nullable = true)
@@ -73,6 +67,7 @@ object Datasource_1 extends App {
      |-- 00A10: string (nullable = true)
      |-- 40.07080078125, -74.93360137939453: string (nullable = true)
    */
+  airportsReadDf.show(numRows = 1, truncate = 100, vertical = true)
 
   val headerLinesCount: Long =
     spark
@@ -91,7 +86,7 @@ object Datasource_1 extends App {
       .head()
       .toString()
 
-  println(firstLineWritedDf)
+  println(s"firstLineWritedDf: $firstLineWritedDf")
   println()
 
   /** если прочитать с header == false - названия колонок будут сгенерированы автоматически - _с0/_с1/... */
@@ -103,14 +98,14 @@ object Datasource_1 extends App {
     .csv("src/main/resources/l_6/airports-2.csv")
     .printSchema()
 
-  /** сохранять схему удобно в json */
+  /** сохранение схемы в json */
   val airportDfSchemaJson: String = airportsDf.schema.json
-  println(airportDfSchemaJson)
+  println(s"airportDfSchemaJson: $airportDfSchemaJson")
   println()
 
   /** импорт схемы */
   val importedSchema: DataType = DataType.fromJson(airportDfSchemaJson)
-  println(importedSchema)
+  println(s"importedSchema: $importedSchema")
   println()
 
   /** чтение со схемой */
@@ -128,15 +123,19 @@ object Datasource_1 extends App {
   println(s"airportsDf2.rdd.getNumPartitions: ${airportsDf2.rdd.getNumPartitions}")
   println()
 
-  /** получение схемы из шапки csv */
-
-  /** v1 - с помощью команд терминала */
+  /** Получение схемы из шапки csv */
+  /** v1.1 - с помощью команд терминала */
   import sys.process._
   val originalCsvTerminal: String = "head -n 1 src/main/resources/l_3/airport-codes.csv".!!
   println(originalCsvTerminal)
 
-  /** v2 - c помощью scala.io */
-  val originalCsvIO: BufferedSource = fromFile("src/main/resources/l_3/airport-codes.csv")
+  /** v1.2 - c помощью scala.io */
+  val firstLine: Try[String] =
+    Using(scala.io.Source.fromFile("src/main/resources/l_3/airport-codes.csv")) { bs =>
+    bs.getLines().next()
+  }
+
+  val originalCsvIO: scala.io.BufferedSource = scala.io.Source.fromFile("src/main/resources/l_3/airport-codes.csv")
   val firstLineOriginalCsv: String = originalCsvIO.getLines.next()
   println(firstLineOriginalCsv)
 
@@ -165,7 +164,7 @@ object Datasource_1 extends App {
       .options(csvOptions2)
       .csv("src/main/resources/l_6/airports-3.csv.gz")
 
-  /** !!! сжатый файл при чтении превращается ровно в 1 партицию - антипаттерн */
+  /** !!! Сжатый файл читается в 1 партицию - антипаттерн */
   println(s"compressedDf.rdd.getNumPartitions: ${compressedDf.rdd.getNumPartitions}")
   println()
 
@@ -177,16 +176,28 @@ object Datasource_1 extends App {
 //    .partitionBy("iso_region", "iso_country")
 //    .json("src/main/resources/l_6/airports-4.json_partitioned")
 
-  val lsRes: Int =
+  val lsCount: Int =
     "ls -laR src/main/resources/l_6/airports-4.json_partitioned".!!
       .split("\n")
       .length
 
-  println(lsRes)
+  println(lsCount)
   println()
 
+  val ls: String =
+    "ls -lah src/main/resources/l_6/airports-4.json_partitioned/iso_region=AD-04/iso_country=AD".!!
+
+  println(ls)
+
+  /** !!! Колонки партицирования не входят в состав записанных файлов */
+  val cat: String =
+    "cat src/main/resources/l_6/airports-4.json_partitioned/iso_region=AD-04/iso_country=AD/part-00000-176c6c89-0ad1-47e7-9b3d-c1301efcd2f2.c000.json".!!
+
+  println(cat)
+
+
   /**
-   * !!! отключение записи _SUCCESS файлов
+   * !!! Отключение записи _SUCCESS файлов
    * sc.hadoopConfiguration.set("mapreduce.fileoutputcommitter.marksuccessfuljobs", "false")
    *
    * получение файловой системы с которой работает Spark
@@ -211,7 +222,7 @@ object Datasource_1 extends App {
 
   /** сохранение датасета в text - датафрейм должен содержать 1 StringType колонку */
 
-  // err - Column `elevation_ft` has a data type of int, which is not supported by Text.
+  // err - [UNSUPPORTED_DATA_TYPE_FOR_DATASOURCE] The Text datasource doesn't support the column `elevation_ft` of the type "INT"
 //  airportsDf
 //    .write
 //    .mode(SaveMode.Overwrite)
@@ -227,29 +238,30 @@ object Datasource_1 extends App {
 //    .save("src/main/resources/l_6/airports-6.text")
 
   // ок
-//  airportsDf
+  airportsDf
 //    .select($"ident".as("value"))
 //    .write
 //    .mode(SaveMode.Overwrite)
 //    .format("text")
-//    .save("src/main/resources/l_6/airports-6.text")
+////    .save("src/main/resources/l_6/airports-6.text")
+//    .save("src/main/resources/l_6/airports-6.multiformat")
 
   /**
-   * !!! файловые форматы не имеют автоматической валидации данных при записи
+   * !!! Файловые форматы не имеют автоматической валидации данных при записи
    * => достаточно легко ошибиться и записать данные в другом формате
    */
 
-  /** как бы по ошибке запишем в ту же папку данные в формате json - SaveMode.Append */
+  /** "по ошибке" запишем данные в формате json в папку с text - SaveMode.Append */
 //  airportsDf
 //    .write
 //    .mode(SaveMode.Append)
-//    .json("src/main/resources/l_6/airports-6.text")
+//    .json("src/main/resources/l_6/airports-6.multiformat")
 
   /** при попытке чтения данных как text получим все данные, т.к. формат json сохраняет все в виде JSON строк */
   val mixedTextDf: DataFrame =
     spark
       .read
-      .text("src/main/resources/l_6/airports-6.text")
+      .text("src/main/resources/l_6/airports-6.multiformat")
 
   println("mixedTextDf: ")
   mixedTextDf.show(3, truncate = false)
@@ -258,10 +270,10 @@ object Datasource_1 extends App {
   val mixedJsonDf: DataFrame =
     spark
       .read
-      .json("src/main/resources/l_6/airports-6.text")
+      .json("src/main/resources/l_6/airports-6.multiformat")
     /** можно читать только файлы определенного формата - *.'format' */
-//      .json("src/main/resources/l_6/airports-6.text/*.json")
-//      .json("src/main/resources/l_6/airports-6.text/*.txt")
+//      .json("src/main/resources/l_6/airports-6.multiformat/*.json")
+//      .json("src/main/resources/l_6/airports-6.multiformat/*.txt")
 
   println("mixedJsonDf: ")
   mixedJsonDf.printSchema()
@@ -273,16 +285,13 @@ object Datasource_1 extends App {
     .na.drop("all", Seq("_corrupt_record")) // у валидных строк _corrupt_record == null
     /** начиная со Spark 2.3 нельзя выбирать только колонку _corrupt_record */
     /*
-      Exception in thread "main" org.apache.spark.sql.AnalysisException:
-      Since Spark 2.3, the queries from raw JSON/CSV files are disallowed when the
+      Exception in thread "main" org.apache.spark.sql.AnalysisException: Since Spark 2.3, the queries from raw JSON/CSV files are disallowed when the
       referenced columns only include the internal corrupt record column
-      (named _corrupt_record by default).
-      For example:
+      (named _corrupt_record by default). For example:
       spark.read.schema(schema).csv(file).filter($"_corrupt_record".isNotNull).count()
       and spark.read.schema(schema).csv(file).select("_corrupt_record").show().
       Instead, you can cache or save the parsed results and then send the same query.
-      For example,
-      val df = spark.read.schema(schema).csv(file).cache() and then
+      For example, val df = spark.read.schema(schema).csv(file).cache() and then
       df.filter($"_corrupt_record".isNotNull).count()
      */
 //    .select($"_corrupt_record")
@@ -291,24 +300,24 @@ object Datasource_1 extends App {
 
 
   /**
-   * !!! динамическая перезапись партиций
+   * !!! Динамическая перезапись партиций
    * без этой опции будут удаляться все партиции, а не только присутствующие в записываемом датасете
    */
   // v1
-  spark.conf.set("spark.sql.sources.partitionOverwriteMode", "dynamic")
+//  spark.conf.set("spark.sql.sources.partitionOverwriteMode", "dynamic")
 
-//  airportsDf
-//    .filter($"iso_country".isin("RU", "US")) // 1-й запуск
+  airportsDf
+    .filter($"iso_country".isin("RU", "US")) // 1-й запуск
 //    .filter($"iso_country".isin("GB", "CN")) // 2-й запуск
-//    .write
-    // v2
-//    .option("spark.sql.sources.partitionOverwriteMode", "dynamic")
-//    .format("json")
-//    .mode(SaveMode.Overwrite)
-//    .partitionBy("iso_country")
-//    .save("src/main/resources/l_6/airports-7.dynamicOverwrite")
+    .write
+    // !!! v2 - НЕ РАБОТАЕТ
+    .option("spark.sql.sources.partitionOverwriteMode", "dynamic")
+    .format("json")
+    .mode(SaveMode.Overwrite)
+    .partitionBy("iso_country")
+    .save("src/main/resources/l_6/airports-7.dynamicOverwrite")
 
-  /** семплирование - чтение определенной части данных для вывода схемы с типами */
+  /** Семплирование - чтение определенной части данных для вывода схемы с типами */
   spark.time {
     val csvOptions: Map[String, String] = Map("header" -> "true", "inferSchema" -> "true", "samplingRatio" -> "0.1")
 
@@ -319,7 +328,7 @@ object Datasource_1 extends App {
         .csv("src/main/resources/l_3/airport-codes.csv")
 
     airportsDf.printSchema()
-  } // 160 ms
+  } // 135 ms
   println()
 
   spark.time {
@@ -332,7 +341,7 @@ object Datasource_1 extends App {
         .csv("src/main/resources/l_3/airport-codes.csv")
 
     airportsDf.printSchema
-  } // 201 ms
+  } // 187 ms
   println()
 
 

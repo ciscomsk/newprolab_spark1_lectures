@@ -8,10 +8,6 @@ import org.apache.spark.sql.functions.{col, struct, to_json}
 import org.apache.spark.sql.{DataFrame, Dataset, Row, SaveMode, SparkSession}
 
 object Datasource_2 extends App {
-  Logger
-    .getLogger("org")
-    .setLevel(Level.OFF)
-
   val spark: SparkSession =
     SparkSession
       .builder()
@@ -37,7 +33,7 @@ object Datasource_2 extends App {
   println(airportsDf.count())
   println()
 
-  /** !!! отключение записи crc файлов  */
+  /** !!! Отключение записи crc файлов  */
   val hadoopConf: Configuration = sc.hadoopConfiguration
   FileSystem.get(hadoopConf).setWriteChecksum(false)
 
@@ -57,7 +53,7 @@ object Datasource_2 extends App {
   println()
 
   /**
-   *  в каждой row group для каждой колонки рассчитываются min/max значения =>
+   *  В каждой row group для каждой колонки рассчитываются min/max значения =>
    *  фильтр будет спущен в PushedFilters.
    */
   parquetDf
@@ -72,10 +68,10 @@ object Datasource_2 extends App {
    */
 
   /** Schema evolution */
-  case class AppleBase(size: Int, color: String)
+  case class AppleBase1(size: Int, color: String)
   case class PriceApple(size: Int, color: String, price: Double)
 
-//  List(AppleBase(1, "green"))
+//  List(AppleBase1(1, "green"))
 //    .toDS
 //    .write
 //    .mode(SaveMode.Append)
@@ -88,8 +84,8 @@ object Datasource_2 extends App {
 //    .parquet("src/main/resources/l_6/apples-9")
 
   /**
-   * !!! несмотря на то, что файлы имеют разную схему - Spark ВОЗМОЖНО корректно прочитает файлы, используя обобщенную схему
-   * читается 1 произвольный паркет файл - и из него выводится схема (в нашем случае можно потерять колонку price)
+   * !!! Несмотря на то, что файлы имеют разную схему - Spark ВОЗМОЖНО корректно прочитает файлы, используя обобщенную схему
+   * Перед чтением всем данных читается 1 произвольный паркет файл и из него читается схема (в нашем случае можно потерять колонку price)
    *
    * это работает только при ДОБАВЛЕНИИ в схему новых колонок
    */
@@ -101,8 +97,8 @@ object Datasource_2 extends App {
   applesDfNoMerge.show()
 
   /**
-   * !!! spark.sql.parquet.mergeSchema == true - читает все паркет файл и выводит объединенную схему
-   * без этой опции - будет прочитан 1 случайный паркет файл и из него будет выведена схема
+   * !!! spark.sql.parquet.mergeSchema == true - будут прочитаны схемы всех паркет файлов и создана ОБЪЕДИНЕННАЯ схема
+   * false - будет прочитан 1 случайный паркет файл и из него будет прочитана схема
    */
   spark.conf.set("spark.sql.parquet.mergeSchema", "true")
 
@@ -114,11 +110,11 @@ object Datasource_2 extends App {
   applesDfMerge.show()
 
 
-  /** если записать новый файл, ИЗМЕНИВ тип уже существующей колонки - получим ошибку */
-  /* case class AppleBase(size: Int, color: String) */
+  /** Если записать новый файл, ИЗМЕНИВ тип уже существующей колонки - получим ошибку */
+  case class AppleBase2(size: Int, color: String)
   case class AppleChanged(size: Double)
 
-//  List(AppleBase(1, "green"))
+//  List(AppleBase2(1, "green"))
 //    .toDS
 //    .write
 //    .mode(SaveMode.Append)
@@ -130,13 +126,17 @@ object Datasource_2 extends App {
 //    .mode(SaveMode.Append)
 //    .parquet("src/main/resources/l_6/apples-10")
 
-  // err - Failed merging schema. [CANNOT_MERGE_INCOMPATIBLE_DATA_TYPE] Failed to merge incompatible data types "INT" and "DOUBLE"
+  /*
+    err - [CANNOT_MERGE_SCHEMAS] Failed merging schemas:
+    Initial schema: "STRUCT<size: DOUBLE>"
+    Schema that cannot be merged with the initial schema: "STRUCT<size: INT, color: STRING>"
+   */
 //  val changedParquetDf: DataFrame =
 //    spark
 //      .read
 //      .parquet("src/main/resources/l_6/apples-10")
 
-  /** !!! печать всех доступных опций для parquet */
+  /** !!! Печать всех доступных опций для parquet */
   val optionDf: Dataset[Row] =
     spark
       .sql("SET -v")
@@ -145,36 +145,36 @@ object Datasource_2 extends App {
   optionDf.show(200, truncate = false)
 
 
-  /** сравнение скорости записи + обработки запросов для разных форматов */
-//  spark.time {
-//    1 to 40 foreach { _ =>
-//      airportsDf
-//        .repartition(1)
-//        .write
-//        .mode(SaveMode.Append)
-//        .parquet("src/main/resources/l_6/speed-test-11/parquet")
-//    }
-//  } // 16258 ms
+  /** Сравнение скорости записи + обработки запросов для разных форматов */
+  spark.time {
+    1 to 40 foreach { _ =>
+      airportsDf
+        .repartition(1)
+        .write
+        .mode(SaveMode.Append)
+        .parquet("src/main/resources/l_6/speed-test-11/parquet")
+    }
+  } // 14143 ms
 
-//  spark.time {
-//    1 to 40 foreach { _ =>
-//      airportsDf
-//        .repartition(1)
-//        .write
-//        .mode(SaveMode.Append)
-//        .orc("src/main/resources/l_6/speed-test-11/orc")
-//    }
-//  } // 16208 ms
+  spark.time {
+    1 to 40 foreach { _ =>
+      airportsDf
+        .repartition(1)
+        .write
+        .mode(SaveMode.Append)
+        .orc("src/main/resources/l_6/speed-test-11/orc")
+    }
+  } // 14569 ms
 
-//  spark.time {
-//    1 to 40 foreach { _ =>
-//      airportsDf
-//        .repartition(1)
-//        .write
-//        .mode(SaveMode.Append)
-//        .json("src/main/resources/l_6/speed-test-11/json")
-//    }
-//  } // 11048 ms
+  spark.time {
+    1 to 40 foreach { _ =>
+      airportsDf
+        .repartition(1)
+        .write
+        .mode(SaveMode.Append)
+        .json("src/main/resources/l_6/speed-test-11/json")
+    }
+  } // 10289 ms
 
   println()
 
@@ -187,48 +187,48 @@ object Datasource_2 extends App {
       DatasetFormat(spark.read.json("src/main/resources/l_6/speed-test-11/json"), "json")
     )
 
-  datasets.foreach { el =>
-    println(s"Running ${el.format}: ")
-
-    spark.time {
-      val count: Long =
-        el
-          .ds
-          .filter($"iso_country" === "RU" and $"elevation_ft" > 300)
-          .count()
-
-      println(count)
-    }
-    println()
-  }
+//  datasets.foreach { dsf =>
+//    println(s"Running ${dsf.format}: ")
+//
+//    spark.time {
+//      val count: Long =
+//        dsf
+//          .ds
+//          .filter($"iso_country" === "RU" and $"elevation_ft" > 300)
+//          .count()
+//
+//      println(count)
+//    }
+//    println()
+//  }
   /*
     Running parquet:
     16400
-    Time taken: 514 ms
+    Time taken: 354 ms
 
     Running orc:
     16400
-    Time taken: 582 ms
+    Time taken: 405 ms
 
     Running json:
-    16810
-    Time taken: 1573 ms
+    16400
+    Time taken: 1103 ms
    */
 
-  datasets.foreach { el =>
-    println(s"Running ${el.format}")
-    spark.time { el.ds.count() }
-    println()
-  }
+//  datasets.foreach { dsf =>
+//    println(s"Running ${dsf.format}")
+//    spark.time { dsf.ds.count() }
+//    println()
+//  }
   /*
     Running parquet
-    Time taken: 160 ms
+    Time taken: 100 ms
 
     Running orc
-    Time taken: 154 ms
+    Time taken: 82 ms
 
     Running json
-    Time taken: 1165 ms
+    Time taken: 905 ms
    */
 
   /** json лучше хранить в паркете */

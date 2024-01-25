@@ -8,10 +8,6 @@ import org.apache.spark.sql.functions.{broadcast, expr, udf, col}
 import org.apache.spark.sql.{Column, DataFrame, Dataset, Row, SparkSession}
 
 object DataFrame_6 extends App {
-  Logger
-    .getLogger("org")
-    .setLevel(Level.OFF)
-
   val spark: SparkSession =
     SparkSession
       .builder()
@@ -32,14 +28,13 @@ object DataFrame_6 extends App {
       .options(csvOptions)
       .csv("src/main/resources/l_3/airport-codes.csv")
 
-  /** оптимизация соединений и группировок */
+  /** Оптимизация соединений и группировок */
   val leftDf: DataFrame = airportsDf.select($"type", $"ident", $"iso_country")
 
   val rightDf: DataFrame =
     airportsDf
       .groupBy($"type")
       .count()
-
 
   /** BroadcastHash Join */
   val resDf: DataFrame = leftDf.join(broadcast(rightDf), Seq("type"), "inner")
@@ -139,7 +134,7 @@ object DataFrame_6 extends App {
       .map { date =>
         leftDf.filter(dateExpression).join(right.filter(dateExpression), Seq(...), "inner")
       }
-      .reduce { (acc, df) => acc.unionAll(df) }
+      .reduce { (df1, df2) => df1.unionAll(df2) }
 
     !!! unionAll - важен порядок колонок, есть unionByName
    */
@@ -178,97 +173,15 @@ object DataFrame_6 extends App {
     +- *(2) Scan ExistingRDD[type#191,count#192L]
    */
 
+  /** Cartesian product num partitions == left num partitions * right num partitions */
   println(
     s"""Partition summary:
        |left=${leftDf2.rdd.getNumPartitions}
        |right=${rightDf2.rdd.getNumPartitions}
        |result=${resDf5.rdd.getNumPartitions}
-       |""".stripMargin)
-    // cartesian product num partitions == left num partitions * right num partitions
+       |""".stripMargin
+  )
 
-  /**
-   * cнижение объема shuffle
-   *
-   * предварительное репартиционирование по ключам имеет смысл делать если после него идет
-   * несколько операций требующих репартицирования по одинаковым ключам (Exchange hashpartitioning)
-   */
-  spark.time {
-    val leftDf: DataFrame = airportsDf
-
-    val rightDf: DataFrame =
-      airportsDf
-        .groupBy($"type")
-        .count()
-
-    val joinedDf: DataFrame = leftDf.join(rightDf, Seq("type"))
-
-    joinedDf.explain()
-    /*
-      == Physical Plan ==
-      AdaptiveSparkPlan isFinalPlan=false
-      +- Project [type#18, ident#17, name#19, elevation_ft#20, continent#21, iso_country#22, iso_region#23, municipality#24, gps_code#25, iata_code#26, local_code#27, coordinates#28, count#231L]
-         +- SortMergeJoin [type#18], [type#235], Inner
-            :- Sort [type#18 ASC NULLS FIRST], false, 0
-            :  +- Exchange hashpartitioning(type#18, 200), ENSURE_REQUIREMENTS, [plan_id=266]
-            :     +- Filter isnotnull(type#18)
-            :        +- FileScan csv [ident#17,type#18,name#19,elevation_ft#20,continent#21,iso_country#22,iso_region#23,municipality#24,gps_code#25,iata_code#26,local_code#27,coordinates#28] Batched: false, DataFilters: [isnotnull(type#18)], Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [IsNotNull(type)], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_country:string,...
-            +- Sort [type#235 ASC NULLS FIRST], false, 0
-               +- HashAggregate(keys=[type#235], functions=[count(1)])
-                  +- Exchange hashpartitioning(type#235, 200), ENSURE_REQUIREMENTS, [plan_id=262]
-                     +- HashAggregate(keys=[type#235], functions=[partial_count(1)])
-                        +- Filter isnotnull(type#235)
-                           +- FileScan csv [type#235] Batched: false, DataFilters: [isnotnull(type#235)], Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [IsNotNull(type)], ReadSchema: struct<type:string>
-     */
-
-    /** план в SQL/DataFrame показан для joinedDf.count(), а не joinedDf */
-    joinedDf.count()
-  }  // 811 ms
-  println()
-
-  spark.time {
-    /**
-     * экономия видна в Spark UI в физическом плане SQL/Dataframe(++) и на графе выполнения в Jobs(+) (df.explain - разницы не покажет)
-     * -1 Scan csv - т.к. результат репартицирования это файлы на файловой системе воркеров (~persist DISK_ONLY) => второе чтение из источника не нужно
-     * -1 Exchange hashpartitioning - т.к. репартицирование по нужному ключу уже было
-     *
-     * skipped stage == ранее был шаффл, который подходит для продолжения выполнения графа
-     */
-
-//    val airportsRepDf: Dataset[Row] = airportsDf.repartition(200, col("type"))  // 1656 ms
-    val airportsRepDf: Dataset[Row] = airportsDf.repartition(10, col("type"))  // 691 ms
-
-    val leftDf: Dataset[Row] = airportsRepDf
-
-    val rightDf: DataFrame =
-      airportsRepDf
-        .groupBy($"type")
-        .count()
-
-    val joinedDf: DataFrame = leftDf.join(rightDf, Seq("type"))
-
-    joinedDf.explain()
-    /*
-      == Physical Plan ==
-      AdaptiveSparkPlan isFinalPlan=false
-      +- Project [type#18, ident#17, name#19, elevation_ft#20, continent#21, iso_country#22, iso_region#23, municipality#24, gps_code#25, iata_code#26, local_code#27, coordinates#28, count#293L]
-         +- SortMergeJoin [type#18], [type#297], Inner
-            :- Sort [type#18 ASC NULLS FIRST], false, 0
-            :  +- Exchange hashpartitioning(type#18, 10), REPARTITION_BY_NUM, [plan_id=488]
-            :     +- Filter isnotnull(type#18)
-            :        +- FileScan csv [ident#17,type#18,name#19,elevation_ft#20,continent#21,iso_country#22,iso_region#23,municipality#24,gps_code#25,iata_code#26,local_code#27,coordinates#28] Batched: false, DataFilters: [isnotnull(type#18)], Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [IsNotNull(type)], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_country:string,...
-            +- Sort [type#297 ASC NULLS FIRST], false, 0
-               // !!! HashAggregate partial_count(1)] + HashAggregate count(1) - выполняются без Exchange hashpartitioning
-               +- HashAggregate(keys=[type#297], functions=[count(1)])
-                  +- HashAggregate(keys=[type#297], functions=[)
-                     +- Exchange hashpartitioning(type#297, 10), REPARTITION_BY_NUM, [plan_id=489]
-                        +- Filter isnotnull(type#297)
-                           +- FileScan csv [type#297] Batched: false, DataFilters: [isnotnull(type#297)], Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [IsNotNull(type)], ReadSchema: struct<type:string>
-     */
-
-    /** План в SQL/DataFrame показан для joinedDf.count(), а не joinedDf */
-    joinedDf.count()
-  }  // 806/590 ms
-  println()
 
 
   println(sc.uiWebUrl)

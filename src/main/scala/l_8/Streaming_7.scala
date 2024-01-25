@@ -9,11 +9,6 @@ import org.apache.spark.sql.{Column, DataFrame, Dataset, Row, SparkSession}
 import scala.concurrent.Future
 
 object Streaming_7 extends App {
-  // не работает в Spark 3.4.0
-//  Logger
-//    .getLogger("org")
-//    .setLevel(Level.ERROR)
-
   val spark: SparkSession =
     SparkSession
       .builder()
@@ -22,7 +17,7 @@ object Streaming_7 extends App {
       .getOrCreate()
 
   val sc: SparkContext = spark.sparkContext
-  sc.setLogLevel("ERROR")
+//  sc.setLogLevel("ERROR")
   println(sc.uiWebUrl)
   println()
 
@@ -356,7 +351,7 @@ object Streaming_7 extends App {
                       +- StreamingRelation rate, [timestamp#355, value#356L]
    */
 
-  createConsoleSink("state16_StreamStream_Timestamp", OutputMode.Append, joinedTimestampDf).start()
+//  createConsoleSink("state16_StreamStream_Timestamp", OutputMode.Append, joinedTimestampDf).start()
 
 
   Thread.sleep(1000000)

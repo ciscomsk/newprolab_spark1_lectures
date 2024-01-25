@@ -6,10 +6,6 @@ import org.apache.spark.sql.functions.{monotonically_increasing_id, rand, round,
 import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 
 object Datasource_5 extends App {
-  Logger
-    .getLogger("org")
-    .setLevel(Level.OFF)
-
   val spark: SparkSession =
     SparkSession
     .builder()
@@ -29,10 +25,9 @@ object Datasource_5 extends App {
       .csv("src/main/resources/l_3/airport-codes.csv")
 
   /**
-   * запуск в докере:
-   * docker run --rm -p 5432:5432 --name test_postgres -e POSTGRES_PASSWORD=12345 postgres:latest
+   * Запуск в докере:
    *
-   * подключение с помощью psql:
+   * docker run --rm -p 5432:5432 --name test_postgres -e POSTGRES_PASSWORD=12345 postgres:latest
    * docker exec -it test_postgres psql -U postgres
    *
    * CREATE DATABASE airports;
@@ -75,21 +70,22 @@ object Datasource_5 extends App {
 //    .mode(SaveMode.Append)
 //    .save()
 
-  val postgesDf: DataFrame =
-    spark
-      .read
-      .format("jdbc")
-      .option("url", jdbcUrl)
-      .option("dbtable", "codes")
-      .load()
+//  val postgesDf: DataFrame =
+//    spark
+//      .read
+//      .format("jdbc")
+//      .option("url", jdbcUrl)
+//      .option("dbtable", "codes")
+//      .load()
 
-  postgesDf.printSchema()
-  postgesDf.show(1, 200, vertical = true)
-  println(postgesDf.rdd.getNumPartitions)
-  println()
+//  postgesDf.printSchema()
+//  postgesDf.show(1, 200, vertical = true)
+  /** !!! по умолчанию чтение производится в 1 партицию */
+//  println(postgesDf.rdd.getNumPartitions)
+//  println()
 
 
-  /** чтение в несколько партиций */
+  /** Чтение в несколько партиций */
   val ddlColumnPart: String = s"$ddlColumns,id INTEGER"
   val ddlQueryPart = s"CREATE TABLE IF NOT EXISTS codes_x ($ddlColumnPart);"
   println(ddlQueryPart)
@@ -105,36 +101,36 @@ object Datasource_5 extends App {
 //    .mode(SaveMode.Append)
 //    .save()
 
-  val postgresPartDf: DataFrame =
-    spark
-      .read
-      .format("jdbc")
-      .option("url", jdbcUrl)
-      .option("dbtable", "codes_x")
-      /** колонка партиционирования */
-      .option("partitionColumn", "id")
-      /** lowerBound/upperBound - задаются вручную */
-      .option("lowerBound", "0")
-      /** если ошибиться в этом параметре - данные в полученном датафрейме будут перекошены */
-      .option("upperBound", "10000")
-//      .option("upperBound", "100000")
-      .option("numPartitions", "200")
-      .load()
+//  val postgresPartDf: DataFrame =
+//    spark
+//      .read
+//      .format("jdbc")
+//      .option("url", jdbcUrl)
+//      .option("dbtable", "codes_x")
+//      /** колонка партиционирования */
+//      .option("partitionColumn", "id")
+//      /** lowerBound/upperBound - задаются вручную */
+//      .option("lowerBound", "0")
+//      /** если ошибиться в этом параметре - данные в полученном датафрейме будут перекошены */
+//      .option("upperBound", "10000")
+////      .option("upperBound", "100000")
+//      .option("numPartitions", "200")
+//      .load()
 
-  postgresPartDf.printSchema()
-  postgresPartDf.show(1, 200, vertical = true)
-  println(postgresPartDf.rdd.getNumPartitions)
-  println()
+//  postgresPartDf.printSchema()
+//  postgresPartDf.show(1, 200, vertical = true)
+//  println(postgresPartDf.rdd.getNumPartitions) // == 200
+//  println()
 
-  /** проверка распределение данных по партициям */
-  postgresPartDf
-    .groupBy(spark_partition_id())
-    .count()
-    .show(200, truncate = false)
+  /** Проверка распределение данных по партициям */
+//  postgresPartDf
+//    .groupBy(spark_partition_id())
+//    .count()
+//    .show(200, truncate = false)
 
   /**
    * monotonically_increasing_id - генерирует монотонно возрастающий счетчик
-   * cчетчик неразрывен в пределах каждой партиции, между партициями - большие разрывы
+   * счетчик неразрывен в пределах каждой партиции, между партициями - большие разрывы
    */
   monotonically_increasing_id()
 

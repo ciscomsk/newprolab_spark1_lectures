@@ -8,11 +8,6 @@ import org.apache.spark.sql.types.{LongType, TimestampType}
 import org.apache.spark.sql.{Column, DataFrame, RelationalGroupedDataset, Row, SparkSession}
 
 object Streaming_6 extends App {
-  // не работает в Spark 3.4.0
-//  Logger
-//    .getLogger("org")
-//    .setLevel(Level.ERROR)
-
   val spark: SparkSession =
     SparkSession
       .builder()
@@ -21,7 +16,7 @@ object Streaming_6 extends App {
       .getOrCreate()
 
   val sc: SparkContext = spark.sparkContext
-  sc.setLogLevel("ERROR")
+//  sc.setLogLevel("ERROR")
   println(sc.uiWebUrl)
   println()
 
@@ -72,14 +67,14 @@ object Streaming_6 extends App {
 
   /**
    * Complete mode
-   * таблица с полным агрегатом по ВСЕМУ стриму (рассчитывается по всем батчам в стриме) - обновляется на каждом батче
+   * таблица с полным агрегатом по ВСЕМУ стриму (рассчитывается по ВСЕМ батчам в стриме) - обновляется на каждом батче
    *
    * !!! В Complete mode нельзя использовать watermark
    */
   val groupedDf: DataFrame =
     streamDfWithDuplicates
       /**
-       * Можно уменьшить кардинальность ключа до 26 (количество букв в английском алфавите)
+       * можно уменьшить кардинальность ключа до 26 (количество букв в английском алфавите)
        * split("ident", "")(2) => 00GA => G
        */
 //      .select(split($"ident", "")(2).as("ident"))
@@ -129,7 +124,6 @@ object Streaming_6 extends App {
     newDataDf
       .union(oldDateDf)
       .withWatermark("timestamp", "10 minutes")
-      /** window($"timestamp", "10 minutes" - ширина окна, "5 minutes" - пересечение окон) */
       .groupBy(window($"timestamp", "10 minutes"), $"ident")
       .count()
 
@@ -145,18 +139,23 @@ object Streaming_6 extends App {
     .select(current_timestamp().as("ts"))
     .select(
       $"ts",
-      window($"ts", "10 minutes", "5 minutes").as("win")
+      /**
+       * window($"timestamp", "10 minutes", "5 minutes")
+       * "10 minutes" - ширина окна
+       * "5 minutes" - пересечение окон
+       */
+      window($"ts", "10 minutes", "5 minutes").as("window")
     )
 //    .show(40, truncate = false)
 
 
   /**
    * Append mode - режим по умолчанию
-   * !!! Без  watermark - Append mode не работает
-   * !!! В Append mode в синк будут записаны ТОЛЬКО ЗАВЕРШЕННЫЕ окна с данными в момент window_right_bound + watermark_value
+   * !!! Без  watermark - агрегации в Append mode не работает
+   * !!! В Append mode в синк будут записаны ТОЛЬКО ЗАВЕРШЕННЫЕ ОКНА с данными в момент window_right_bound + watermark_value
    */
 
-  /** Первый результат будет через ~1.5 минуты (delayThreshold + windowDuration) */
+  /** !!! Первый результат будет через ~1.5 минуты (delayThreshold + windowDuration) */
   val unionDataDf2: DataFrame =
     newDataDf
       .withWatermark("timestamp", "1 minutes")
@@ -165,12 +164,18 @@ object Streaming_6 extends App {
 
 //  createConsoleSink("state10_AppendAgg_1", OutputMode.Append, unionDataDf2).start()
 
+
+
   /** Более наглядный пример с Append mode */
   val unionDataDf3: DataFrame =
     newDataDf
       .withColumn("timestamp",
         (($"timestamp".cast(LongType) / 60).cast(LongType) * 60).cast("timestamp")
       )
+      /**
+       * без withWatermark - err:
+       * AnalysisException: Append output mode not supported when there are streaming aggregations on streaming DataFrames/DataSets without watermark
+       */
       .withWatermark("timestamp", "1 minutes")
       .groupBy($"ident", $"timestamp")
       .count()

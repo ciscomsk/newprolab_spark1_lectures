@@ -8,10 +8,6 @@ import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{Column, DataFrame, Dataset, Row, SparkSession}
 
 object HelperExplain_Streaming_9 extends App {
-  Logger
-    .getLogger("org")
-    .setLevel(Level.ERROR)
-
   val spark: SparkSession =
     SparkSession
       .builder()
@@ -22,6 +18,7 @@ object HelperExplain_Streaming_9 extends App {
   import spark.implicits._
 
   val sc: SparkContext = spark.sparkContext
+//  sc.setLogLevel("ERROR")
   println(sc.uiWebUrl)
   println()
 

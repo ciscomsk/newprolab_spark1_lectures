@@ -11,10 +11,6 @@ import java.net.InetAddress
 import scala.util.{Failure, Success, Try}
 
 object DataFrame_4 extends App {
-  Logger
-    .getLogger("org")
-    .setLevel(Level.OFF)
-
   val spark: SparkSession =
     SparkSession
       .builder()
@@ -63,11 +59,16 @@ object DataFrame_4 extends App {
     .withColumn("hostname", hostname())
     .show(10, truncate = false)
 
-  // None => null в DF
+  /** !!! None => null в DF */
   val divideTwoBy: UserDefinedFunction = udf { (inputValue: Long) => Try(2L / inputValue).toOption }
 
   val resultDf: DataFrame = df.withColumn("divideTwoBy", divideTwoBy(col("id")))
   resultDf.printSchema()
+  /*
+    root
+     |-- id: long (nullable = false)
+     |-- divideTwoBy: long (nullable = true)
+   */
   resultDf.show(10, truncate = false)
 
 
@@ -142,14 +143,23 @@ object DataFrame_4 extends App {
 
   val leftDf: DataFrame = spark.range(10).withColumn("foo", lit("foo"))
   leftDf.printSchema()
+  /*
+    root
+     |-- id: long (nullable = false)
+     |-- foo: string (nullable = false)
+   */
   leftDf.show()
 
   val rightDf: DataFrame = spark.range(10).withColumn("foo", lit("foo"))
 
   leftDf.as("left")
     .join(rightDf.as("right"), joinConditionExpr, "inner")
-    .drop($"right.id") // v1
-//    .select($"id", leftDf("foo").as("left_foo")) // v2
+//    .drop($"right.id") // v1
+    .select(
+      leftDf("id").as("left_id"),
+      leftDf("foo").as("left_foo"),
+      rightDf("foo").as("right_foo")
+    ) // v2
     .show()
 
 
@@ -201,7 +211,7 @@ object DataFrame_4 extends App {
     +- Project [rn#396, ident#90]
        +- Window [row_number() windowspecdefinition(ident#90 ASC NULLS FIRST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS rn#396], [ident#90 ASC NULLS FIRST]
           +- Sort [ident#90 ASC NULLS FIRST], false, 0
-             // !!! Exchange SinglePartition - все сливается в 1 партицию
+             // !!! Exchange SinglePartition - все данные перемещаются в 1 партицию
              +- Exchange SinglePartition, ENSURE_REQUIREMENTS, [plan_id=888]
                 +- FileScan csv [ident#90] Batched: false, DataFilters: [], Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<ident:string>
    */

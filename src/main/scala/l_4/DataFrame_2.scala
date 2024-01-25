@@ -6,10 +6,6 @@ import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 import org.apache.spark.sql.functions.{col, collect_list, count, struct, sum, to_json}
 
 object DataFrame_2 extends App {
-  Logger
-    .getLogger("org")
-    .setLevel(Level.OFF)
-
   val spark: SparkSession =
     SparkSession
       .builder()
@@ -64,7 +60,7 @@ object DataFrame_2 extends App {
       .groupBy($"continent")
       .agg(collect_list("country").alias("countries"))
 
-  aggList.show()
+  aggList.show(truncate = false)
   aggList.printSchema()
   /*
     root
@@ -99,6 +95,7 @@ object DataFrame_2 extends App {
 
   json1Df.explain()
   /*
+   // в плане нет struct + to_json (?)
    == Physical Plan ==
     AdaptiveSparkPlan isFinalPlan=false
     +- ObjectHashAggregate(keys=[continent#0], functions=[collect_list(country#1, 0, 0)])
@@ -123,14 +120,13 @@ object DataFrame_2 extends App {
     // конвертация Java object (String) => Internal row
     +- SerializeFromObject [staticinvoke(class org.apache.spark.unsafe.types.UTF8String, StringType, fromString, input[0, java.lang.String, true], true, false, true) AS value#175]
        // применение функции к Java object (String)
-       +- MapPartitions org.apache.spark.sql.Dataset$$Lambda$3464/0x0000000801536840@49de1717, obj#174: java.lang.String
+       +- MapPartitions org.apache.spark.sql.Dataset$$Lambda$3509/0x0000000801602840@26be5ee, obj#174: java.lang.String
           // конвертация Internal row => Java object (String)
           +- DeserializeToObject createexternalrow(continent#0.toString, mapobjects(lambdavariable(MapObject, StringType, false, -1), lambdavariable(MapObject, StringType, false, -1).toString, countries#102, Some(class scala.collection.mutable.ArraySeq)), StructField(continent,StringType,true), StructField(countries,ArrayType(StringType,false),false)), obj#173: org.apache.spark.sql.Row
              +- ObjectHashAggregate(keys=[continent#0], functions=[collect_list(country#1, 0, 0)])
-                +- Exchange hashpartitioning(continent#0, 200), ENSURE_REQUIREMENTS, [plan_id=442]
+                +- Exchange hashpartitioning(continent#0, 200), ENSURE_REQUIREMENTS, [plan_id=453]
                    +- ObjectHashAggregate(keys=[continent#0], functions=[partial_collect_list(country#1, 0, 0)])
                       +- FileScan parquet [continent#0,country#1] Batched: true, DataFilters: [], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<continent:string,country:string>
-
    */
 
   /** pivot - создает колонки из значений заданной колонки  */
@@ -183,13 +179,13 @@ object DataFrame_2 extends App {
        // агрегация внутри каждой партиции после репартиционирования - по ключу country рассчитывается pivotfirst
        +- HashAggregate(keys=[country#1], functions=[pivotfirst(continent#0, sum(population)#316L, Africa, Europe, Undefined, 0, 0)])
           // репартиционирование по country
-          +- Exchange hashpartitioning(country#1, 200), ENSURE_REQUIREMENTS, [plan_id=785]
+          +- Exchange hashpartitioning(country#1, 200), ENSURE_REQUIREMENTS, [plan_id=796]
              // агрегация внутри каждой партиции - по ключу country рассчитывается partial_pivotfirst
              +- HashAggregate(keys=[country#1], functions=[partial_pivotfirst(continent#0, sum(population)#316L, Africa, Europe, Undefined, 0, 0)])
                 // агрегация внутри каждой партиции после репартиционирования - по ключам country + continent рассчитывается sum(population)
                 +- HashAggregate(keys=[country#1, continent#0], functions=[sum(population#3L)])
                    // репартиционирование по country + continent
-                   +- Exchange hashpartitioning(country#1, continent#0, 200), ENSURE_REQUIREMENTS, [plan_id=781]
+                   +- Exchange hashpartitioning(country#1, continent#0, 200), ENSURE_REQUIREMENTS, [plan_id=792]
                       // агрегация внутри каждой партиции - по ключам country + continent рассчитывается partial_sum(population)
                       +- HashAggregate(keys=[country#1, continent#0], functions=[partial_sum(population#3L)])
                          // выбираем только колонки, использующиеся в агрегации

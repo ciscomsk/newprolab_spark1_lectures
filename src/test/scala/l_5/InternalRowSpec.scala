@@ -12,10 +12,6 @@ import org.scalatest.matchers.should
 import java.lang
 
 class InternalRowSpec extends AnyFlatSpec with should.Matchers {
-  Logger
-    .getLogger("org")
-    .setLevel(Level.OFF)
-
   val spark: SparkSession =
     SparkSession
       .builder()

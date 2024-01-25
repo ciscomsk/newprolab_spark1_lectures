@@ -7,10 +7,6 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should
 
 class SchemaSpec extends AnyFlatSpec with should.Matchers {
-  Logger
-    .getLogger("org")
-    .setLevel(Level.OFF)
-
   val spark: SparkSession =
     SparkSession
       .builder()
@@ -61,9 +57,9 @@ class SchemaSpec extends AnyFlatSpec with should.Matchers {
   }
 
   "Schema recursion" should "work" in {
-    val res: DataType = recursion(someSchema)
+    val result: DataType = recursion(someSchema)
 
-    println(res)
+    println(s"res: $result")
     println()
   }
 

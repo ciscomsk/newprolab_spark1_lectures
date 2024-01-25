@@ -1,19 +1,14 @@
 package l_5
 
-import l_5.DataFrame_5.printPhysicalPlan
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
-import org.apache.spark.sql.functions.{col, lit}
-import org.apache.spark.sql.types.{IntegerType, LongType}
-import org.apache.spark.sql.{DataFrame, Dataset, Row, SaveMode, SparkSession}
+import org.apache.spark.sql.catalyst.ScalaReflection
+import org.apache.spark.sql.functions.{col, from_json, lit, schema_of_json}
+import org.apache.spark.sql.types.{ArrayType, AtomicType, BooleanType, DataType, IntegerType, StringType, StructField, StructType}
+import org.apache.spark.sql.{Column, DataFrame, Dataset, Row, SparkSession}
 
-import java.lang
-
+/** test: l_5 + org.apache.spark.sql  */
 object DataFrame_8 extends App {
-  Logger
-    .getLogger("org")
-    .setLevel(Level.OFF)
-
   val spark: SparkSession =
     SparkSession
       .builder()
@@ -34,264 +29,181 @@ object DataFrame_8 extends App {
       .options(csvOptions)
       .csv("src/main/resources/l_3/airport-codes.csv")
 
-//  airportsDf
-//    .write
-//    .format("parquet")
-//    .partitionBy("iso_country")
-//    .mode(SaveMode.Overwrite)
-//    .save("src/main/resources/l_5/airports")
+  /** columns - получение списка колонок */
+  println()
+  println(airportsDf.columns.toList)
+  println()
 
-//  airportsDf
-//    .write
-//    .format("json")
-//    .partitionBy("iso_country")
-//    .mode(SaveMode.Overwrite)
-//    .save("src/main/resources/l_5/airports_json")
+  /**
+   * schema - получение схемы DF
+   * !!! порядок полей в схеме (в StructType) ВАЖЕН
+   */
+  val schema: StructType = airportsDf.schema
+  println(schema)
+  println()
 
-  val airportPartPqDf: DataFrame =
+  /** apply - получение поля по имени/индексу */
+  val field: StructField = schema("ident") // == schema(0)
+  println(field)
+  println()
+
+  /** fieldIndex - получение индекса поля по имени */
+  val idx: Int = schema.fieldIndex("ident")
+  println(idx)
+  println()
+
+  val fieldName: String = field.name
+  val fieldType: DataType = field.dataType
+  println(fieldName)
+  println(fieldType)
+
+  fieldType match {
+    case _: StringType => println("This is StringType")
+    case _ => println("This is not StringType!")
+  }
+  println()
+
+  /** simpleString - получение DDL схемы в виде удобочитаемой строк */
+  println("simpleString: ")
+  println(fieldType.simpleString)
+  println(schema.simpleString)
+  println()
+
+  /** schema.json/DataType.fromJson(schema) - удобно при необходимости сериализации и передачи схемы */
+  val jsonSchema: String = schema.json
+  val schemaFromJson: DataType = DataType.fromJson(jsonSchema)
+  println("json: ")
+  println(jsonSchema)
+  println(schemaFromJson)
+  println()
+
+  println("DataType: ")
+  val ddlSchema: String = schema.toDDL
+  val schemaFromDtDDL: DataType = DataType.fromDDL(ddlSchema)
+  println(ddlSchema)
+  println(schemaFromDtDDL)
+  println()
+
+
+  println("schema.sql: ")
+  val sqlSchema: String = schema.sql
+  println(sqlSchema)
+  println()
+
+  println("StructType: ")
+//  val schemaFromStDDL: StructType = StructType.fromDDL(sqlSchema) // org.apache.spark.sql.catalyst.parser.ParseException
+  val schemaFromStDDL: StructType = StructType.fromDDL(ddlSchema) // ок
+  println(schemaFromStDDL)
+  println()
+
+  /**
+   * Получение схемы из кейс класса
+   * v1.1 - reflection
+   */
+  case class Airport(
+                      ident: String,
+                      `type`: String,
+                      name: String,
+                      elevation_ft: Int,
+                      continent: String,
+                      iso_country: String,
+                      iso_region: String,
+                      municipality: String,
+                      gps_code: String,
+                      iata_code: String,
+                      local_code: String,
+                      coordinates: String
+                    )
+
+  val schemaFromCC: StructType =
+    ScalaReflection
+      .schemaFor[Airport]
+      .dataType
+      .asInstanceOf[StructType]
+
+  println(schemaFromCC)
+
+  /** v1.2 - DS API */
+  val ds: Dataset[Airport] = spark.emptyDataset[Airport]
+  println(ds.schema)
+  println()
+
+  /** использование схемы */
+  val airportsSchemaDf: DataFrame =
     spark
       .read
-      .parquet("src/main/resources/l_5/airports")
+      .options(csvOptions)
+      .schema(schemaFromCC)
+      .csv("src/main/resources/l_3/airport-codes.csv")
 
+  airportsSchemaDf.printSchema()
+  airportsSchemaDf.show(numRows = 1, truncate = 100, vertical = true)
+
+  val jsonedDf: Dataset[String] = airportsDf.toJSON // в датафрейме будет 1 колонка value
+  jsonedDf.show(1, truncate = false)
+  jsonedDf.printSchema()
+
+  val parseJson: Column = from_json(col("value"), schemaFromCC).alias("s")
+
+  val withColumnsDf: DataFrame =
+    jsonedDf
+      .select(parseJson)
+      .select(col("s.*"))
+
+  withColumnsDf.show(1, 200, vertical = true)
+  withColumnsDf.printSchema()
+
+  /** v2 - ручное создание схемы */
+  val someSchema: StructType =
+    StructType(
+      List(
+        StructField("foo", StringType),
+        StructField("bar", StringType),
+        StructField("boo",
+          StructType(
+            List(
+              StructField("x", IntegerType),
+              StructField("y", BooleanType)
+            )
+          )
+        )
+      )
+    )
+
+  someSchema.printTreeString()
   println()
-  airportPartPqDf.printSchema()
+
+  /** v3 - получение схемы из json */
+  val firstLine: String = jsonedDf.head()
+  println(s"firstLine: $firstLine")
+
+  val row: Row =
+    spark
+      .range(1)
+      .select(schema_of_json(lit(firstLine)))
+      .head()
+
+  println(s"row: $row")
   println()
 
-  /** Column projection */
-  spark.time {
-    val selectedDf: DataFrame = airportPartPqDf.select($"ident")
+  /** cast - изменяет тип колонки, возвращает null при некорректном касте */
+  airportsDf
+    .select($"elevation_ft".cast(StringType)) // StringType == string
+    .printSchema()
 
-    selectedDf.cache()
-    selectedDf.count()
-    selectedDf.unpersist()
+  airportsDf
+    .select($"type".cast("float"))
+    .printSchema()
 
-    printPhysicalPlan(selectedDf)
-    /*
-      *(1) Project [ident#92]
-      +- *(1) ColumnarToRow
-         // cache - в кэш будет помещена только эта колонка
-         // ReadSchema: struct<ident:string> - будет вычитана только колонка ident
-         +- FileScan parquet [ident#92,iso_country#103] Batched: true, DataFilters: [], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<ident:string>
-     */
-
-  } // 1125 ms
-  println()
-
-  spark.time {
-    val selectedDf: DataFrame = airportPartPqDf
-
-    selectedDf.cache()
-    selectedDf.count()
-    selectedDf.unpersist()
-
-    printPhysicalPlan(selectedDf)
-    /*
-      *(1) ColumnarToRow
-      +- FileScan parquet [ident#92,type#93,name#94,elevation_ft#95,continent#96,iso_region#97,municipality#98,gps_code#99,iata_code#100,local_code#101,coordinates#102,iso_country#103] Batched: true, DataFilters: [], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_region:string,m...
-     */
-  } // 844 ms
-  println()
-
-  /** !!! для текстовых форматов (например json) - ReadSchema будет указан в плане выполнения, но работать оптимизация не будет */
-  spark
-    .read
-    .json("src/main/resources/l_5/airports_json")
-    .select($"ident")
-    .explain()
-  /*
-    == Physical Plan ==
-    *(1) Project [ident#493]
-    // ReadSchema: struct<ident:string>
-    +- FileScan json [ident#493,iso_country#499] Batched: false, DataFilters: [], Format: JSON, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<ident:string>
-   */
-
+  airportsDf
+    .select($"type".cast("float"))
+    .show(1, truncate = false)
 
   /**
-   * Partition pruning - df.write.partitionBy("iso_country")
-   * в плане - PartitionFilters
+   * !!! cast может менять названия/типы колонок внутри структуры
+   * но не список этих колонок (например - убрать нельзя, это можно сделать с помощью рекурсии)
    */
-  spark.time {
-    val filteredDf: Dataset[Row] = airportPartPqDf.filter($"iso_country" === "RU")
-    filteredDf.count()
-
-    printPhysicalPlan(filteredDf)
-    /*
-      *(1) ColumnarToRow
-      // PartitionFilters: [isnotnull(iso_country#52), (iso_country#52 = RU)] => будет прочитан только каталог RU
-      +- FileScan parquet [ident#41,type#42,name#43,elevation_ft#44,continent#45,iso_region#46,municipality#47,gps_code#48,iata_code#49,local_code#50,coordinates#51,iso_country#52] Batched: true, DataFilters: [], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [isnotnull(iso_country#52), (iso_country#52 = RU)], PushedFilters: [], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_region:string,m...
-     */
-  } // 104 ms
-  println()
-
-  spark.time {
-    val filteredDf: Dataset[Row] = airportPartPqDf
-    filteredDf.count()
-
-    printPhysicalPlan(filteredDf)
-    /*
-      *(1) ColumnarToRow
-      // PartitionFilters: []
-      +- FileScan parquet [ident#41,type#42,name#43,elevation_ft#44,continent#45,iso_region#46,municipality#47,gps_code#48,iata_code#49,local_code#50,coordinates#51,iso_country#52] Batched: true, DataFilters: [], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_region:string,m...
-     */
-  } // 304 ms
-  println()
-
-
-  /**
-   * Predicate pushdown
-   * в плане - PushedFilters
-   */
-  spark.time {
-    val filteredDf: Dataset[Row] = airportPartPqDf.filter($"iso_region" === "RU")
-    filteredDf.count()
-
-    printPhysicalPlan(filteredDf)
-    /*
-      *(1) Filter (isnotnull(iso_region#46) AND (iso_region#46 = RU))
-      +- *(1) ColumnarToRow
-         // PushedFilters: [IsNotNull(iso_region), EqualTo(iso_region,RU)]
-         +- FileScan parquet [ident#41,type#42,name#43,elevation_ft#44,continent#45,iso_region#46,municipality#47,gps_code#48,iata_code#49,local_code#50,coordinates#51,iso_country#52] Batched: true, DataFilters: [isnotnull(iso_region#46), (iso_region#46 = RU)], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [IsNotNull(iso_region), EqualTo(iso_region,RU)], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_region:string,m...
-     */
-  } // 395 ms
-  println()
-
-
-  /**
-   * Simplify casts
-   * LongType.cast(LongType) => каста не будет
-   */
-  val resDf1: DataFrame =
-    spark
-      .range(0, 10)
-      .select($"id".cast(LongType))
-
-  printPhysicalPlan(resDf1)
-  /*
-    *(1) Range (0, 10, step=1, splits=8)
-   */
-
-  resDf1.explain(true)
-  /*
-    == Parsed Logical Plan ==
-    'Project [unresolvedalias(cast('id as bigint), None)]
-    +- Range (0, 10, step=1, splits=Some(8))
-
-    == Analyzed Logical Plan ==
-    id: bigint
-    Project [cast(id#565L as bigint) AS id#567L]
-    +- Range (0, 10, step=1, splits=Some(8))
-
-    == Optimized Logical Plan ==
-    Range (0, 10, step=1, splits=Some(8))
-
-    == Physical Plan ==
-    *(1) Range (0, 10, step=1, splits=8)
-   */
-
-  /** cast LongType - IntegerType - LongType - оптимизация работать не будет */
-  val resDf2: DataFrame =
-    spark
-      .range(0, 10)
-      .select($"id".cast(IntegerType).cast(LongType))
-
-  printPhysicalPlan(resDf2)
-  /*
-    *(1) Project [cast(cast(id#569L as int) as bigint) AS id#572L]
-    +- *(1) Range (0, 10, step=1, splits=8)
-   */
-
-
-  /**
-   * Constant folding
-   * (lit(3) > lit(0) => true
-   */
-  val resDf3: Dataset[Row] =
-    spark
-      .range(0, 10)
-      .select((lit(3) > lit(0)).alias("foo"))
-
-  printPhysicalPlan(resDf3)
-  /*
-    *(1) Project [true AS foo#576]
-    +- *(1) Range (0, 10, step=1, splits=8)
-   */
-
-  resDf3.explain(true)
-  /*
-    == Parsed Logical Plan ==
-    Project [(3 > 0) AS foo#576]
-    +- Range (0, 10, step=1, splits=Some(8))
-
-    == Analyzed Logical Plan ==
-    foo: boolean
-    Project [(3 > 0) AS foo#576]
-    +- Range (0, 10, step=1, splits=Some(8))
-
-    == Optimized Logical Plan ==
-    Project [true AS foo#576]
-    +- Range (0, 10, step=1, splits=Some(8))
-
-    == Physical Plan ==
-    *(1) Project [true AS foo#576]
-    +- *(1) Range (0, 10, step=1, splits=8)
-   */
-
-  val resDf4: DataFrame =
-    spark
-      .range(0, 10)
-      .select(($"id" > 0).alias("foo"))
-
-  printPhysicalPlan(resDf4)
-  /*
-    *(1) Project [(id#578L > 0) AS foo#580]
-    +- *(1) Range (0, 10, step=1, splits=8)
-   */
-
-
-  /**
-   * Combine filters
-   * .filter('id > 0) + .filter('id =!= 5) + .filter('id < 10) => Filter ((id#582L > 0) AND (NOT (id#582L = 5) AND (id#582L < 10)))
-   */
-  val resDf5: Dataset[Row] =
-    spark
-      .range(0, 10)
-      .filter($"id" > 0)
-      /** проекция не мешает объединению фильтров */
-      .select(col("*"))
-      .filter($"id" =!= 5)
-      .filter($"id" < 10)
-
-  printPhysicalPlan(resDf5)
-  /*
-    *(1) Filter ((id#582L > 0) AND (NOT (id#582L = 5) AND (id#582L < 10)))
-    +- *(1) Range (0, 10, step=1, splits=8)
-   */
-
-  resDf5.explain(true)
-  /*
-    == Parsed Logical Plan ==
-    'Filter ('id < 10)
-    +- Filter NOT (id#582L = cast(5 as bigint))
-       +- Project [id#582L]
-          +- Filter (id#582L > cast(0 as bigint))
-             +- Range (0, 10, step=1, splits=Some(8))
-
-    == Analyzed Logical Plan ==
-    id: bigint
-    Filter (id#582L < cast(10 as bigint))
-    +- Filter NOT (id#582L = cast(5 as bigint))
-       +- Project [id#582L]
-          +- Filter (id#582L > cast(0 as bigint))
-             +- Range (0, 10, step=1, splits=Some(8))
-
-    == Optimized Logical Plan ==
-    Filter ((id#582L > 0) AND (NOT (id#582L = 5) AND (id#582L < 10)))
-    +- Range (0, 10, step=1, splits=Some(8))
-
-    == Physical Plan ==
-    *(1) Filter ((id#582L > 0) AND (NOT (id#582L = 5) AND (id#582L < 10)))
-    +- *(1) Range (0, 10, step=1, splits=8)
-   */
+  // cast(StructType(...))
 
 
   println(sc.uiWebUrl)

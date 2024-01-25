@@ -40,6 +40,8 @@ https://cwiki.apache.org/confluence/display/Hive/HiveServer2+Overview
 
 __DATA_FORMATS+
 https://parquet.apache.org/docs/
+https://mvnrepository.com/artifact/org.apache.parquet/parquet-tools
+https://rangareddy.github.io/ParquetTools/
 https://pypi.org/project/parquet-tools/
 
 Как класть Parquet - Фёдор Лаврентьев, Moscow Spark #5
@@ -125,99 +127,112 @@ https://scastie.scala-lang.org/
 https://scalafiddle.io/ - не работает
 
 
-__JAVA_ECOSYSTEM
+__JAVA_ECOSYSTEM+
 https://janino-compiler.github.io/janino/
+
+jvm -D
+https://stackoverflow.com/questions/44745261/why-do-jvm-arguments-start-with-d
+https://stackoverflow.com/questions/59366184/what-is-d-in-vm-arguments-what-it-indicates-why-we-have-to-specify-always-d-in
 
 
 __SPARK
 https://mageswaran1989.medium.com/spark-jargon-for-starters-af1fd8117ada
 
 Spark does not support nested RDDs or performing Spark actions inside of transformations
-https://issues.apache.org/jira/browse/SPARK-5063
++https://issues.apache.org/jira/browse/SPARK-5063
 
-https://nathankleyn.com/2017/12/29/using-transient-and-lazy-vals-to-avoid-spark-serialisation-issues/
++https://nathankleyn.com/2017/12/29/using-transient-and-lazy-vals-to-avoid-spark-serialisation-issues/
 
-https://www.linkedin.com/pulse/beyond-traditional-join-apache-spark-kirill-pavlov/
-https://www.waitingforcode.com/apache-spark-sql/sort-merge-join-spark-sql/read
++https://www.linkedin.com/pulse/beyond-traditional-join-apache-spark-kirill-pavlov/
++https://www.waitingforcode.com/apache-spark-sql/sort-merge-join-spark-sql/read
 
 Optimizing Apache Spark SQL Joins: Spark Summit East talk by Vida Ha
-https://www.youtube.com/watch?v=fp53QhSfQcI
++https://www.youtube.com/watch?v=fp53QhSfQcI
 
-https://stackoverflow.com/questions/34580662/what-does-stage-skipped-mean-in-apache-spark-web-ui
++https://stackoverflow.com/questions/34580662/what-does-stage-skipped-mean-in-apache-spark-web-ui
 
 Шаблоны конфигов
 https://github.com/apache/spark/tree/branch-3.4/conf
 
 https://spark.apache.org/docs/latest/configuration.html#dynamically-loading-spark-properties
 
-https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/DataFrameReader.html
++https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/DataFrameReader.html
 
-https://spark.apache.org/docs/latest/sql-data-sources-csv.html
-https://spark.apache.org/docs/latest/sql-data-sources-csv.html#data-source-option
-https://spark.apache.org/docs/latest/sql-data-sources-json.html
-https://spark.apache.org/docs/latest/sql-data-sources-text.html
++https://spark.apache.org/docs/latest/sql-data-sources.html
++https://spark.apache.org/docs/latest/sql-data-sources-csv.html
++https://spark.apache.org/docs/latest/sql-data-sources-csv.html#data-source-option
++https://spark.apache.org/docs/latest/sql-data-sources-json.html
++https://spark.apache.org/docs/latest/sql-data-sources-text.html
 
-https://spark.apache.org/docs/latest/sql-data-sources-parquet.html
-https://spark.apache.org/docs/latest/sql-data-sources-parquet.html#data-source-option
-https://spark.apache.org/docs/latest/sql-data-sources-orc.html
++https://spark.apache.org/docs/latest/sql-data-sources-parquet.html
++https://spark.apache.org/docs/latest/sql-data-sources-parquet.html#data-source-option
++https://spark.apache.org/docs/latest/sql-data-sources-orc.html
 
-https://spark.apache.org/docs/latest/sql-data-sources-jdbc.html
-https://mvnrepository.com/artifact/org.postgresql/postgresql
++https://spark.apache.org/docs/latest/sql-data-sources-jdbc.html
++https://mvnrepository.com/artifact/org.postgresql/postgresql
 
-https://www.elastic.co/guide/en/elasticsearch/hadoop/current/spark.html
-https://www.elastic.co/guide/en/elasticsearch/hadoop/current/spark.html#spark-sql
-https://mvnrepository.com/artifact/org.elasticsearch/elasticsearch-spark-30
++https://www.elastic.co/guide/en/elasticsearch/hadoop/current/spark.html
++https://www.elastic.co/guide/en/elasticsearch/hadoop/current/spark.html#spark-sql
++https://mvnrepository.com/artifact/org.elasticsearch/elasticsearch-spark-30
 
-https://github.com/datastax/spark-cassandra-connector#documentation
-https://github.com/datastax/spark-cassandra-connector/blob/master/doc/14_data_frames.md
-https://mvnrepository.com/artifact/com.datastax.spark/spark-cassandra-connector
++https://github.com/datastax/spark-cassandra-connector#documentation
++https://github.com/datastax/spark-cassandra-connector/blob/master/doc/14_data_frames.md
++https://mvnrepository.com/artifact/com.datastax.spark/spark-cassandra-connector
 
-https://github.com/RedisLabs/spark-redis/blob/master/doc/dataframe.md
++https://github.com/RedisLabs/spark-redis/blob/master/doc/dataframe.md
 
-https://docs.mongodb.com/spark-connector/master/scala-api/
++https://www.mongodb.com/docs/spark-connector/upcoming/
++https://www.mongodb.com/products/integrations/spark-connector
++https://github.com/mongodb/mongo-spark
 
 
++https://spark.apache.org/docs/latest/rdd-programming-guide.html
++https://spark.apache.org/docs/latest/rdd-programming-guide.html#rdd-persistence
 
-https://spark.apache.org/docs/latest/rdd-programming-guide.html
-https://spark.apache.org/docs/latest/rdd-programming-guide.html#rdd-persistence
++https://spark.apache.org/docs/latest/api/scala/org/apache/spark/rdd/RDD.html
++https://spark.apache.org/docs/latest/api/scala/org/apache/spark/rdd/PairRDDFunctions.html
 
-https://spark.apache.org/docs/latest/api/scala/org/apache/spark/rdd/RDD.html
-https://spark.apache.org/docs/latest/api/scala/org/apache/spark/rdd/PairRDDFunctions.html
-
-https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/Dataset.html
++https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/Dataset.html
 
 https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/Row.html
 https://github.com/apache/spark/blob/master/sql/catalyst/src/main/scala/org/apache/spark/sql/catalyst/InternalRow.scala
 
-https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/Column.html
-https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/TypedColumn.html
++https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/Column.html
++https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/TypedColumn.html
 
-https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/types/index.html
-https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/types/DateType.html
-https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/types/TimestampType.html
++https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/types/index.html
++https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/types/DateType.html
++https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/types/TimestampType.html
 
-https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/functions$.html
-
-https://spark.apache.org/docs/latest/api/sql/index.html
-
-https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/DataFrameNaFunctions.html
-
-https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/RelationalGroupedDataset.html
-
-https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/expressions/WindowSpec.html
-https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/expressions/Window$.html
++https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/functions$.html
++https://spark.apache.org/docs/latest/api/sql/index.html
++https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/DataFrameNaFunctions.html
++https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/RelationalGroupedDataset.html
++https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/expressions/Window$.html
++https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/expressions/WindowSpec.html
 
 
-__SPARK_STREAMING
+__SQL
+Оконные функции с «форточкой» или как пользоваться фреймом
+https://habr.com/ru/companies/otus/articles/490296/
+
+
+__SPARK_STREAMING+
 Spark Structured Streaming graceful shutdown — Что в этом сложного и как это правильно делать?
 https://habr.com/ru/articles/569898/
 
-https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html
+https://spark.apache.org/docs/latest/structured-streaming-kafka-integration.html
 https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#input-sources
 https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#output-sinks
 
-https://spark.apache.org/docs/latest/structured-streaming-kafka-integration.html
 https://mvnrepository.com/artifact/org.apache.spark/spark-sql-kafka-0-10
+
+
+__STATEFUL STREAMING+
+
+https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#state-store
+
+https://medium.com/@vndhya/stateful-processing-in-spark-structured-streaming-memory-aspects-964bc6414346
 
 
 __KAFKA
@@ -227,7 +242,7 @@ https://habr.com/ru/company/southbridge/blog/552688/
 Алгоритм Raft
 https://ru.wikipedia.org/wiki/%D0%90%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC_Raft
 
-https://kafka.apache.org/
++https://kafka.apache.org/
 
 
 __DELTA
@@ -237,11 +252,13 @@ https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#dock
 https://www.elastic.co/guide/en/kibana/current/docker.html#_running_kibana_on_docker_for_development
 
 
-__ELASTIC
+__ELASTIC+
 https://www.elastic.co/
+https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-cli-run-dev-mode
+https://www.elastic.co/guide/en/kibana/current/docker.html#_running_kibana_on_docker_for_development
 
 
-__CASSANDRA
+__CASSANDRA+
 https://cassandra.apache.org/_/index.html
 https://cassandra.apache.org/doc/latest/architecture/dynamo.html#dataset-partitioning-consistent-hashing
 
@@ -251,7 +268,7 @@ https://cwiki.apache.org/confluence/display/CASSANDRA/CEP-15%3A+General+Purpose+
 https://www.guru99.com/cassandra-query-language-cql-insert-update-delete-read-data.html
 
 
-__JUPYTER_NOTEBOOK
+__JUPYTER_NOTEBOOK+
 jupyter notebook - запустить Jupyter Notebook
 
 https://www.8host.com/blog/ustanovka-jupyter-notebook-dlya-python-3-v-ubuntu-20-04-i-podklyuchenie-po-ssh-tunnelyu/
@@ -287,7 +304,12 @@ docker-compose для практики hdfs cli
 
 3.
 l_3.RDD
-counterAccum иногда не равен rdd4.count() (?)
+counterAccum иногда не равен rdd4.count() (?) - проблема в Idea?
+в spark-shell - равен
+
+4.
+DataFrame_2
+в плане нет struct + to_json (?)
 
 5.
 l_5.DataFrame_5 => В Spark 3+ - не работает => Found 0 WholeStageCodegen subtrees (?)
@@ -295,6 +317,11 @@ l_5.DataFrame_5 => В Spark 3+ - не работает => Found 0 WholeStageCode
 6.
 l_6/Datasource_2.scala => spark.sql("SET -v")
 WARN SQLConf: SQL configurations from Hive module is not loaded
+
+Размер будет больше ... (?) - размер получился меньше
+
+#! Legacy index templates are deprecated in favor of composable templates - (?)
+PUT _template/airports
 
 8.
 Watermark нужен только для stream-stream join (?)
@@ -767,7 +794,7 @@ Implicit class (IC) - использутся для неявного расши�
 __3
 1-40
 59-55 => 1-04-45
-1-40-10 => 1-46-15
+1-40-10 => 1-47-05
 3-00-40
 
 
@@ -800,7 +827,7 @@ Driver/Executor'ы - обычные jvm приложения (могут быт�
 SparkContext - точка входа в API - отвечает за загрузку конфигурации/запуск экзекьюторов/... 
 
 1 Task == 1 Partition == 1 Cpu core
-1 таска - это обработка 1-м ядром 1-ой партиции
+1 таск - это обработка 1-ой партиции 1-м ядром
 
 Компоненты Spark DAG (Directed Acyclic Graph):
 1. Job
@@ -825,14 +852,14 @@ RDD можно создать из:
 Transformations:
 1. всегда создают новый RDD и не изменяют исходный
 2. всегда являются ленивыми (lazy) - создают граф, но не запускают его вычисление
-Гораздо эффективнее оптимизировать/выполнить полный граф 1 раз, чем выполнять операции по одной
+Гораздо эффективнее оптимизировать/выполнить граф целиком, чем выполнять трансформации по одной
 3. иногда (часто) неявно требуют перемещения данных между экзекьюторами - shuffle
 
 Actions:
 1. выполняют действия над RDD
 2. запускают граф вычислений
 
-RDD - неизменяемы => всегда создается новый RDD
+RDD - неизменяемы => трансформации всегда создают новый RDD (не изменяют исходный)
 Элементами RDD могут быть коллекции/кейс классы/кортежи/...
 
 Обычный экзекьютор - 1/2 ядра + 4/8 Gb ram
@@ -872,7 +899,7 @@ RDD: низкоуровневая распределенная коллекци�
 DF: таблица со схемой, состоящей из колонок ОПРЕДЕЛЕННЫХ типов, описанных в org.apache.spark.sql.types
 
 2. Обработка данных:
-RDD: сериализация (java serializer) функций на драйвере => десериализация и применение на экзекьюторе
+RDD: сериализация (java serializer) функций на драйвере => десериализация и применение на экзекьюторах
 DF: кодогенерация (Thungsten) => java код трансформации (для каждого физического оператора) => компилятор janino => применение скомпилированного кода к данным
 
 3. Функции и алгоритмы:
@@ -979,7 +1006,7 @@ Stage состоит из task
 
 spark.conf.set("spark.sql.shuffle.partitions", <partition_number>) - подбирается индивидуально исходя из ресурсов кластера (по умолчанию == 200)
 
-!!! Передача данных между стейджами (шафл) выполняется через файлы =>
+!!! Передача данных между стейджами (шафл) выполняется через файлы
 => репартиционирование считается дорогой операцией
 
 Алгоритм выполнения репартицирования:
@@ -1031,7 +1058,7 @@ null в Spark превращается в null внутри UDF
 4. Option[T] (None => null in DF)
 
 1. пользовательские функции позволяют реализовать произвольный алгоритм и использовать его в DF API
-2. пользовательские функции работают медленнее встроенных, поскольку при использовании встроенных функций Spark использует ряд оптимизаций (например векторизацию вычислений на уровне CPU) + Catalyst + Thungsten + отсутствуют лишние сериализации/десериализации
+2. пользовательские функции работают медленнее встроенных, поскольку при использовании встроенных функций Spark использует ряд оптимизаций (например векторизацию вычислений на уровне CPU) + Catalyst + Thungsten + отсутствуют лишние сериализации/десериализации/копирование
 
 
 Соединения:
@@ -1091,7 +1118,7 @@ spark.read.csv - позволяет читать заархивированны�
 
 методы map/flatMap - это переход к DS API => дополнительные операции => потеря перформанса:
 1. десериализация (Internal row => Java object)
-2. MapPartition + применение функции
+2. MapPartition и применение функции
 3. сериализация (Java object => Internal row)
 
 В Spark 3 появилась возможность написания плагинов для кастомных операторов (примеры - Direct Cassandra Join, Spark GPU)
@@ -1114,7 +1141,7 @@ __5
 1. метод explain() у DF
 2. на вкладке SQL/DataFrame в Spark UI
 
-Варианты реализации операторов:
+Варианты реализации физических операторов:
 1. с кодогенерацией - представлены конкретным java кодом, который компилируется janino
 2. без кодогенерации - представлены кодом на scala (например - toJson)
 
@@ -1133,8 +1160,10 @@ import org.apache.spark.rdd.RDD
 
 Имплементации InternalRow:
 1. GenericInternalRow - человекочитаемые данные, располагаются в хипе
+package org.apache.spark.sql.catalyst.expressions -> BaseGenericInternalRow
 class GenericInternalRow(val values: Array[Any]) extends BaseGenericInternalRow
 2. UnsafeRow - массив байт с некоторой метаинформацией, располагаются в оффхипе
+package org.apache.spark.sql.catalyst.expressions -> UnsafeRow
 public final class UnsafeRow extends InternalRow implements Externalizable, KryoSerializable
 
 1. Spark составляет физический план выполнения запроса на основании написанного кода
@@ -1173,10 +1202,10 @@ BroadcastHash Join:
 2. работает, когда один из датасетов небольшой и полностью вмещается в память экзекьютора
 3. оставляет левый датасет как есть
 4. копирует правый датасет на каждый экзекьютор (должен влезать в хип экзекьютора)
-копирование происходит по peer-to-peer алгоритму
+Копирование происходит по peer-to-peer алгоритму
 5. составляет HashMap из правого датасета, где ключ - кортеж из колонок в условии соединения
 6. итерируется по левому датасету внутри каждой партиции и проверяет наличие ключей в HashMap
-7. может быть использован атоматически, либо явно - broadcast(df)
+7. может быть использован автоматически, либо явно - broadcast(df)
 
 
 BroadcastTimeoutException (по умолчанию 300с) => на экзекьюторе не хватает памяти для броадкаста датафрейма
@@ -1188,11 +1217,11 @@ BroadcastTimeoutException (по умолчанию 300с) => на экзекью
 
 
 SortMerge Join - дефолтный вид джоина больших датафреймов
-Падает если есть перекошенные партиции, не влезающие в экзекьютор:
+Упадет если есть перекошенные партиции, не влезающие в экзекьютор:
 1. работает, когда ключи соединения в обоих датасетах являются сортируемыми
 2. репартиционирует оба датасета в 200 партиций по ключам соединения
 3. сортирует партиции каждого из датасетов по ключам соединения
-4. используется сравнение левого и правого ключей, обходит каждую пару партиций и соединяет строки с одинаковыми ключами
+4. сравнивает левый и правый ключи, обходит каждую пару партиций и соединяет строки с одинаковыми ключами
 
 
 BroadcastNestedLoop Join:
@@ -1215,17 +1244,21 @@ CartesianProduct - стоит избегать:
 В ряде случаев можно уйти от лишних shuffle операций при выполнении соединения
 Для этого оба DF должны иметь одинаковое партицирование == одинаковое количество партиций и ключ партицирования, совпадающий с ключом соединения
 
-Разница между планами выполнения будет хорошо видна в Spark UI на плане выполнения
-в SQL/Dataframe(++) и на графе выполнения в Jobs(+) (в explain - разницы видно не будет)
+Оптимизация видна в Spark UI:
+1. ++ в плане выполнения - в SQL/Dataframe + Details
+2. +  в графе выполнения - в Jobs
+3. -  в explain - разницы не будет
 
-Optimal number of spark.sql.shuffle.partitions = num_workers * cores_per_worker * 3(или 4)
+Optimal number of spark.sql.shuffle.partitions = num_workers * cores_per_worker * 3/4
 
 !!! После репартиционирования не имеет смысла делать cache т.к. данные уже будут лежать на дисках воркеров (т.к. результат репартиционирования - файлы)
 т.е. репартицирование ~= persist(StorageLevel.DISK_ONLY)
 
+После репартицирования по ключам партиции левого и правого датафрейма с одинаковыми ключами гарантированно будут в разных партициях, однако гарантии попадания на один и тот же воркер у этих партиций нет -> запускается неявная операция релокации партиций на воркер
+
 
 Управление схемой данных:
-Типы колонок DF API:
+Типы колонок в DF API:
 1. скаляр - StringType/IntegerType/...
 2. массив - ArrayType(T)
 3. словарь - MapType(K, V)
@@ -1233,7 +1266,7 @@ Optimal number of spark.sql.shuffle.partitions = num_workers * cores_per_worker 
 
 Вложенность словарей, массивов и структур не ограничена
 
-Схема DF целиком описывается с помощью класса StructType[Seq(StructField)]
+Схема DF описывается с помощью класса StructType[Seq(StructField)]
 StructField имеет 3 атрибута - name/dataType/nullable
 
 Иерархия типов:
@@ -1254,14 +1287,14 @@ StructField имеет 3 атрибута - name/dataType/nullable
 1. при чтении источника - значительно ускоряет чтение (в худшем случае с автовыводом схемы - потребуется прочитать весь датасет)
 2. при работе с JSON - from_json
 
-Физический оператор чтения файлов - FileScan <format> - до сих пор работает на Datasource API V1
 
 Оптимизатор запросов Catalyst:
 Catalyst выполняет оптимизацию запросов с целью ускорения их выполнения и применяет следующие методы:
-1. Column projection - позволяет избегать вычитывания ненужных колонок при работе с источниками
+1. Column projection - позволяет избегать чтения ненужных колонок при работе с источником
 + позволяет избегать вычисления ненужных колонок (например - groubBy)
 Работает для колоночных форматов - parquet/orc
-!!! Для текстовых форматов (например - json) - ReadSchema[] будет указан в плане выполнения, но работать оптимизация не будет
+Физический оператор чтения файлов - FileScan <format> - до сих пор работает на Datasource API V1
+!!! Для текстовых форматов (например - json) - ReadSchema[] будет указана в плане выполнения, но работать оптимизация не будет
 2. Partition pruning - позволяет избегать чтения ненужных партиций. Работает только с файловыми форматами (json/orc/parquet/csv/text)
 Best practice партиционирования - год/месяц/день
 3. Predicate pushdown - позволяет "протолкнуть" условия фильтрации данных на уровень datasource 
@@ -1288,12 +1321,11 @@ __6
 58-45 => 1-04-50
 1-57-00 => 2-05-05
 
-1-35-41 => 2-39-55 - Elastic + Cassanda - переделать
 
 Обзор источников данных:
 Spark - это платформа для ОБРАБОТКИ распределенных данных. Она не отвечает за хранение данных и не завязана на какую-либо БД или формат хранения, что позволяет разработать коннектор для работы с любым источником. Часть распространенных источников доступна "из коробки", часть - в виде сторонних библиотек
 
-На текущий момент Spark DF API позволяет работать (читать/сохранять) с большим набором источников:
+На текущий момент Spark DF API позволяет работать (читать/записывать) с большим набором источников:
 1. текстовые файлы:
   1.1 json
   1.2 text
@@ -1318,25 +1350,26 @@ Spark - это платформа для ОБРАБОТКИ распределе
   1.1 выбрать актуальную версию для Scala_<version>
   1.2 скачать jar или скопировать команду для нужной системы сборки
 
-2. добавить зависимость, для sbt - в libraryDependencies в файле build.sbt:
-libraryDependencies += "org.elasticsearch" %% "elasticsearch-spark-30" % "8.9.0"
+2. добавить зависимость в проект:
+sbt - в libraryDependencies в файле build.sbt:
+libraryDependencies += "org.elasticsearch" %% "elasticsearch-spark-30" % "8.10.4"
 
 Добавить зависимость в приложение можно одним из способов:
 3.1 добавить зависимость в spark-submit:
-spark-submit --packages org.elasticsearch:elasticsearch-spark-30_2.13:8.9.0
+spark-submit --packages org.elasticsearch:elasticsearch-spark-30_2.13:8.10.4
 Автоматическая загрузка джарников в кэш хоста, на котором запускается submit
 При запуске распределенного приложения джарники будут перемещены в рабочие
 директории драйвера/экзекьюторов и добавлены в classpath
   
-3.2 добавить jar файл в spark-submit:
-spark submit --jars /path/to/elasticsearch-spark-30_2.13-8.9.0.jar
+3.2 добавить jar в spark-submit:
+spark submit --jars /path/to/elasticsearch-spark-30_2.13-8.10.4.jar
 драйвер + воркеры
   
 3.3 добавить зависимость в spark-defaults.conf:
-spark.jars.packages org.elasticsearch:elasticsearch-spark-30_2.13:8.9.0
+spark.jars.packages org.elasticsearch:elasticsearch-spark-30_2.13:8.10.4
   
-3.4 добавить jar файл в spark-defaults.conf:
-spark.jars /path/to/elasticsearch=spark-30_2.13-8.9.0.jar
+3.4 добавить jar в spark-defaults.conf:
+spark.jars /path/to/elasticsearch=spark-30_2.13-8.10.4.jar
   
 3.5 в runtime с помощью кода:
 spark.sparkContext.addJar - !!! добавляет зависимости только в класспасс экзекьюторов
@@ -1353,12 +1386,12 @@ spark.es.nodes localhost:9200
 spark.conf.set("spark.es.nodes", "localhost:9200")
   
 4. в коде при чтении:
-val df = spark.read.format("elastic").option("es.nodes", "localhost:9200")...
-val df = spark.read.format("elastic).options(Map("es.nodes" -> "localhost:9200"))...
+val df = spark.read.format("elastic").option("es.nodes", "localhost:9200")
+val df = spark.read.format("elastic).options(Map("es.nodes" -> "localhost:9200", ...))
 
 5. в коде при записи:
-df.write.format("elastic").option("es.nodes", "localhost:9200)...
-df.write.format("elastic").options(Map("es.nodes" -> "localhost:9200"))...
+df.write.format("elastic").option("es.nodes", "localhost:9200)
+df.write.format("elastic").options(Map("es.nodes" -> "localhost:9200", ...))
   
 1. поддержка источника всегда добавляется на уровне JVM (даже для pyspark) путем добавления в java classpath нужного класса
 2. добавить поддержку источника можно по-разному, однако в большинстве случаев следует избегать "хардкода"
@@ -1367,9 +1400,9 @@ df.write.format("elastic").options(Map("es.nodes" -> "localhost:9200"))...
 
 Текстовые форматы:
 Spark позволяет хранить данные в текстовом виде в форматах text/json/csv
-1. Json - JSON строки (не массив JSON документов, а именно раздельные строки, разделенные \n)
-2. Csv - плоские данные с разделителем
-3. Text - просто текстовые строки, вычитываются как DF с единственной колонкой (value: String)
+1. json - JSON строки (не массив JSON документов, а именно раздельные строки, разделенные \n)
+2. csv - плоские данные с разделителем
+3. text - просто текстовые строки, вычитываются как DF с единственной колонкой (value: String)
 
 Преимущества:
 1. простота интеграции
@@ -1423,7 +1456,7 @@ Spark позволяет выбирать режим записи с помощ�
 ORC/Parquet:
 В отличие от обычных текстовых форматов, ORC/Parquet изначально спроектированы под распределенные системы хранения и обработки
 
-Совйства форматов ORC/Parquet:
+Свойства форматов ORC/Parquet:
 1. колоночныe - в них есть колонки и схема, как в таблицах БД
 2. бинарныe - прочитать их обычным текстовым редактором не получится
 3. имеют похожие показатели производительности и архитектуру, но Parquet используется чаще
@@ -1457,7 +1490,7 @@ Parquet Tools позволяет:
 3. объединить несколько файлов в один
 
 Если данные пришли в json, то лучше хранить их в parquet
-Размер будет больше (~ +20%), но получаем возможность сжатия без вреда для многопоточости.
+Размер будет больше (~ +20%), но получаем возможность сжатия без вреда для многопоточости - (?)
 
 1. форматы ORC/Parquet позволяют эффективно работать со структурированными данными
 2. производительность ORC/Parquet на порядок выше обычных текстовых файлов
@@ -1492,9 +1525,10 @@ Elastic - документированная распределенная баз
 2. Template - шаблон с параметрами, с которыми создается новый индекс (~схема для записи)
 Задает ограничения (на уровне схемы документа) для записываемых документов (по умолчанию - ограничений нет)
 
-0.0.0.0:5601 => Management (всплывающая панель слева) => Dev Tools
+0.0.0.0:5601 => MANAGEMENT (всплывающая панель слева) => Dev Tools
 
 Пример шаблона:
+#! Legacy index templates are deprecated in favor of composable templates - (?)
 PUT _template/airports
 {
   "index_patterns": ["airports-*"],
@@ -1515,9 +1549,16 @@ PUT _template/airports
   }
 }
 
-"index_patterns": ["airports-*"] - для всех индексов, начинающихся с airports-xxx
+"index_patterns": ["airports-*"] - для всех индексов, начинающихся с airports-*
 "number_of_shards: 1 - все данные буду на одном шарде
-"dynamic": true - допустима запись документов с любой схемой, но в ней должно быть поле ts с типом "type": "date" формата "format": "strict_date_optional_time||epoch_millis"
+"dynamic": true - допустима запись документов с любой схемой
+"properties": {
+      "ts": {
+        "type": "date",
+        "format": "strict_date_optional_time||epoch_millis"
+      }
+    }
+- в схеме должно быть поле ts с типом "date" в формате "strict_date_optional_time||epoch_millis"
 
 3. Shard - индексы в elastic делятся на шарды
 Это позволяет хранить индекс на нескольких узлах кластера
@@ -1527,27 +1568,27 @@ PUT _template/airports
 Перед тем, как начать писать в elastic с помощью Spark, нам необходимо создать шаблон, иначе индекс будет создан с параметрами по умолчанию и построить красивый pie chart в Kibana не получится
 Это можно сделать с помощью Dev Tools в Kibana
 
-Management => Stack Management => Kibana => Data Views (опции для красивого отображения)
-=> Create index pattern =>
+MANAGEMENT => Stack Management => Kibana => Data Views (опции для красивого отображения)
+=> Create data view =>
 Name == airports 
 Index pattern == airports-*
 Timestamp field == ts
 => Save data view to Kibana
-=> Analytics => Discover (аналитика)
+ANALYTICS => Discover (аналитика)
 
 Основной пайплайн работы с elastic (и другими БД) - записывать в него данные (а не
 читать - т.к. медленно)
 Spark => запись данных в Elastic => аналитика/визуализация в Kibana
 
-!!! Количество партиций в DF равно общему количеству шардов индекса
+!!! Количество партиций в DF равно количеству шардов индекса
 
 1. Elastic - удобное распределенное хранилище документов, не накладывающее строгих ограничений на схему документов
 2. Elastic позволяет делать сложные запросы, включая полнотекстовые
-3. При работе с elastic, Spark часто использует filter pushdown
+3. при работе с elastic, Spark часто использует filter pushdown
 4. Spark отлично подходит для того, чтобы писать в elastic. Однако чтение работает не очень быстро
 5. User friendly для аналитиков
-6. При отказе ноды, кластер будет временно недоступен
-7. Кластер только внутри одного дата-центра (будет лучше, если узлы будут расположены рядом на высокоскоростных свитчах)
+6. при отказе ноды, кластер будет временно недоступен
+7. кластер только внутри одного дата-центра (будет лучше, если узлы будут расположены рядом на высокоскоростных свитчах)
 
 
 Cassandra - распределенная wide-column база данных
@@ -1562,7 +1603,7 @@ Cassandra - распределенная wide-column база данных
 7. возможность быстро получать строку по ключу на любом объеме данных
 
 Недостатки:
-1. слабая согласованность (eventual - т.е. есть возможность считать старые данные)
+1. слабая согласованность (eventual - т.е. есть возможность прочитать старые данные)
 2. "бедный" SQL (в кассандре называется Cassandra Query Language - CQL)
 3. отсутствие транзакций (есть lightweight transaction)
 
@@ -1574,8 +1615,8 @@ Cassandra имеет симметричную архитектуру. Кажды
 Высокая доступность (HA) обеспечивается за счет репликации (запись производится на n-1 следующих узлов в кольце кластера, n - фактор репликации)
 
 Ключ может быть составным и состоять из:
-1. Partition keys - часть ключа (колонки) по которым рассчитывается Murmur3 hash
-2. Clustering keys - определяют сортировку внутри каждой партиции
+1. Partition key - колонки по которым рассчитывается Murmur3 hash
+2. Clustering key - колонки, определяющие сортировку внутри каждой партиции
 Partition keys + Clustering keys = Composite key
 
 От выбранных partition/clustering keys (определяются на этапе создания таблицы)
@@ -1590,21 +1631,22 @@ token(n3) = t3		range(t3, t4] => {n4, n5, n6}
 Есть вторичные индексы по обычным колонкам (не являющимися ключами)
 
 Сущности cassandra:
-1.Keyspace - аналог database - логическое объединение таблиц
-На уровне keyspace устанавливается фактор репликации
-2. table - таблицы (как в обычной бд)
+1. Keyspace - аналог database - логическое объединение таблиц
+на уровне keyspace устанавливается фактор репликации
+2. Table - таблицы (как в обычной бд)
 
 При записи производится Upsert == Update (для существующих ключей) + Insert
 
-Скорость чтения ОЧЕНЬ СИЛЬНО зависит от структуры таблицы и запроса. Если сделать запрос по колонке, являющейся partition key, то будет применена оптимизация filter pushdown (в Spark3 - Cassandra Filters: [["ident" = ?, 22MV]]) и запрос отработает очень быстро (т.к. зная ключ - cassandra быстро установит на каком хосте находятс данные)
+Скорость чтения ОЧЕНЬ СИЛЬНО зависит от структуры таблицы и запроса. Если сделать запрос по колонке, являющейся partition key, то будет применена оптимизация filter pushdown (в Spark3 - Cassandra Filters: [["ident" = ?, 22WV]]) и запрос отработает очень быстро (т.к. зная ключ - cassandra быстро установит на каком хосте находятс данные)
 
-Если сделать запрос по колонке не являющейся partition key, то filter pushdown также может отработать (а может и нет) => но cassandra будет искать эти данные на всем кластере(full table scan) (в Spark3 - Cassandra Filters: [])
+Если сделать запрос по колонке не являющейся partition key, то filter pushdown также может отработать (а может и нет) => но cassandra будет искать эти данные на всем кластере(full table scan)
+(в Spark3 - Cassandra Filters: [])
 
 Скорость записи из Spark в Cassandra/Kafka - почти никогда не является узким местом
 
 1. Cassandra - одна из немногих БД, которая способна эффективно хранить большие объемы данных
-2. В Cassandra структура таблицы формируется, исходя из запросов, которые будут выполняться, а не наоборот
-3. В данной БД даннные обычно хранятся в денормализованном виде (если утрировать - то по таблице на каждый запрос)
+2. в Cassandra структура таблицы формируется, исходя из запросов, которые будут выполняться, а не наоборот
+3. в Cassandra даннные обычно хранятся в денормализованном виде (если утрировать - по таблице на каждый запрос)
 4. Spark отлично подходит для записи данных в Cassandra, для чтения нужна настройка под конкретный профиль нагрузки
 
 
@@ -1616,13 +1658,14 @@ PostgreSQL - классическая РБД
 Скорректировать это поведение можно, используя параметры partitionColumn/lowerBound/upperBound/numPartitions
 
 Spark выводит схему JDBC-источника с помощью запроса:
-SELECT * FROM tableName WHERE 1 = 0 LIMIT 1;
+SELECT * FROM table_name WHERE 1 = 0 LIMIT 1;
 Но гарантий оптимизации этого запроса в конкретной базе - нет, может быть FULL TABLE SCAN
 
 1. Spark позволяет работать с PostgeSQL через JDBC коннектор
 2. при использовании JDBC настройка партицирования задается вручную
 
-Основные вопросы при написании кастомного коннектора:
+
+Основные компоненты для написания кастомного коннектора:
 1. определить механизм чтения данных в партицию - RDD[InternalRow]
 2. определить механизм вывода схемы - StructType
 
@@ -1631,12 +1674,11 @@ SELECT * FROM tableName WHERE 1 = 0 LIMIT 1;
 
 __7
 9-50
-1-10-10 => 1-14-35
+1-09-55 => 1-15-00
 1-58-55 => 2-05-10
 2-53-05
 
 
-Общие сведения:
 Особенности систем поточной обработки данных:
 1. работают с непрерывным потоком данных
 2. нужно хранить состояние стрима
@@ -1700,7 +1742,7 @@ Trigger позоляет настроить частоту чтения/обра
 В заданный момент времени обрабатывается конкретный микробатч (микробатч под капотом == RDD[InternalRow]), состоящий из определенного числа партиций
 
 Автоматический перезапуск стрима:
-1. стрим упал внутри приложения, но приложение не упало - например ошибка трансформации/OOM на экзекьюторе
+1. Стрим упал внутри приложения, но приложение не упало - например ошибка трансформации/OOM на экзекьюторе
 
 Перезапуск возможен из приложения после анализа ошибки
 Sink.start() - неблокирующая операция - стрим работает асинхронно
@@ -1714,7 +1756,7 @@ awaitTermination(15000) блокирует основной поток на 15с
 Т.е. через каждые 15 секунд работы мы можем запустить свою логику - например rest api для управления стримом снаружи (стартовать/перезапускать)
 Более простое решение - маркер файл на HDFS - если появляется (например stop.file) - остановить стрим
 
-2. стрим упал и приложение упало - например зафейлились таски => зафейлился стрейдж => несколько перезапусков стейджа (если все еще фейлится) => фейл приложения
+2. Стрим упал и приложение упало - например зафейлились таски => зафейлился стрейдж => несколько перезапусков стейджа (если все еще фейлится) => фейл приложения
 
 Можно перезапустить через oozie/airflow/cron
 Если платформа стримовая - стрим надо мониторить
@@ -1733,7 +1775,7 @@ ForeachBatch Sink - позволяет применить произвольну
 
 Best practice стриминговой записи на HDFS:
 1. repartition - уменьшаем количество файлов, которые будут записаны
-2. должна быть compaction задача в фоне, которая объединяет мелкие файлы
+2. compaction
 
 Варианты записи стримингового потока более крупными частями (уменьшение количества файлов):
 1. trigger(Trigger.ProcessingTime("10 seconds")) - увеличить время триггера
@@ -1746,7 +1788,7 @@ Best practice стриминговой записи на HDFS:
   1.1 inputRowsPerSecond - прочитано строк/c
   1.2 processedRowsPerSecond - обработано строк/c - более честный параметр
 
-Параллельно внутри одного Spark приложения можно запускать несколько стримов (т.к. они работают асинхронно) - антипаттерн
+Параллельно внутри одного Spark приложения можно запускать несколько стримов (т.к. они работают асинхронно) - антипаттерн по мнению Андрея Титова
 
 1. rate - самый простой способ создать стрим для тестирования приложений
 2. стрим начинает работу после вызова метода start() и не блокирует основной поток программы
@@ -1768,8 +1810,7 @@ Spark позволяет запустить стрим, который буде�
 1. входной поток можно ограничить только максимальным количеством файлов, попадающих в батч
 2. гранулярность обработки - батч
 Если стрим упадет в середине обработки батча, то при перезапуске все файлы этого батча будут обрабатываться снова
-
-!!! File streaming не стоит использовать на проде
+=> File streaming не стоит использовать в продакшене
 
 
 Kafka streaming:
@@ -1785,11 +1826,11 @@ Apache Kafka - самая распространенная в мире сист�
 3. у каждого сообщения есть свой номер, который называется offset, что позволяет гранулярно сохранять состояние стрима
 Это позволяет повторно обработать уже обработанные сообщения. Сообщение при чтении не удаляется
 
-Технически Kafka - не брокер очередей (нет понятия очереди), а distributed commit log (распределенный лог изменений)
+Технически Kafka - не брокер очередей (нет понятия очереди), а distributed commit log (распределенный журнал коммитов)
 
 Архитектура системы:
 Topic - это логическая таблица в Kafka. Мы пишем данные в топик и читаем данные из топика 
-Топик, как правило, распределен по нескольким брокерам (== узел кластера Kafka) для обеспечения высокой доступности и скорости работы с данными
+Топик, как правило, распределен по нескольким брокерам (== узел кластера Kafka == broker) для обеспечения высокой доступности и скорости работы с данными
 
 Partition - это физические блоки, из которых состоят топики. Партиция представляет собой неделимый блок, который хранится на одном из узлов. Топик может иметь произвольное количество партиций
 Чем больше партиций - тем выше параллелизм при чтении/записи, однако большое число партиций в топике может привести к замедлению работы всей системы
@@ -1799,7 +1840,7 @@ Replica - каждая партиция может иметь несколько
 Message - это данные, которые мы пишем и читаем в Kafka - представляют собой кортеж (key, value)
 Ключ используется не всегда - может иметь значение null
 Сериализация/десериализация данных всегда происходят на уровне клиентов Kafka
-Сама Kafka ничего о типах данных не знает и хранит ключи/значения в виде массива байт
+!!! Kafka ничего о типах данных не знает и хранит ключи/значения в виде массива байт
 
 Ключ нужен для партиционирования данных внутри топика
 
@@ -1816,14 +1857,14 @@ Consumer - это приложение, читающее данные из то�
 
 !!! Если консьюмеров больше чем партиций - лишние консьюмеры будут использовать ресурсы впустую
 
-Сommit - называют сохранение информации о факте обработки сообщения с отдельным оффсетом
+Сommit - называют сохранение информации о факте обработки сообщения с определенным оффсетом
 Поскольку оффсеты для каждой партиции топика свои, то и информация о последнем обработанном оффсете хранится по каждой партиции отдельно
 Обычные приложения пишут коммиты в специальный топик Kafka __consumer_offsets
 
 !!! Управление оффсетами в Spark происходит с помощью чекпоинтов, которые сохраняются на ФС (например HDFS)
 Spark сохраняет обработанные оффсеты по каждому батчу
 
-Retention - поскольку кластер Kafka не может хранить данные вечно => в ее конфигурации задаются пороговые значения по объему и/или времени хранения для каждого топика, при превышении которого данные удаляются
+Retention - поскольку кластер Kafka не может хранить данные вечно -> в ее конфигурации задаются пороговые значения по объему и/или времени хранения для каждого топика, при превышении которого данные удаляются
 Например - если у топика A установлен retention по времени 1 месяц, то данные будут хранится в системе не менее одного месяца (и затем будут удалены одной из внутренних подсистем)
 
 Best practice - для удобного последующего поиска оффсета с нужным таймстэмпом - после обработки микробатча записывать в БД offset:timestamp
@@ -1831,10 +1872,12 @@ Best practice - для удобного последующего поиска о
 
 
 Работа с Kafka с помощью Static DataFrame:
+
 Spark позволяет работать с Kafka как с обычной БД
 Для записи в Kafka необходиммо подготовить датафрейм с 2-мя колонками:
 1. value: String - данные, которые мы хотим записать
 2. topic: String - топик, куда писать каждую строку датафрейма
+String - тк легко конвертируется в Array[Byte]
 
 Kafka использует Zookeeper для синхронизации узлов (ранее в зукипере также хранились оффсеты)
 
@@ -1849,18 +1892,19 @@ Kafka использует Zookeeper для синхронизации узло�
 Чтобы получить данные из binary - их необходимо десериализовать
 Формат данных может быть произвольным (если json - достаточно cast(StringType))
 
-Spark управляет Сonsumer group сам автоматически, собственный механизм Kafka - не используется
+Spark управляет Сonsumer group сам, собственный механизм Kafka - не используется
 
-При использовании статических датафреймов с Kafka - если нужно хранить последний прочитанный оффсет - нужно делать вручную
+При использовании статических датафреймов с Kafka - если нужно хранить последний прочитанный оффсет - делать вручную
 
 
 Работа с Kafka с помощью Streaming DF:
+
 При создании streamingDf необходимо помнить:
 1. startingOffsets - по умолчанию имеет значение latest
 2. endingOffsets использовать нельзя (стрим бесконечен)
 3. !!! количество сообщений за батч можно (и нужно) ограничить параметром maxOffsetsPerTrigger - по умолчанию он не задан => первый батч будет вычитывать данные всего топика
 
-Гранулярность - сообщение топика Kafka
+Гранулярность - 1 offset топика Kafka
 
 Если maxOffsetsPerTrigger ~= lastProgress.processedRowsPerSecond стрим лагает, т.е. чтение не успевает за источником
 
@@ -1868,19 +1912,19 @@ Spark управляет Сonsumer group сам автоматически, со
 
 В чекпоинте лежат последние оффсеты по каждому топику
 src/main/resources/l_7/chk/s3.kafka/offsets
-Если нужно перечитать данные из Kafka (с произвольного места) - нужно удалить файл чекпоинта и в параметре startingOffsets указать нужное значение
+Если нужно перечитать данные из Kafka (с произвольного места) - нужно удалить файлы чекпоинта и в параметре startingOffsets указать нужное значение
 
 
 
 
 __8
-4-45 => 6-10
-44-30 => 50-40
-1-44-00 => 1-50-00
+4-40 => 6-10
+44-25 => 50-40
+1-43-55 => 1-50-00
 
-15-25
+1-44-20
+https://www.youtube.com/watch?v=9wuQVcl211g
 
-Stateful streaming:
 Stateful streaming - это вид поточной обработки данных, при которой при обработке батча с данными используются данные из предыдущих батчей
 
 Все операции с использованием select/filter/withColumn (кроме операций с плавающими окнами) являются stateless
@@ -1902,7 +1946,7 @@ Statefull streaming - если при обработке стрима испол
 Удаление дубликатов:
 Spark позволяет удалять дубликаты данных в стриме. Это можно сделать 2-мя способами:
 1. Без использования watermark:
-  1.1 хэш каждого элемента будет сохраняться в чекпоинте - папка state
+  1.1 хэш каждого элемента будет сохраняться в чекпоинте - директория state
   1.2 в стриме полностью исключаются дубликаты
   1.3 если число уникальных значений большое - со временем начнется деградация стрима (из-за 1.1)
   
@@ -1913,9 +1957,9 @@ Spark позволяет удалять дубликаты данных в ст�
   2.4 колонка, по которой делается watermark, должна быть включена в dropDuplicates
 
 Watermark - пороговое значение, рассчитывающееся на основании колонки с таймстемпом данных
-!!! Т.е. в стриме обязательно наличие колонки с временной меткой
+!!! т.е. в датафрейме обязательно наличие колонки с временной меткой
 
-Алгоритм работы watermark - есть несколько переменных:
+Алгоритм работы watermark:
 1. Maximum Observable Timestamp (MOT) - максимальный таймстэмп в предыдущем батче
 MOT обновляется с каждым батчем
 2. Threshold - порог (например 5 минут)
@@ -1941,18 +1985,18 @@ dropDuplicates - делает неявное репартицирование
 Агрегаты будут рассчитываться на каждом батче по ВСЕЙ таблице
 Если кардинальность ключей высокая - со временем стрим будет деградировать
 
-!!! В complete нельзя использовать watermark => можно использовать для statefull, только при низкой кардинальности ключей (~ до 1_000_000 значений)
+!!! В Complete нельзя использовать watermark => Complete можно использовать для statefull, только при низкой кардинальности ключей (~ до 1_000_000 значений)
 
 Если писать в паркет - на каждом батче будет записываться новый файл, если использовать cassandra/mongo - на каждом батче ВСЕ данные будут перезаписываться => большая нагрузка на БД
 
 2. Update - будем получать только дельты, т.е. строки, которые поменялись в агрегате после обработки текущего батча
-!!! Записывать в таком режиме в cassandra/mongo - дешевле чем в complete, т.к. перезаписываться будут только изменения
+!!! Записывать в Update режиме в cassandra/mongo - дешевле чем в Complete, т.к. перезаписываться будут только изменения
 
 Можно использовать watermark - т.е. режим подходит для высококардинальных ключей:
   2.1 watermark + агрегат на указанных колонках
   2.2 агрегаты на плавающих окна
 
-3. Append - по умолчанию. После обработки батча Spark "забывает" про него
+3. Append - ПО УМОЛЧАНИЮ. После обработки батча Spark "забывает" про него
 В Append режиме в синк будут записаны только ЗАВЕРШЕННЫЕ окна с данными в момент window_right_bound + watermark_value
 !!! Без watermark - не работает
 
@@ -2008,7 +2052,7 @@ StreamingSymmetricHashJoin - технически работает как HashJo
 Stream-Static Left/Inner/Left Anti join - работают в Append режиме без обязательного указания watermark
 Watermark нужен только для stream-stream join (?)
 
-Получение отброшенных (ватермаркой) событий:
+Получение отброшенных (по watermark) событий:
 В lastProgess => раздел eventTime - есть значения watermark + метрики времени - на основании этих данных потенциально можно получить отброшенные события - создать еще 1 стрим и на основании batchId/eventTime получать отброшенные события (но это двойное чтение источника + возможность рассинхронизации стримов)
 Нормального решения - нет (только постпроцессинг)
 
@@ -2306,7 +2350,7 @@ Options:
 1. spark-defaults.conf - основной конфигурациооный файл
 Общие для всех пользователей настройки нужно указать в spark-defaults.conf,
 отличающиеся - через параметры спарк-сабмита/пропертис файл
-!!! Пропертис файл полностью оверрайдит дефолтный
+!!! Properties файл полностью оверрайдит дефолтный
 2. log4j.properties - конфигурация логирования, можно задать необходимый уровень логирования для различных компонентов Spark (включая собственные 
 3. spark-en.sh - скрипт, в котором устанавливаются переменные окружения (например - HADOOP_CONF_DIR/YARN_CONF_DIR)
 !!! Переменные окружения имеют больший вес, чем настройки в spark-defaults.conf

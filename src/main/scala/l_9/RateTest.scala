@@ -5,11 +5,6 @@ import org.apache.spark.sql.streaming.{DataStreamWriter, Trigger}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 
 object RateTest extends App {
-  // не работает в Spark 3.4.0
-//  Logger
-//    .getLogger("org")
-//    .setLevel(Level.ERROR)
-
   val spark: SparkSession =
     SparkSession
     .builder()

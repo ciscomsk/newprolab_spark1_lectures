@@ -8,10 +8,6 @@ import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{Column, DataFrame, Dataset, Row, SaveMode, SparkSession}
 
 object Streaming_8 extends App {
-  Logger
-    .getLogger("org")
-    .setLevel(Level.ERROR)
-
   val spark: SparkSession =
     SparkSession
       .builder()
@@ -85,7 +81,7 @@ object Streaming_8 extends App {
 //  createConsoleSink("state1", myStreamDf).start()
 
   /**
-   * !!! стримы на основе одного источника данных - не могут быть синхронизированы (т.к. не могут использовать общий чекпоинт)
+   * !!! Стримы на основе одного источника данных - не могут быть синхронизированы (т.к. не могут использовать общий чекпоинт)
    * если попробовать запустить два стрима с одинаковым чекпоинтом - второй не запустится
    *
    * c queryName:
@@ -104,7 +100,7 @@ object Streaming_8 extends App {
 //  Thread.sleep(3000)
 //  createConsoleSink("state2", myStreamDf).start()
 
-  /** foreachBatch sink */
+  /** ForeachBatch sink */
   def createSink(chkName: String, df: DataFrame)(batchFunc: (DataFrame, Long) => Unit): DataStreamWriter[Row] = {
     df
       .writeStream
@@ -121,7 +117,7 @@ object Streaming_8 extends App {
 //    .start()
 
   /**
-   * !!! стримовый датафрейм кэшировать нельзя
+   * !!! Стримовый датафрейм кэшировать нельзя
    * в foreachBatch - датафрейм является статическим => можно
    */
   createSink("state4", myStreamDf) { (df, id) =>
@@ -134,7 +130,7 @@ object Streaming_8 extends App {
   }
 //    .start()
 
-  /** запись каждого микробатча в паркет */
+  /** Запись каждого микробатча в паркет */
   createSink("state5", myStreamDf) { (df, id) =>
     df.cache()
     val count: Long = df.count()
@@ -162,7 +158,7 @@ object Streaming_8 extends App {
 //  println(parquetDf.count())
 //  parquetDf.show(20, truncate = false)
 
-  /** запись в паркет в зависимости от 3-го символа ident */
+  /** Запись в паркет в зависимости от 3-го символа ident */
   case class Category(name: String, count: Long)
 
   createSink("state6", myStreamDf) { (df, id) =>

@@ -11,10 +11,6 @@ import org.apache.spark.sql.{Column, DataFrame, Dataset, Row, SaveMode, SparkSes
 import scala.collection.parallel.CollectionConverters._
 
 object Streaming_9 extends App {
-  Logger
-    .getLogger("org")
-    .setLevel(Level.ERROR)
-
   val spark: SparkSession =
     SparkSession
       .builder()
@@ -126,7 +122,7 @@ object Streaming_9 extends App {
     val categories: Array[Category] = categoriesDs.collect()
 
     /**
-     * объединяем датафрейм в 1 партицию
+     * Объединяем датафрейм в 1 партицию
      * чтобы в categories.foreach записывалось по 1 файлу для каждой категории => снижаем нагрузку на hdfs
      */
     val coalescedDf: Dataset[Row] = withSymbolDf.coalesce(1)
@@ -172,7 +168,7 @@ object Streaming_9 extends App {
        */
 
       /**
-       * !!! запись выполняется последовательно в 1 ПОТОК (т.к. coalesce(1)) и является БЛОКИРУЮЩЕЙ операцией (остальные ядра в этот момент простаивают)
+       * !!! Запись выполняется последовательно в 1 ПОТОК (т.к. coalesce(1)) и является БЛОКИРУЮЩЕЙ операцией (остальные ядра в этот момент простаивают)
        * !!! пока не закончится запись определенный ident - запись следующего не начнется
        * Spark UI => Executors => Cores/Active Tasks
        */
@@ -214,10 +210,7 @@ object Streaming_9 extends App {
     coalescedDf.count()
     withSymbolDf.unpersist()
 
-    /**
-     *  Parallel collection - операции над элементами выполняются асинхронно
-     *  каждый foreach будет работать в своем потоке
-     */
+    /** Parallel collection - операции над элементами выполняются асинхронно, каждый foreach будет работать в своем потоке */
     categories
       .par
       .foreach { category =>

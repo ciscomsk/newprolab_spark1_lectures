@@ -8,10 +8,6 @@ import org.apache.spark.sql.types.{DataType, DataTypes, StringType}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 
 object Streaming_4 extends App {
-  Logger
-    .getLogger("org")
-    .setLevel(Level.ERROR)
-
   val spark: SparkSession =
     SparkSession
       .builder()
@@ -26,16 +22,17 @@ object Streaming_4 extends App {
 
   import spark.implicits._
 
-  def createConsoleSink(df: DataFrame): DataStreamWriter[Row] =
+  def createConsoleSink(df: DataFrame): DataStreamWriter[Row] = {
     df
       .writeStream
       .format("console")
       .trigger(Trigger.ProcessingTime("10 seconds"))
       .option("truncate", "false")
       .option("numRows", "20")
+  }
 
   /**
-   * запуск в докере:
+   * Запуск в докере:
    * docker run --rm -p 2181:2181 --name=test_zoo -e ZOOKEEPER_CLIENT_PORT=2181 confluentinc/cp-zookeeper
    * docker inspect test_zoo --format='{{ .NetworkSettings.IPAddress }}'
    *
@@ -71,10 +68,10 @@ object Streaming_4 extends App {
 
   val parsedStreamingDf: DataFrame =
     streamingDf
-      /*
-        без .cast(StringType) - [DATATYPE_MISMATCH.UNEXPECTED_INPUT_TYPE]
-        Cannot resolve "from_json(value)" due to data type mismatch:
-        Parameter 1 requires the "STRING" type, however "value" has the type "BINARY"
+      /**
+       * без .cast(StringType) - err:
+       * AnalysisException: [DATATYPE_MISMATCH.UNEXPECTED_INPUT_TYPE] Cannot resolve "from_json(value)"
+       * due to data type mismatch: Parameter 1 requires the "STRING" type, however "value" has the type "BINARY"
        */
 //      .withColumn("value", from_json($"value", schema))
       .withColumn("value", from_json($"value".cast(StringType), schema))
@@ -94,22 +91,24 @@ object Streaming_4 extends App {
        +- StreamingRelation kafka, [key#7, value#8, topic#9, partition#10, offset#11L, timestamp#12, timestampType#13]
    */
 
-  /** если батч пустой - запустить Streaming_3 => writeKafka("test_topic0", identParquetDf) */
+  /** Если батч пустой - запустить Streaming_3 => writeKafka("test_topic0", identParquetDf) */
   val sink: DataStreamWriter[Row] = createConsoleSink(parsedStreamingDf)
 //  val streamingQuery: StreamingQuery = sink.start()
 
-  def createConsoleSinkWithCheckpoint(chkName: String, df: DataFrame): DataStreamWriter[Row] =
+  def createConsoleSinkWithCheckpoint(chkName: String, df: DataFrame): DataStreamWriter[Row] = {
     df
       .writeStream
       .format("console")
       .trigger(Trigger.ProcessingTime("10 seconds"))
-      /** !!! без checkpointLocation - при перезапуске стрима топик будет вычитываться с начала*/
+      /** !!! без checkpointLocation - при перезапуске стрима топик будет вычитываться с начала */
       .option("checkpointLocation", s"src/main/resources/l_7/chk/$chkName")
       .option("truncate", "false")
       .option("numRows", "20")
+  }
 
   val sinkWithCheckpoint: DataStreamWriter[Row] = createConsoleSinkWithCheckpoint("s3.kafka", parsedStreamingDf)
 //  val streamingQuery2: StreamingQuery = sinkWithCheckpoint.start()
+
 
   /** Graceful stream shutdown */
   val testStreamingDf: DataFrame =
@@ -123,9 +122,10 @@ object Streaming_4 extends App {
       .writeStream
       .format("console")
 
-//  val streamingQuery: StreamingQuery = gracefulSink.start()
+  val streamingQuery: StreamingQuery = gracefulSink.start()
+  Thread.sleep(5000)
 
-  // isTriggerActive будет false, как только батч будет полностью обработан (т.е. произведена запись в sink)
+  /** isTriggerActive будет false, как только батч будет полностью обработан (т.е. произведена запись в sink) */
 //  while (streamingQuery.status.isTriggerActive) {
 //    println("processing is active")
 //  }
@@ -133,14 +133,14 @@ object Streaming_4 extends App {
   /** как только isTriggerActive станет false - останавливаем стрим */
 //  streamingQuery.stop()
 
-  /** пример с маркер-файлом */
-//  val isStopFile: Boolean = true
-//  while (testStreamingQuery.status.isTriggerActive || !isStopFile) {
-//    streamingQuery.awaitTermination(10000)
-//  }
-//  streamingQuery.stop()
+  /** Пример с маркер-файлом */
+  val isStopFile: Boolean = true
+  while (streamingQuery.status.isTriggerActive || !isStopFile) {
+    streamingQuery.awaitTermination(5000)
+  }
+  streamingQuery.stop()
 
-  /** более безопасно можно останавливать стрим с помощью foreachBatch - описание алгоритма с 2-50-00 */
+  /** Более безопасно можно останавливать стрим с помощью foreachBatch - описание алгоритма с 2-50-00 */
 
 
   Thread.sleep(1000000)

@@ -10,10 +10,6 @@ import org.apache.spark.util.LongAccumulator
 import scala.util.{Failure, Success, Try}
 
 object RDD extends App {
-  Logger
-    .getLogger("org")
-    .setLevel(Level.ERROR)
-
   val spark: SparkSession =
     SparkSession
       .builder()
@@ -72,7 +68,7 @@ object RDD extends App {
   println()
 
   /** filter */
-  val startsWithM: RDD[String] = upperRdd.filter(_.startsWith("M"))
+  val startsWithM: RDD[String] = rdd.filter(_.startsWith("M"))
   startsWithM.cache()
   startsWithM.count()
   println(s"The following city names starts with M: ${startsWithM.collect().mkString(", ")}")
@@ -103,8 +99,8 @@ object RDD extends App {
 
   /**
    * takeOrdered - двухэтапный action - передача N минимальных элементов RDD на драйвер
-   * 1. выборка N минимальных (сортировка) элементов в каждой партиции + передача на драйвер
-   * 2. выборка N минимальных (сортировка) элементов на драйвере
+   * 1. сортировка + выборка N минимальных элементов в каждой партиции + передача на драйвер
+   * 2. сортировка + выборка N минимальных элементов на драйвере
    */
   val twoSortedElements: Array[String] = startsWithM.takeOrdered(2)
   println(s"Two sorted elements of the RDD are: ${twoSortedElements.mkString(", ")}")
@@ -128,6 +124,8 @@ object RDD extends App {
   println(s"rdd.map(_.toVector): ${mappedCollect.mkString(", ")}")
 
   val flatMappedRdd: RDD[Char] = rdd.flatMap(_.toLowerCase) // == rdd.map(_.toLowerCase).flatten
+  flatMappedRdd.cache()
+  flatMappedRdd.count()
   val flatMappedCollect: Array[Char] = flatMappedRdd.collect()
   println(s"rdd.flatMap(_.toLowerCase): ${flatMappedCollect.mkString(", ")}")
   println()
@@ -144,6 +142,7 @@ object RDD extends App {
       .filter(_ != ' ')
 
   val uniqueLetters: Array[Char] = uniqueLettersRdd.collect().sorted
+  flatMappedRdd.unpersist()
   println(s"Unique letters in the RDD are: ${uniqueLetters.mkString(", ")}")
   println()
 
@@ -167,6 +166,8 @@ object RDD extends App {
   pairRdd.cache()
   pairRdd.count()
   rdd.unpersist()
+
+  println(s"pairRdd.take(4): ${pairRdd.take(4).mkString("Array(", ", ", ")")}")
 
   /** countByKey - подсчитывает количество элементов для каждого ключа и возвращает ЛОКАЛЬНЫЙ Map */
   val letterCount1: collection.Map[Char, Long] = pairRdd.countByKey()
@@ -208,6 +209,10 @@ object RDD extends App {
       v1 <- opt1
       v2 <- opt2
     } yield v1 + v2
+  // ==
+  opt1.flatMap { v1 =>
+    opt2.map(v2 => v2 + v1)
+  }
   println(s"forOpt: $forOpt")
   println()
 
@@ -244,8 +249,8 @@ object RDD extends App {
   joinedRdd.count()
   letterCountRdd.unpersist()
 
-//  println(joinedRdd.collect().mkString(", "))
-//  println()
+  println(joinedRdd.collect().mkString(", "))
+  println()
 
   joinedRdd
     .collect()
@@ -283,13 +288,13 @@ object RDD extends App {
   /*
     map
 
-    def f(x: T): T = _
+    def f(x: A): B = _
     rdd2.map(f)
     =>
-    partition0: Iterator[T]
-    partition1: Iterator[T]
-    partition2: Iterator[T]
-    partition3: Iterator[T]
+    partition0: Iterator[A]
+    partition1: Iterator[A]
+    partition2: Iterator[A]
+    partition3: Iterator[A]
     =>
     в каждой партиции будет выполнен цикл:
     while (partition.hasNext) {
@@ -300,8 +305,8 @@ object RDD extends App {
   /*
     mapPartition
 
-    def f(x: Iterator[T]): Iterator[T] = _
-    rdd2.mapPartitions(f) { (p: Iterator[T} => ... }
+    def f(x: Iterator[A]): Iterator[B] = _
+    rdd2.mapPartitions(f) { (p: Iterator[A} => ... }
     =>
     partition0: Iterator[T]
     partition1: Iterator[T]
@@ -341,7 +346,7 @@ object RDD extends App {
    *
    * Transient lazy val pattern
    * вместо сериализации и передачи объекта с драйвера - передается описание конструктора класса
-   * инстанс класса connection будет создан на каждом экзекьюторе (1 на экзкьютор, в mapPartitions - 1 на партицию)
+   * инстанс connection будет создан на каждом экзекьюторе (1 на экзкьютор, в mapPartitions - 1 на партицию)
    */
   object Foo {
 //    @transient
@@ -350,7 +355,7 @@ object RDD extends App {
 
 
   /**
-   * sc.textFile - позволяет прочитать файл на локальной фс/S3/HDFS
+   * sc.textFile - позволяет прочитать файл на локальной ФС/S3/HDFS
    * с помощью метода textFile можно читать файлы/директории с файлами/архивы
    */
   val rdd3: RDD[String] = sc.textFile("src/main/resources/l_3/airport-codes.csv")
@@ -669,7 +674,7 @@ object RDD extends App {
    * распространяется peer-to-peer - т.е. нагрузка распределяется между экзекьюторами
    *
    * myMap - существует только на драйвере
-   * myMapBroadcast - read only копия myMap, существующая на каждом экзекьюторе
+   * myMapBroadcast - read only копия myMap - существует на каждом экзекьюторе
    * !!! если myMap изменится - myMapBroadcast не изменится
    */
   val myMapBroadcast: Broadcast[Map[Int, String]] = sc.broadcast(myMap)
@@ -687,18 +692,21 @@ object RDD extends App {
   var counter: Int = 0
 
   /**
-   * бессмысленное выражение (при работе на кластере)
+   * бессмысленная операция (при работе на кластере)
    * мутабельная переменная сериализуется и передается в каждую партицию, инкрементируется и там же остается
    */
   rdd4.foreach(_ => counter += 1)
   println(s"counter: $counter")
   println()
 
-  val counterAccum: LongAccumulator = sc.longAccumulator("myAccum")
+  val counterAccum = sc.longAccumulator("myAccum")
   rdd4.foreach(_ => counterAccum.add(1))
 
   println(s"counterAccum: $counterAccum")
-  /** counterAccum.value иногда не равен rdd4.count() (?) */
+  /**
+   * counterAccum.value иногда не равен rdd4.count() (?) - проблема в Idea?
+   * в spark-shell - равен 100
+   */
   println(s"counterAccum.value: ${counterAccum.value}")
   println(s"rdd4.count(): ${rdd4.count()}")
   println()

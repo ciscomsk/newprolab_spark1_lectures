@@ -7,11 +7,6 @@ import org.apache.spark.sql.{Column, DataFrame, Dataset, Row, SaveMode, SparkSes
 import org.apache.spark.sql.functions.{col, count, lit, max, struct, to_json, udf}
 
 object AntiPatterns extends App {
-  // не работает в Spark 3.4.0
-//  Logger
-//    .getLogger("org")
-//    .setLevel(Level.ERROR)
-
   val spark: SparkSession =
     SparkSession
       .builder()

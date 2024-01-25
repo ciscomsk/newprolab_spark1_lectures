@@ -15,11 +15,6 @@ import scala.language.postfixOps
 import scala.util.Try
 
 object Streaming_12 extends App {
-  // не работает в Spark 3.4.0
-//  Logger
-//    .getLogger("org")
-//    .setLevel(Level.ERROR)
-
   val sparkConf: SparkConf = new SparkConf()
     .setMaster("local[*]")
     .setAppName("l_9")
@@ -33,7 +28,7 @@ object Streaming_12 extends App {
       .getOrCreate()
 
   val sc: SparkContext = spark.sparkContext
-  sc.setLogLevel("ERROR")
+//  sc.setLogLevel("ERROR")
   println(sc.uiWebUrl)
   println(spark.conf.get("spark.scheduler.mode"))
   println()

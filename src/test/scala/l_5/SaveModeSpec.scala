@@ -5,11 +5,6 @@ import org.apache.spark.SparkContext
 import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 
 object SaveModeSpec extends App {
-  // не работает в Spark 3.3.1
-//  Logger
-//    .getLogger("org")
-//    .setLevel(Level.ERROR)
-
   val spark: SparkSession =
     SparkSession
       .builder()

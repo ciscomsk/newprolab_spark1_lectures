@@ -1,12 +1,14 @@
 package l_2
 
 import org.apache.log4j.{Level, Logger}
+import org.apache.spark.SparkContext
 import org.apache.spark.sql.SparkSession
 
 object Spark extends App {
-  Logger
-    .getLogger("org")
-    .setLevel(Level.ERROR)
+  // не работает в Spark 3.5
+//  Logger
+//    .getLogger("org")
+//    .setLevel(Level.ERROR)
 
   val spark: SparkSession =
     SparkSession
@@ -15,8 +17,9 @@ object Spark extends App {
       .appName("l_2")
       .getOrCreate()
 
-//  val sc: SparkContext = spark.sparkContext
-//  sc.setLogLevel("ERROR")
+  // работает в Spark 3.5
+  val sc: SparkContext = spark.sparkContext
+  sc.setLogLevel("ERROR")
 
   spark
     .sql("select 1")

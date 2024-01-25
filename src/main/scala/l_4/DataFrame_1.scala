@@ -9,10 +9,6 @@ import org.apache.spark.sql.{Column, DataFrame, Dataset, Row, SaveMode, SparkSes
 import java.lang
 
 object DataFrame_1 extends App {
-  Logger
-    .getLogger("org")
-    .setLevel(Level.OFF)
-
   val spark: SparkSession =
     SparkSession
       .builder()
@@ -128,7 +124,7 @@ object DataFrame_1 extends App {
    */
 
   /**
-   * Catalyst парсит выражение и создает план, состоящий из физических операторов
+   * Catalyst парсит выражения и создает план, состоящий из физических операторов
    * => план передается в Thungsten для кодогенерации
    */
 
@@ -229,7 +225,7 @@ object DataFrame_1 extends App {
 
   /**
    * drop - удаляет колонки
-   * !!! drop не будет выбрасывать исключение, если указана несуществующая колонка
+   * !!! drop не выбросит исключение, если указана несуществующая колонка
    */
   withUpperDf
     .drop("upperCity", "abraKadabra")
@@ -302,7 +298,14 @@ object DataFrame_1 extends App {
   println("df4: ")
   df4.show(truncate = false)
   df4.printSchema()
-
+  /*
+    root
+     |-- _corrupt_record: string (nullable = true)
+     |-- continent: string (nullable = true)
+     |-- country: string (nullable = true)
+     |-- name: string (nullable = true)
+     |-- population: long (nullable = true)
+   */
 
   val corruptedData: Array[Row] =
     df4
@@ -324,7 +327,7 @@ object DataFrame_1 extends App {
        * .na.drop("all") - удаляются строки, где все колонки == null
        * .na.drop("any") - удаляются строки, где хотя бы одна колонка == null
        * можно указать на какие колонки будет распространяться это поведение (all/any)
-       * */
+       */
       .na.drop("all") // na.drop - это срез
       .na.fill(fillData) // na.fill - это проекция
       .na.replace("country", replaceData) // na.replace - это проекция
@@ -397,7 +400,7 @@ object DataFrame_1 extends App {
     +- SortAggregate(key=[continent#426, country#436], functions=[first(name#217, false), first(population#427L, false)])
        +- Sort [continent#426 ASC NULLS FIRST, country#436 ASC NULLS FIRST], false, 0
           // репартиционирование по ключам continent + country на 200 партиций
-          +- Exchange hashpartitioning(continent#426, country#436, 200), ENSURE_REQUIREMENTS, [plan_id=528]
+          +- Exchange hashpartitioning(continent#426, country#436, 200), ENSURE_REQUIREMENTS, [plan_id=537]
              // удаление дубликатов внутри каждой партиции
              +- SortAggregate(key=[continent#426, country#436], functions=[partial_first(name#217, false), partial_first(population#427L, false)])
                 +- Sort [continent#426 ASC NULLS FIRST, country#436 ASC NULLS FIRST], false, 0
@@ -406,10 +409,14 @@ object DataFrame_1 extends App {
                          +- Scan ExistingRDD[continent#215,country#216,name#217,population#218L]
    */
 
-  /** when */
+  /** when == SQL CASE WHEN */
   val newCol: Column =
     when(col("continent") === "Europe", lit(0))
       .when(col("continent") === "Africa", lit(1))
+      /**
+       * otherwise - дефолтное значение для остальных случаев
+       * !!! если otherwise не указан - дефолтное значение будет NULL
+       */
       .otherwise(lit(2))
 
   val whenDf: DataFrame =
@@ -421,7 +428,7 @@ object DataFrame_1 extends App {
   whenDf.explain()
   /*
     == Physical Plan ==
-    *(1) Project [continent#261, country#271, name#217, population#262L, CASE WHEN (continent#261 = Europe) THEN 0 WHEN (continent#261 = Africa) THEN 1 ELSE 2 END AS newCol#477]
+    *(1) Project [continent#261, country#271, name#217, population#262L, CASE WHEN (continent#261 = Europe) THEN 0 WHEN (continent#261 = Africa) THEN 1 ELSE 2 END AS newCol#445]
     +- *(1) Scan ExistingRDD[continent#261,country#271,name#217,population#262L]
    */
 

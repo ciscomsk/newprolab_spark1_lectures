@@ -8,10 +8,6 @@ import org.apache.spark.sql.types.{LongType, TimestampType}
 import org.apache.spark.sql.{Column, DataFrame, Dataset, Row, SparkSession}
 
 object Streaming_5 extends App {
-  Logger
-    .getLogger("org")
-    .setLevel(Level.ERROR)
-
   val spark: SparkSession =
     SparkSession
       .builder()
@@ -41,11 +37,12 @@ object Streaming_5 extends App {
       .streams
       .active
       .foreach { stream =>
-        val description: String = stream
-          .lastProgress
-          .sources
-          .head
-          .description
+        val description: String =
+          stream
+            .lastProgress
+            .sources
+            .head
+            .description
 
         stream.stop()
         println(s"Stopped $description")
@@ -76,9 +73,6 @@ object Streaming_5 extends App {
     shuffledArray(0)
   }
 
-  /** удаление дубликатов */
-
-  /** v1 - без использования watermark */
   val streamDfWithDuplicates: DataFrame =
     spark
       .readStream
@@ -88,6 +82,8 @@ object Streaming_5 extends App {
 
 //  createConsoleSink("state1_WithDuplicates", streamDfWithDuplicates).start()
 
+  /** Удаление дубликатов */
+  /** v1 - без использования watermark */
   val streamingDfWithoutDuplicates: DataFrame =
     spark
       .readStream
@@ -96,7 +92,7 @@ object Streaming_5 extends App {
       .withColumn("ident", getRandomIdent)
       .dropDuplicates(Seq("ident"))
 
-  createConsoleSink("state2_WithoutDuplicates", streamingDfWithoutDuplicates).start()
+//  createConsoleSink("state2_WithoutDuplicates", streamingDfWithoutDuplicates).start()
 
   /** v2 - с использованием watermark */
   val streamingDfWithoutDuplicatesWatermark: Dataset[Row] =
@@ -120,7 +116,7 @@ object Streaming_5 extends App {
 //  createConsoleSink("state3_WithoutDuplicatesWatermark", streamingDfWithoutDuplicatesWatermark).start()
 
   /**
-   * если требуется удалять дубликаты в каком-либо временном диапазоне -
+   * Если требуется удалять дубликаты в каком-либо временном диапазоне -
    * нужно округлять timestamp до необходимого значения
    */
   val streamingDfWithoutDuplicatesWatermarkRounded: Dataset[Row] =

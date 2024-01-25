@@ -9,10 +9,6 @@ import org.apache.spark.sql.{Column, DataFrame, Dataset, Row, SparkSession}
 import java.lang
 
 object DataFrame_3 extends App {
-  Logger
-    .getLogger("org")
-    .setLevel(Level.OFF)
-
   val spark: SparkSession =
     SparkSession
       .builder()
@@ -25,8 +21,8 @@ object DataFrame_3 extends App {
 
 //  spark.conf.set("spark.sql.adaptive.enabled", true)
 //  spark.conf.set("spark.sql.adaptive.coalescePartitions.enabled", true)
-//  spark.conf.set("spark.sql.adaptive.skewedJoin.enabled", true)
 //  spark.conf.set("spark.sql.adaptive.advisoryPartitionSizeInBytes", "128m")
+//  spark.conf.set("spark.sql.adaptive.skewJoin.enabled", true)
 //  spark.conf.getAll.foreach(println)
 //  sc.getConf.getAll.foreach(println)
 
@@ -44,6 +40,21 @@ object DataFrame_3 extends App {
   println()
   airportsDf.show(numRows = 1, truncate = 100, vertical = true)
   airportsDf.printSchema()
+  /*
+    root
+     |-- ident: string (nullable = true)
+     |-- type: string (nullable = true)
+     |-- name: string (nullable = true)
+     |-- elevation_ft: integer (nullable = true)
+     |-- continent: string (nullable = true)
+     |-- iso_country: string (nullable = true)
+     |-- iso_region: string (nullable = true)
+     |-- municipality: string (nullable = true)
+     |-- gps_code: string (nullable = true)
+     |-- iata_code: string (nullable = true)
+     |-- local_code: string (nullable = true)
+     |-- coordinates: string (nullable = true)
+   */
 
   val onlyRuAndHighDs: Dataset[Row] = airportsDf.filter($"iso_country" === "RU" and $"elevation_ft" > 1000)
 
@@ -54,8 +65,8 @@ object DataFrame_3 extends App {
    * onlyRuAndHighDs в нашем случае будет рассчитан 4 раза - count/show/collect/groupBy->show
    */
   val start1: Long = System.currentTimeMillis()
-  onlyRuAndHighDs.count()
   onlyRuAndHighDs.show(numRows = 1, truncate = 100, vertical = true)
+  onlyRuAndHighDs.count()
   onlyRuAndHighDs.collect()
 
   onlyRuAndHighDs
@@ -66,7 +77,7 @@ object DataFrame_3 extends App {
     .show()
 
   val end1: Long = System.currentTimeMillis()
-  println(s"time1: ${(end1.toDouble - start1) / 1000}") // 1.526s
+  println(s"time1: ${(end1.toDouble - start1) / 1000}") // 2.133s
   println()
 
   /**
@@ -81,8 +92,8 @@ object DataFrame_3 extends App {
    */
   onlyRuAndHighDs.cache()
   val start2: Long = System.currentTimeMillis()
-  onlyRuAndHighDs.count()
   onlyRuAndHighDs.show(numRows = 1, truncate = 100, vertical = true)
+  onlyRuAndHighDs.count()
   onlyRuAndHighDs.collect()
 
   onlyRuAndHighDs
@@ -93,7 +104,7 @@ object DataFrame_3 extends App {
     .show()
 
   val end2: Long = System.currentTimeMillis()
-  println(s"time2: ${(end2.toDouble - start2) / 1000}") // 0.709s
+  println(s"time2: ${(end2.toDouble - start2) / 1000}") // 1.093s
   onlyRuAndHighDs.unpersist()
   println()
 
@@ -104,7 +115,7 @@ object DataFrame_3 extends App {
    * 1. localcheckpoint - неленивая операция (по умолчанию)
    * 2. использует стандартную систему кеширования Spark
    * 3. после localcheckpoint требуется очистка - Spark сам будет принимать решение о времени очистки кэша (не всегда эффективно)
-   * 4. localcheckpoint  - стирает граф выполнения до localcheckpoint
+   * 4. localcheckpoint - стирает граф выполнения до localcheckpoint
    */
 
   /**
@@ -116,7 +127,7 @@ object DataFrame_3 extends App {
    */
 
   /**
-   * память, выделенная экзекьютору, делится области:
+   * память, выделенная экзекьютору, делится на области:
    * 1. хип - для внутренних объектов Spark
    * 2. storage - для кэша (max 50%)
    *
@@ -138,7 +149,7 @@ object DataFrame_3 extends App {
   /*
     == Physical Plan ==
     AdaptiveSparkPlan isFinalPlan=false
-    +- Exchange hashpartitioning(CASE WHEN (id#1247L < 900) THEN 0 ELSE 1 END, 10), REPARTITION_BY_NUM, [plan_id=298]
+    +- Exchange hashpartitioning(CASE WHEN (id#1247L < 900) THEN 0 ELSE 1 END, 10), REPARTITION_BY_NUM, [plan_id=343]
        +- Range (0, 1000, step=1, splits=8)
    */
 
@@ -164,8 +175,8 @@ object DataFrame_3 extends App {
    * любые операции со skewDs будет работать медленно, т.к.:
    * 1. если суммарное количество ядер на всех экзекьюторах больше 10, то в один момент времени работать будут максимум 10,
    * остальные будут простаивать
-   * 2. из 10 партиций только в 2-х есть данные => только 2 ядра будут обрабатывать данные,
-   * при этом из-за перекоса данных между ними (900 vs 100) первый станет bottleneck'ом
+   * 2. только в 2-х партициях из 10 есть данные => только 2 ядра будут обрабатывать данные,
+   * при этом из-за перекоса данных между ними (900 vs 100) первая партиция станет bottleneck'ом
    */
 
   /**
@@ -182,7 +193,7 @@ object DataFrame_3 extends App {
   /*
     == Physical Plan ==
     AdaptiveSparkPlan isFinalPlan=false
-    +- Exchange RoundRobinPartitioning(20), REPARTITION_BY_NUM, [plan_id=656]
+    +- Exchange RoundRobinPartitioning(20), REPARTITION_BY_NUM, [plan_id=701]
        +- Range (0, 1000, step=1, splits=8)
    */
 
@@ -200,7 +211,7 @@ object DataFrame_3 extends App {
   /*
     == Physical Plan ==
     AdaptiveSparkPlan isFinalPlan=false
-    +- Exchange hashpartitioning(id#1247L, 20), REPARTITION_BY_NUM, [plan_id=788]
+    +- Exchange hashpartitioning(id#1247L, 20), REPARTITION_BY_NUM, [plan_id=833]
        +- Range (0, 1000, step=1, splits=8)
    */
 
@@ -220,7 +231,7 @@ object DataFrame_3 extends App {
     == Physical Plan ==
     AdaptiveSparkPlan isFinalPlan=false
     +- Sort [count#1315L DESC NULLS LAST], true, 0
-       +- Exchange rangepartitioning(count#1315L DESC NULLS LAST, 200), ENSURE_REQUIREMENTS, [plan_id=848]
+       +- Exchange rangepartitioning(count#1315L DESC NULLS LAST, 200), ENSURE_REQUIREMENTS, [plan_id=893]
           +- Scan ExistingRDD[municipality#24,count#1315L]
    */
 
@@ -247,7 +258,7 @@ object DataFrame_3 extends App {
     == Physical Plan ==
     AdaptiveSparkPlan isFinalPlan=false
     +- Coalesce 3
-       +- Exchange hashpartitioning(CASE WHEN (id#1247L < 900) THEN 0 ELSE 1 END, 10), REPARTITION_BY_NUM, [plan_id=999]
+       +- Exchange hashpartitioning(CASE WHEN (id#1247L < 900) THEN 0 ELSE 1 END, 10), REPARTITION_BY_NUM, [plan_id=1044]
           +- Range (0, 1000, step=1, splits=8)
    */
 
