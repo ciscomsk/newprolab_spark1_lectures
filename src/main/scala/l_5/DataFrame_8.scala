@@ -43,17 +43,20 @@ object DataFrame_8 extends App {
   println()
 
   /** apply - получение поля по имени/индексу */
-  val field: StructField = schema("ident") // == schema(0)
-  println(field)
+  val field1: StructField = schema("ident")
+  // ==
+  val field2: StructField = schema(0)
+  println(field1)
+  println(field2)
   println()
 
   /** fieldIndex - получение индекса поля по имени */
-  val idx: Int = schema.fieldIndex("ident")
-  println(idx)
+  val fieldIdx: Int = schema.fieldIndex("ident")
+  println(fieldIdx)
   println()
 
-  val fieldName: String = field.name
-  val fieldType: DataType = field.dataType
+  val fieldName: String = field1.name
+  val fieldType: DataType = field1.dataType
   println(fieldName)
   println(fieldType)
 
@@ -69,7 +72,7 @@ object DataFrame_8 extends App {
   println(schema.simpleString)
   println()
 
-  /** schema.json/DataType.fromJson(schema) - удобно при необходимости сериализации и передачи схемы */
+  /** schema.json/DataType.fromJson(schema) - удобно при необходимости сериализовать и передать схему */
   val jsonSchema: String = schema.json
   val schemaFromJson: DataType = DataType.fromJson(jsonSchema)
   println("json: ")
@@ -96,10 +99,8 @@ object DataFrame_8 extends App {
   println(schemaFromStDDL)
   println()
 
-  /**
-   * Получение схемы из кейс класса
-   * v1.1 - reflection
-   */
+  /** Получение схемы из кейс класса */
+  /** v1.1 - reflection */
   case class Airport(
                       ident: String,
                       `type`: String,
@@ -128,7 +129,7 @@ object DataFrame_8 extends App {
   println(ds.schema)
   println()
 
-  /** использование схемы */
+  /** Использование схемы */
   val airportsSchemaDf: DataFrame =
     spark
       .read
@@ -150,8 +151,8 @@ object DataFrame_8 extends App {
       .select(parseJson)
       .select(col("s.*"))
 
-  withColumnsDf.show(1, 200, vertical = true)
   withColumnsDf.printSchema()
+  withColumnsDf.show(1, 200, vertical = true)
 
   /** v2 - ручное создание схемы */
   val someSchema: StructType =
@@ -170,6 +171,7 @@ object DataFrame_8 extends App {
       )
     )
 
+  println("printTreeString: ")
   someSchema.printTreeString()
   println()
 
@@ -186,7 +188,10 @@ object DataFrame_8 extends App {
   println(s"row: $row")
   println()
 
-  /** cast - изменяет тип колонки, возвращает null при некорректном касте */
+  /**
+   * cast - изменяет тип колонки
+   * !!! возвращает null при некорректном касте
+   */
   airportsDf
     .select($"elevation_ft".cast(StringType)) // StringType == string
     .printSchema()

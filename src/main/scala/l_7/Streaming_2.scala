@@ -36,8 +36,8 @@ object Streaming_2 extends App {
       .readStream
       .format("parquet")
     /**
-     * Поскольку в директорию могут попасть любые данные, а DF должен иметь фиксированную схему
-     * -> Spark не даст создать streamingDf на основе файлов без указания схемы
+     * В директорию могут попасть любые данные, а DF должен иметь фиксированную схему
+     * => Spark не дает создать streamingDf на основе файлов без указания схемы
      *
      * без schema - err:
      * SparkIllegalArgumentException: Schema must be specified when creating a streaming source DataFrame.

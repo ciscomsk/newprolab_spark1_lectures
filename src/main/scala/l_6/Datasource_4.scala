@@ -31,8 +31,8 @@ object Datasource_4 extends App {
    * docker exec -it cass cqlsh (cqlsh - /opt/cassandra/bin/)
    *
    * CREATE KEYSPACE IF NOT EXISTS airports WITH REPLICATION = {'class': 'SimpleStrategy', 'replication_factor': 3};
-   * SimpleStrategy - кластер внутри одного дата-центра, быстрее чем гео-распределенный, но масштабировать
-   * на несколько дата центров не получится
+   * SimpleStrategy - кластер внутри одного дата-центра, быстрее чем геораспределенный, но масштабировать
+   * на несколько дата-центров не получится
    *
    * DESCRIBE KEYSPACE airports; - покажет DDL, который был использован при создании кейспейса (с дополнениями)
    *
@@ -47,8 +47,8 @@ object Datasource_4 extends App {
    * ident - PARTITION KEY, если бы дополнительно был CLUSTERING KEY - знали бы сортировку внутри партиции
    *
    * SELECT ident, continent, iso_country, name FROM airports.codes WHERE continent = 'NA' LIMIT 10;
-   * err - InvalidRequest: Error from server: code=2200 [Invalid query] message="Cannot execute this query
-   * as it might involve data filtering and thus may have unpredictable performance.
+   * InvalidRequest: Error from server: code=2200 [Invalid query]
+   * message="Cannot execute this query as it might involve data filtering and thus may have unpredictable performance.
    * If you want to execute this query despite the performance unpredictability, use ALLOW FILTERING"
    *
    * ALLOW FILTERING - позволит выполнить запрос с фильтрацией не по partition key
@@ -114,7 +114,7 @@ object Datasource_4 extends App {
       .options(tableOpts)
       .load()
 
-//  cassandraDf.show(1, 200, vertical = true)
+  cassandraDf.show(1, 200, vertical = true)
 
   cassandraDf
     .filter(col("ident") === "22WV")
@@ -122,19 +122,19 @@ object Datasource_4 extends App {
   /*
     == Parsed Logical Plan ==
     'Filter ('ident = 22WV)
-    +- RelationV2[ident#41, continent#42, coordinates#43, elevation_ft#44, gps_code#45, iata_code#46, iso_country#47, iso_region#48, local_code#49, municipality#50, name#51, type#52]  codes
+    +- RelationV2[ident#77, continent#78, coordinates#79, elevation_ft#80, gps_code#81, iata_code#82, iso_country#83, iso_region#84, local_code#85, municipality#86, name#87, type#88]  codes
 
     == Analyzed Logical Plan ==
     ident: string, continent: string, coordinates: string, elevation_ft: int, gps_code: string, iata_code: string, iso_country: string, iso_region: string, local_code: string, municipality: string, name: string, type: string
-    Filter (ident#41 = 22WV)
-    +- RelationV2[ident#41, continent#42, coordinates#43, elevation_ft#44, gps_code#45, iata_code#46, iso_country#47, iso_region#48, local_code#49, municipality#50, name#51, type#52]  codes
+    Filter (ident#77 = 22WV)
+    +- RelationV2[ident#77, continent#78, coordinates#79, elevation_ft#80, gps_code#81, iata_code#82, iso_country#83, iso_region#84, local_code#85, municipality#86, name#87, type#88]  codes
 
     == Optimized Logical Plan ==
-    RelationV2[ident#41, continent#42, coordinates#43, elevation_ft#44, gps_code#45, iata_code#46, iso_country#47, iso_region#48, local_code#49, municipality#50, name#51, type#52] codes
+    RelationV2[ident#77, continent#78, coordinates#79, elevation_ft#80, gps_code#81, iata_code#82, iso_country#83, iso_region#84, local_code#85, municipality#86, name#87, type#88] codes
 
     == Physical Plan ==
-    *(1) Project [ident#41, continent#42, coordinates#43, elevation_ft#44, gps_code#45, iata_code#46, iso_country#47, iso_region#48, local_code#49, municipality#50, name#51, type#52]
-    +- BatchScan codes[ident#41, continent#42, coordinates#43, elevation_ft#44, gps_code#45, iata_code#46, iso_country#47, iso_region#48, local_code#49, municipality#50, name#51, type#52] Cassandra Scan: airports.codes
+    *(1) Project [ident#77, continent#78, coordinates#79, elevation_ft#80, gps_code#81, iata_code#82, iso_country#83, iso_region#84, local_code#85, municipality#86, name#87, type#88]
+    +- BatchScan codes[ident#77, continent#78, coordinates#79, elevation_ft#80, gps_code#81, iata_code#82, iso_country#83, iso_region#84, local_code#85, municipality#86, name#87, type#88] Cassandra Scan: airports.codes
      - Cassandra Filters: [["ident" = ?, 22WV]]
      - Requested Columns: [ident,continent,coordinates,elevation_ft,gps_code,iata_code,iso_country,iso_region,local_code,municipality,name,type] RuntimeFilters: []
    */
@@ -143,7 +143,7 @@ object Datasource_4 extends App {
     cassandraDf
       .filter(col("ident") === "22WV")
       .show(1, 200, vertical = true)
-  }  // 419 ms
+  }  // 117 ms
   println()
 
   cassandraDf
@@ -152,21 +152,21 @@ object Datasource_4 extends App {
   /*
     == Parsed Logical Plan ==
     'Filter ('iso_country = RU)
-    +- RelationV2[ident#41, continent#42, coordinates#43, elevation_ft#44, gps_code#45, iata_code#46, iso_country#47, iso_region#48, local_code#49, municipality#50, name#51, type#52]  codes
+    +- RelationV2[ident#77, continent#78, coordinates#79, elevation_ft#80, gps_code#81, iata_code#82, iso_country#83, iso_region#84, local_code#85, municipality#86, name#87, type#88]  codes
 
     == Analyzed Logical Plan ==
     ident: string, continent: string, coordinates: string, elevation_ft: int, gps_code: string, iata_code: string, iso_country: string, iso_region: string, local_code: string, municipality: string, name: string, type: string
-    Filter (iso_country#47 = RU)
-    +- RelationV2[ident#41, continent#42, coordinates#43, elevation_ft#44, gps_code#45, iata_code#46, iso_country#47, iso_region#48, local_code#49, municipality#50, name#51, type#52]  codes
+    Filter (iso_country#83 = RU)
+    +- RelationV2[ident#77, continent#78, coordinates#79, elevation_ft#80, gps_code#81, iata_code#82, iso_country#83, iso_region#84, local_code#85, municipality#86, name#87, type#88]  codes
 
     == Optimized Logical Plan ==
-    Filter (iso_country#47 = RU)
-    +- RelationV2[ident#41, continent#42, coordinates#43, elevation_ft#44, gps_code#45, iata_code#46, iso_country#47, iso_region#48, local_code#49, municipality#50, name#51, type#52] codes
+    Filter (iso_country#83 = RU)
+    +- RelationV2[ident#77, continent#78, coordinates#79, elevation_ft#80, gps_code#81, iata_code#82, iso_country#83, iso_region#84, local_code#85, municipality#86, name#87, type#88] codes
 
     == Physical Plan ==
-    *(1) Project [ident#41, continent#42, coordinates#43, elevation_ft#44, gps_code#45, iata_code#46, iso_country#47, iso_region#48, local_code#49, municipality#50, name#51, type#52]
-    +- *(1) Filter (iso_country#47 = RU)
-       +- BatchScan codes[ident#41, continent#42, coordinates#43, elevation_ft#44, gps_code#45, iata_code#46, iso_country#47, iso_region#48, local_code#49, municipality#50, name#51, type#52] Cassandra Scan: airports.codes
+    *(1) Project [ident#77, continent#78, coordinates#79, elevation_ft#80, gps_code#81, iata_code#82, iso_country#83, iso_region#84, local_code#85, municipality#86, name#87, type#88]
+    +- *(1) Filter (iso_country#83 = RU)
+       +- BatchScan codes[ident#77, continent#78, coordinates#79, elevation_ft#80, gps_code#81, iata_code#82, iso_country#83, iso_region#84, local_code#85, municipality#86, name#87, type#88] Cassandra Scan: airports.codes
      - Cassandra Filters: []
      - Requested Columns: [ident,continent,coordinates,elevation_ft,gps_code,iata_code,iso_country,iso_region,local_code,municipality,name,type] RuntimeFilters: []
    */
@@ -175,7 +175,7 @@ object Datasource_4 extends App {
     cassandraDf
       .filter(col("iso_country") === "RU")
       .show(1, 200, vertical = true)
-  }  // 205 ms
+  }  // 210 ms
   println()
 
   cassandraDf
@@ -184,21 +184,21 @@ object Datasource_4 extends App {
   /*
     == Parsed Logical Plan ==
     'Filter (lower('iso_country) = ru)
-    +- RelationV2[ident#41, continent#42, coordinates#43, elevation_ft#44, gps_code#45, iata_code#46, iso_country#47, iso_region#48, local_code#49, municipality#50, name#51, type#52]  codes
+    +- RelationV2[ident#77, continent#78, coordinates#79, elevation_ft#80, gps_code#81, iata_code#82, iso_country#83, iso_region#84, local_code#85, municipality#86, name#87, type#88]  codes
 
     == Analyzed Logical Plan ==
     ident: string, continent: string, coordinates: string, elevation_ft: int, gps_code: string, iata_code: string, iso_country: string, iso_region: string, local_code: string, municipality: string, name: string, type: string
-    Filter (lower(iso_country#47) = ru)
-    +- RelationV2[ident#41, continent#42, coordinates#43, elevation_ft#44, gps_code#45, iata_code#46, iso_country#47, iso_region#48, local_code#49, municipality#50, name#51, type#52]  codes
+    Filter (lower(iso_country#83) = ru)
+    +- RelationV2[ident#77, continent#78, coordinates#79, elevation_ft#80, gps_code#81, iata_code#82, iso_country#83, iso_region#84, local_code#85, municipality#86, name#87, type#88]  codes
 
     == Optimized Logical Plan ==
-    Filter (isnotnull(iso_country#47) AND (lower(iso_country#47) = ru))
-    +- RelationV2[ident#41, continent#42, coordinates#43, elevation_ft#44, gps_code#45, iata_code#46, iso_country#47, iso_region#48, local_code#49, municipality#50, name#51, type#52] codes
+    Filter (isnotnull(iso_country#83) AND (lower(iso_country#83) = ru))
+    +- RelationV2[ident#77, continent#78, coordinates#79, elevation_ft#80, gps_code#81, iata_code#82, iso_country#83, iso_region#84, local_code#85, municipality#86, name#87, type#88] codes
 
     == Physical Plan ==
-    *(1) Project [ident#41, continent#42, coordinates#43, elevation_ft#44, gps_code#45, iata_code#46, iso_country#47, iso_region#48, local_code#49, municipality#50, name#51, type#52]
-    +- *(1) Filter (isnotnull(iso_country#47) AND (lower(iso_country#47) = ru))
-       +- BatchScan codes[ident#41, continent#42, coordinates#43, elevation_ft#44, gps_code#45, iata_code#46, iso_country#47, iso_region#48, local_code#49, municipality#50, name#51, type#52] Cassandra Scan: airports.codes
+    *(1) Project [ident#77, continent#78, coordinates#79, elevation_ft#80, gps_code#81, iata_code#82, iso_country#83, iso_region#84, local_code#85, municipality#86, name#87, type#88]
+    +- *(1) Filter (isnotnull(iso_country#83) AND (lower(iso_country#83) = ru))
+       +- BatchScan codes[ident#77, continent#78, coordinates#79, elevation_ft#80, gps_code#81, iata_code#82, iso_country#83, iso_region#84, local_code#85, municipality#86, name#87, type#88] Cassandra Scan: airports.codes
      - Cassandra Filters: []
      - Requested Columns: [ident,continent,coordinates,elevation_ft,gps_code,iata_code,iso_country,iso_region,local_code,municipality,name,type] RuntimeFilters: []
    */
@@ -207,7 +207,7 @@ object Datasource_4 extends App {
     cassandraDf
       .filter(lower(col("iso_country")) === "ru")
       .show(1, 200, vertical = true)
-  }  // 161 ms
+  }  // 183 ms
 
 
   println(sc.uiWebUrl)

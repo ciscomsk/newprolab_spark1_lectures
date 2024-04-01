@@ -8,10 +8,10 @@ import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 object Datasource_5 extends App {
   val spark: SparkSession =
     SparkSession
-    .builder()
-    .master("local[*]")
-    .appName("l_6")
-    .getOrCreate()
+      .builder()
+      .master("local[*]")
+      .appName("l_6")
+      .getOrCreate()
 
   val sc: SparkContext = spark.sparkContext
 //  sc.setLogLevel("ERROR")
@@ -34,6 +34,8 @@ object Datasource_5 extends App {
    * \c airports; - подключиться к БД airports
    * CREATE TABLE IF NOT EXISTS codes (ident VARCHAR (100) PRIMARY KEY,type VARCHAR (100),name VARCHAR (100),elevation_ft INTEGER,continent VARCHAR (100),iso_country VARCHAR (100),iso_region VARCHAR (100),municipality VARCHAR (100),gps_code VARCHAR (100),iata_code VARCHAR (100),local_code VARCHAR (100),coordinates VARCHAR (100));
    * SELECT * from codes;
+   *
+   * \d codes; - describe
    *
    * CREATE TABLE IF NOT EXISTS codes_x (ident VARCHAR (100) PRIMARY KEY,type VARCHAR (100),name VARCHAR (100),elevation_ft INTEGER,continent VARCHAR (100),iso_country VARCHAR (100),iso_region VARCHAR (100),municipality VARCHAR (100),gps_code VARCHAR (100),iata_code VARCHAR (100),local_code VARCHAR (100),coordinates VARCHAR (100),id INTEGER);
    * SELECT * from codes_x;
@@ -70,19 +72,19 @@ object Datasource_5 extends App {
 //    .mode(SaveMode.Append)
 //    .save()
 
-//  val postgesDf: DataFrame =
-//    spark
-//      .read
-//      .format("jdbc")
-//      .option("url", jdbcUrl)
-//      .option("dbtable", "codes")
-//      .load()
+  val postgesDf: DataFrame =
+    spark
+      .read
+      .format("jdbc")
+      .option("url", jdbcUrl)
+      .option("dbtable", "codes")
+      .load()
 
-//  postgesDf.printSchema()
-//  postgesDf.show(1, 200, vertical = true)
+  postgesDf.printSchema()
+  postgesDf.show(1, 200, vertical = true)
   /** !!! по умолчанию чтение производится в 1 партицию */
-//  println(postgesDf.rdd.getNumPartitions)
-//  println()
+  println(postgesDf.rdd.getNumPartitions)
+  println()
 
 
   /** Чтение в несколько партиций */
@@ -101,32 +103,32 @@ object Datasource_5 extends App {
 //    .mode(SaveMode.Append)
 //    .save()
 
-//  val postgresPartDf: DataFrame =
-//    spark
-//      .read
-//      .format("jdbc")
-//      .option("url", jdbcUrl)
-//      .option("dbtable", "codes_x")
-//      /** колонка партиционирования */
-//      .option("partitionColumn", "id")
-//      /** lowerBound/upperBound - задаются вручную */
-//      .option("lowerBound", "0")
-//      /** если ошибиться в этом параметре - данные в полученном датафрейме будут перекошены */
-//      .option("upperBound", "10000")
-////      .option("upperBound", "100000")
-//      .option("numPartitions", "200")
-//      .load()
+  val postgresPartDf: DataFrame =
+    spark
+      .read
+      .format("jdbc")
+      .option("url", jdbcUrl)
+      .option("dbtable", "codes_x")
+      /** колонка партиционирования */
+      .option("partitionColumn", "id")
+      /** lowerBound/upperBound - задаются вручную */
+      .option("lowerBound", "0")
+      /** если ошибиться в этом параметре - данные в полученном датафрейме будут перекошены */
+      .option("upperBound", "10000")
+//      .option("upperBound", "100000")
+      .option("numPartitions", "200")
+      .load()
 
-//  postgresPartDf.printSchema()
-//  postgresPartDf.show(1, 200, vertical = true)
-//  println(postgresPartDf.rdd.getNumPartitions) // == 200
-//  println()
+  postgresPartDf.printSchema()
+  postgresPartDf.show(1, 200, vertical = true)
+  println(postgresPartDf.rdd.getNumPartitions) // == 200
+  println()
 
-  /** Проверка распределение данных по партициям */
-//  postgresPartDf
-//    .groupBy(spark_partition_id())
-//    .count()
-//    .show(200, truncate = false)
+  /** Проверка распределения данных по партициям */
+  postgresPartDf
+    .groupBy(spark_partition_id())
+    .count()
+    .show(200, truncate = false)
 
   /**
    * monotonically_increasing_id - генерирует монотонно возрастающий счетчик

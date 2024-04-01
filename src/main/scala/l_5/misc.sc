@@ -6,4 +6,4 @@ InternalRow
 DateType
 
 StructType
-//StructType.merge - private[sql]
+//StructType.merge // private[sql]

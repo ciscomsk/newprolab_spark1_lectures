@@ -137,7 +137,7 @@ object DataFrame_4 extends App {
 
   val joinCondition: Column =
     col("left_id") === col("right_id") and col("left_foo") === col("right_foo")
-
+  // ==
   val joinConditionExpr: Column =
     expr("left.id = right.id and left.foo = right.foo")
 
@@ -179,10 +179,10 @@ object DataFrame_4 extends App {
     /*
       == Physical Plan ==
       AdaptiveSparkPlan isFinalPlan=false
-      +- Project [ident#90, type#91, name#92, elevation_ft#93, continent#94, iso_country#95, iso_region#96, municipality#97, gps_code#98, iata_code#99, local_code#100, coordinates#101, cnt_country#322L, cnt_country_type#338L, round((cast((100 * cnt_country_type#338L) as double) / cast(cnt_country#322L as double)), 2) AS percent#353]
-         +- Window [count(1) windowspecdefinition(iso_country#95, type#91, specifiedwindowframe(RowFrame, unboundedpreceding$(), unboundedfollowing$())) AS cnt_country_type#338L], [iso_country#95, type#91]
+      +- Project [ident#90, type#91, name#92, elevation_ft#93, continent#94, iso_country#95, iso_region#96, municipality#97, gps_code#98, iata_code#99, local_code#100, coordinates#101, cnt_country#325L, cnt_country_type#341L, round((cast((100 * cnt_country_type#341L) as double) / cast(cnt_country#325L as double)), 2) AS percent#356]
+         +- Window [count(1) windowspecdefinition(iso_country#95, type#91, specifiedwindowframe(RowFrame, unboundedpreceding$(), unboundedfollowing$())) AS cnt_country_type#341L], [iso_country#95, type#91]
             +- Sort [iso_country#95 ASC NULLS FIRST, type#91 ASC NULLS FIRST], false, 0
-               +- Window [count(1) windowspecdefinition(iso_country#95, specifiedwindowframe(RowFrame, unboundedpreceding$(), unboundedfollowing$())) AS cnt_country#322L], [iso_country#95]
+               +- Window [count(1) windowspecdefinition(iso_country#95, specifiedwindowframe(RowFrame, unboundedpreceding$(), unboundedfollowing$())) AS cnt_country#325L], [iso_country#95]
                   +- Sort [iso_country#95 ASC NULLS FIRST], false, 0
                      +- Exchange hashpartitioning(iso_country#95, 200), ENSURE_REQUIREMENTS, [plan_id=751]
                         +- FileScan csv [ident#90,type#91,name#92,elevation_ft#93,continent#94,iso_country#95,iso_region#96,municipality#97,gps_code#98,iata_code#99,local_code#100,coordinates#101] Batched: false, DataFilters: [], Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_country:string,...
@@ -208,8 +208,8 @@ object DataFrame_4 extends App {
   /*
     == Physical Plan ==
     AdaptiveSparkPlan isFinalPlan=false
-    +- Project [rn#396, ident#90]
-       +- Window [row_number() windowspecdefinition(ident#90 ASC NULLS FIRST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS rn#396], [ident#90 ASC NULLS FIRST]
+    +- Project [rn#399, ident#90]
+       +- Window [row_number() windowspecdefinition(ident#90 ASC NULLS FIRST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS rn#399], [ident#90 ASC NULLS FIRST]
           +- Sort [ident#90 ASC NULLS FIRST], false, 0
              // !!! Exchange SinglePartition - все данные перемещаются в 1 партицию
              +- Exchange SinglePartition, ENSURE_REQUIREMENTS, [plan_id=888]

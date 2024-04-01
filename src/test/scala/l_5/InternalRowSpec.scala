@@ -38,10 +38,10 @@ class InternalRowSpec extends AnyFlatSpec with should.Matchers {
       .collect()
       .head
 
-  println(thisRow)
+  println(s"thisRow: $thisRow")
 
   val data: Seq[Any] = thisRow.toSeq(schema)
-  println(data)
+  println(s"data: $data")
 
 //  data.foreach {
 //  }

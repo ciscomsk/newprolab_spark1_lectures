@@ -63,6 +63,18 @@ object Streaming_4 extends App {
       .options(kafkaParams)
       .load()
 
+  streamingDf.printSchema()
+  /*
+    root
+     |-- key: binary (nullable = true)
+     |-- value: binary (nullable = true)
+     |-- topic: string (nullable = true)
+     |-- partition: integer (nullable = true)
+     |-- offset: long (nullable = true)
+     |-- timestamp: timestamp (nullable = true)
+     |-- timestampType: integer (nullable = true)
+   */
+
   val schema: DataType =
     DataType.fromJson("""{"type":"struct","fields":[{"name":"timestamp","type":"timestamp","nullable":true,"metadata":{}},{"name":"value","type":"long","nullable":true,"metadata":{}},{"name":"ident","type":"string","nullable":true,"metadata":{}}]}""")
 
@@ -70,7 +82,7 @@ object Streaming_4 extends App {
     streamingDf
       /**
        * без .cast(StringType) - err:
-       * AnalysisException: [DATATYPE_MISMATCH.UNEXPECTED_INPUT_TYPE] Cannot resolve "from_json(value)"
+       * AnalysisException: [DATATYPE_MISMATCH.UNEXPECTED_INPUT_TYPE] Cannot resolve "from_json(value)" due to data type mismatch: Parameter 1 requires the "STRING" type, however "value" has the type "BINARY"
        * due to data type mismatch: Parameter 1 requires the "STRING" type, however "value" has the type "BINARY"
        */
 //      .withColumn("value", from_json($"value", schema))
@@ -91,7 +103,7 @@ object Streaming_4 extends App {
        +- StreamingRelation kafka, [key#7, value#8, topic#9, partition#10, offset#11L, timestamp#12, timestampType#13]
    */
 
-  /** Если батч пустой - запустить Streaming_3 => writeKafka("test_topic0", identParquetDf) */
+  /** Если батч пустой - запустить Streaming_3 - writeKafka("test_topic0", identParquetDf) */
   val sink: DataStreamWriter[Row] = createConsoleSink(parsedStreamingDf)
 //  val streamingQuery: StreamingQuery = sink.start()
 
@@ -133,14 +145,14 @@ object Streaming_4 extends App {
   /** как только isTriggerActive станет false - останавливаем стрим */
 //  streamingQuery.stop()
 
-  /** Пример с маркер-файлом */
-  val isStopFile: Boolean = true
-  while (streamingQuery.status.isTriggerActive || !isStopFile) {
-    streamingQuery.awaitTermination(5000)
-  }
-  streamingQuery.stop()
+  /** пример с маркер-файлом */
+//  val isStopFile: Boolean = true
+//  while (streamingQuery.status.isTriggerActive || !isStopFile) {
+//    streamingQuery.awaitTermination(5000)
+//  }
+//  streamingQuery.stop()
 
-  /** Более безопасно можно останавливать стрим с помощью foreachBatch - описание алгоритма с 2-50-00 */
+  /** более безопасно можно останавливать стрим с помощью foreachBatch - описание алгоритма с 2-50-00 */
 
 
   Thread.sleep(1000000)

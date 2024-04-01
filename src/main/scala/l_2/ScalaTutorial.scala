@@ -24,8 +24,9 @@ object ScalaTutorial extends App {
     a + 42
   }
   println(s"c: $c")
+  println()
 
-  /** тип выражения, которое не возвращает значение - Unit () == Java void */
+  /** Unit () - выражение, которое не возвращает значение == Java void */
   def printer(s: String): Unit = println(s)
 
   /** val == value - Immutable */
@@ -38,19 +39,18 @@ object ScalaTutorial extends App {
 
 
   /** в Scala все операторы являются методами */
-
   val v1: String = "Some words".toUpperCase()
   println(v1)
 
   /** Постфиксная нотация - используется только для методов без аргументов */
-  /** без ";" не работает (т.к. считает println(v2) - аргументом) => test.sc */
+  /** без ";" не работает т.к. считает println(v2) - аргументом => test.sc */
   val v2: String = "Some words" toUpperCase; // постфиксная нотация
   println(v2)
   println()
 
   /**
    * Инфиксная нотация - используется только для методов с 1-м аргументом
-   * инфиксная нотация полезна при написании dsl => select * from table1 == select.(*).from(table1)
+   * инфиксная нотация полезна при написании DSL => select * from table1 == select.(*).from(table1)
    */
   val v3: String = "Some" concat " words" // инфиксная нотация
   println(v3)
@@ -99,11 +99,11 @@ object ScalaTutorial extends App {
   println()
 
 
-  /** функции могут быть определены как def или val */
-  def foo(): String = "foo"
+  /** Функции могут быть определены как def или val */
+  def foo1(): String = "foo"
   // ==
-  val bar: () => String = () => "bar"
-  println(s"foo:${foo()} bar:${bar()}")
+  val foo2: () => String = () => "foo"
+  println(s"foo1:${foo1()} foo2:${foo2()}")
   println()
 
   /**
@@ -160,7 +160,6 @@ object ScalaTutorial extends App {
 
 
   /** Управляющие конструкции **/
-
   /** if - это выражение => возвращает значение */
   val x: Int = 1
   val res7: Unit = if (x < 20) println("This is if statement")
@@ -203,17 +202,16 @@ object ScalaTutorial extends App {
       if a + b < 6 // условие
     } yield a + b // генератор
   // ==
-  (1 to 5)
-    .flatMap { a =>
-      (1 to 5)
-        .withFilter(b => a + b < 6)
-        .map(b => a + b)
-    }
+  (1 to 5).flatMap { a =>
+    (1 to 5)
+      .withFilter(b => a + b < 6)
+      .map(b => a + b)
+  }
   println(s"for-comprehension: $res8")
   println()
 
 
-  /** Pattern matching - switch на "стероидах" */
+  /** Pattern matching - Java switch на "стероидах" */
   val any: Any = 10
 
   val res9: Any =
@@ -224,17 +222,17 @@ object ScalaTutorial extends App {
       case _ => "unknown"
     }
   println(res9)
+  println()
 
   def test(val1: Int, val2: Int): (Int, Int) = (val1, val2)
 
-  /** работает с помощью unapply */
+  /** Распаковка - работает с помощью unapply */
   val (a, b) = test(1, 2)
   println(s"a == $a, b == $b")
   println()
 
 
   /** Collections API */
-
   /** List - эффект множественного значения */
   println("__List__")
 
@@ -356,14 +354,14 @@ object ScalaTutorial extends App {
   val fruitsMap: Map[String, Int] = Map("apple" -> 2, "banana" -> 1, "pear" -> 10)
   println(fruitsMap)
 
-  /** Unsafe get value */
-//  val unsafeValue: Int = fruits("peach") // err - key not found
+  /** unsafe get value */
+//  val unsafeValue: Int = fruitsMap("peach") // err - key not found
 
-  /** Safe get value - v1 - getOrElse: A */
+  /** safe get value - v1 - getOrElse: A */
   val safeValue1: Int = fruitsMap.getOrElse("peach", 10)
   println(safeValue1)
 
-  /** Safe get value - v2 - get: Option[A] */
+  /** safe get value - v2 - get: Option[A] */
   val safeValue2: Option[Int] = fruitsMap.get("peach")
   println(safeValue2)
   println()
@@ -382,14 +380,14 @@ object ScalaTutorial extends App {
   println(s"colors.isEmpty: ${colors.isEmpty}")
   println()
 
-  // Immutable map - updateD, result type == Map
+  // Immutable map - update<D>, result type == Map
   val colorsImmutable: Map[String, String] = colors.updated("black", "#000000")
-  println(s"colors before updated: $colors")
+  println(s"colors before update: $colors")
   println(s"colorsImmutable: $colorsImmutable")
-  println(s"colors after updated: $colors")
+  println(s"colors after update: $colors")
   println()
 
-  // Mutable map - update_, result type == Unit
+  // Mutable map - update<_>, result type == Unit
   val colorsMutable: mutable.Map[String, String] = mutable.Map("red" -> "#FF0000", "azure" -> "#F0FFFF")
   println(s"colorsMutable original: $colorsMutable")
   val _: Unit = colorsMutable.update("black", "#000000")
@@ -479,12 +477,12 @@ object ScalaTutorial extends App {
   println()
 
 
-  /** try - Scala style - v1 */
+  /** try - Scala style */
   // toInt - это java.lang.Integer.parseInt()
   def toOptInt(in: String): Option[Int] = Try(in.trim.toInt).toOption
 
   //  val err: Int = "a".toInt // err - NumberFormatException
-  /** try - Java style - v2 */
+  /** try - Java style */
   def toOptIntJava(in: String): Option[Int] = {
     try {
       Some(in.trim.toInt)
@@ -538,11 +536,11 @@ object ScalaTutorial extends App {
   println("__Class__")
 
   class Point(xc: Int, yc: Int) { // (xc: Int, yc: Int) - конструктор по умолчанию
-    /** поля == атрибуты */
+    // поля == атрибуты
     var x: Int = xc
     var y: Int = yc
 
-    /** методы */
+    // методы
     def move(dx: Int, dy: Int): Unit = {
       x += dx
       y += dy
@@ -602,7 +600,7 @@ object ScalaTutorial extends App {
   personsList.foreach {
     case Person("Alice", _) => println("Hi Alice!")
     case Person("Bob", 32) => println("Hi Bob!")
-    case Person(name, age) => println(s"Age: $age years, name: $name")
+    case Person(name, age) => println(s"Name: $name, age: $age years")
   }
   println()
 
@@ -649,7 +647,15 @@ object ScalaTutorial extends App {
   /** Trait */
   println("__Trait__")
 
-  // trait Seq[+A] extends Iterable[A] with collection.Seq[A] with SeqOps[A, Seq, Seq[A]] with IterableFactoryDefaults[A, Seq]
+  /*
+    package scala.collection.immutable
+
+    trait Seq[+A]
+      extends Iterable[A]
+      with collection.Seq[A]
+      with SeqOps[A, Seq, Seq[A]]
+      with IterableFactoryDefaults[A, Seq]
+   */
 
   trait Equal[A] {
     def isEqual(x: A): Boolean
@@ -692,7 +698,6 @@ object ScalaTutorial extends App {
 
   case class Cat(name: String) extends Animal
   case class Dog(name: String) extends Animal
-  println()
 
   abstract class Fruit2 {
     val name: String
@@ -704,7 +709,7 @@ object ScalaTutorial extends App {
   val apple2: Fruit2 = new Fruit2 {
     override val name: String = "apple"
 
-    def newMethod():Unit = printName()
+    def newMethod(): Unit = printName()
   }
   apple2.printName() // == It's apple
   println()
@@ -808,11 +813,14 @@ object ScalaTutorial extends App {
   println("__Implicit conversion__")
 
   val flag: Boolean = true
-//  val sum1: Int = flag + 1 // err - type mismatch
+  val sum1: Int = flag + 1 // err - type mismatch
 
   implicit def bool2Int(b: Boolean): Int = if (b) 1 else 0
-  val sum2: Int = flag + 1 // == bool2Int(flag) + 1
+  val sum2: Int = flag + 1
+  // ==
+  val sum3: Int = bool2Int(flag) + 1
   println(sum2)
+  println(sum3)
   println()
 
 
@@ -821,7 +829,6 @@ object ScalaTutorial extends App {
 
   def usd2Rub(quantity: Double)(implicit rub2UsdRate: Double): Double = quantity * rub2UsdRate
   implicit val rub2UsdRate: Double = 90
-
   println(usd2Rub(10.0))
   println()
 

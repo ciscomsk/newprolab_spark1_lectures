@@ -126,27 +126,25 @@ object Datasource_1 extends App {
   /** Получение схемы из шапки csv */
   /** v1.1 - с помощью команд терминала */
   import sys.process._
-  val originalCsvTerminal: String = "head -n 1 src/main/resources/l_3/airport-codes.csv".!!
-  println(originalCsvTerminal)
+  val firstLineTerminal: String = "head -n 1 src/main/resources/l_3/airport-codes.csv".!!
+  println(firstLineTerminal)
 
   /** v1.2 - c помощью scala.io */
-  val firstLine: Try[String] =
-    Using(scala.io.Source.fromFile("src/main/resources/l_3/airport-codes.csv")) { bs =>
+  val firstLineIO: String =
+    Using.resource(scala.io.Source.fromFile("src/main/resources/l_3/airport-codes.csv")) { bs =>
     bs.getLines().next()
   }
-
-  val originalCsvIO: scala.io.BufferedSource = scala.io.Source.fromFile("src/main/resources/l_3/airport-codes.csv")
-  val firstLineOriginalCsv: String = originalCsvIO.getLines.next()
-  println(firstLineOriginalCsv)
+  println(firstLineIO)
+  println()
 
   val processedSchema: StructType =
     StructType(
-      firstLineOriginalCsv
+      firstLineTerminal
         .split(",", -1)
         .map(el => StructField(el, StringType))
     )
 
-  println(processedSchema)
+  println(s"processedSchema: $processedSchema")
   println()
 
   /** запись с компрессией gzip */
@@ -164,11 +162,11 @@ object Datasource_1 extends App {
       .options(csvOptions2)
       .csv("src/main/resources/l_6/airports-3.csv.gz")
 
-  /** !!! Сжатый файл читается в 1 партицию - антипаттерн */
+  /** !!! сжатый файл читается в 1 партицию - антипаттерн */
   println(s"compressedDf.rdd.getNumPartitions: ${compressedDf.rdd.getNumPartitions}")
   println()
 
-  /** запись с партицированием - длительный процесс т.к. файлов ~ 42k */
+  /** запись с партицированием - длительный процесс т.к. файлов ~ 43k */
 //  airportsDf
 //    .repartition(2)
 //    .write
@@ -184,14 +182,12 @@ object Datasource_1 extends App {
   println(lsCount)
   println()
 
-  val ls: String =
-    "ls -lah src/main/resources/l_6/airports-4.json_partitioned/iso_region=AD-04/iso_country=AD".!!
-
+  val ls: String = "ls -lah src/main/resources/l_6/airports-4.json_partitioned/iso_region=AD-04/iso_country=AD".!!
   println(ls)
 
-  /** !!! Колонки партицирования не входят в состав записанных файлов */
+  /** !!! колонки партицирования не входят в состав записанных файлов */
   val cat: String =
-    "cat src/main/resources/l_6/airports-4.json_partitioned/iso_region=AD-04/iso_country=AD/part-00000-176c6c89-0ad1-47e7-9b3d-c1301efcd2f2.c000.json".!!
+    "cat src/main/resources/l_6/airports-4.json_partitioned/iso_region=AD-04/iso_country=AD/part-00000-6b21a22e-2f06-4813-8f75-59b4cb7a41a8.c000.json".!!
 
   println(cat)
 
@@ -218,18 +214,17 @@ object Datasource_1 extends App {
 //  airportsDf
 //    .write
 //    .mode(SaveMode.Overwrite)
-//    .csv("src/main/resources/l_6/airports-5.noSUCCESS")
+//    .csv("src/main/resources/l_6/airports-5.no_SUCCESS")
 
   /** сохранение датасета в text - датафрейм должен содержать 1 StringType колонку */
-
-  // err - [UNSUPPORTED_DATA_TYPE_FOR_DATASOURCE] The Text datasource doesn't support the column `elevation_ft` of the type "INT"
+  // org.apache.spark.sql.AnalysisException : [UNSUPPORTED_DATA_TYPE_FOR_DATASOURCE] The Text datasource doesn't support the column `elevation_ft` of the type "INT"
 //  airportsDf
 //    .write
 //    .mode(SaveMode.Overwrite)
 //    .format("text")
 //    .save("src/main/resources/l_6/airports-6.text")
 
-  // err - Text data source supports only a single column, and you have 12 columns
+  // org.apache.spark.sql.AnalysisException : Text data source supports only a single column, and you have 12 columns
 //  airportsDf
 //    .withColumn("elevation_ft", $"elevation_ft".cast(StringType))
 //    .write
@@ -238,16 +233,16 @@ object Datasource_1 extends App {
 //    .save("src/main/resources/l_6/airports-6.text")
 
   // ок
-  airportsDf
+//  airportsDf
 //    .select($"ident".as("value"))
 //    .write
 //    .mode(SaveMode.Overwrite)
 //    .format("text")
 ////    .save("src/main/resources/l_6/airports-6.text")
-//    .save("src/main/resources/l_6/airports-6.multiformat")
+//    .save("src/main/resources/l_6/airports-7.multiformat")
 
   /**
-   * !!! Файловые форматы не имеют автоматической валидации данных при записи
+   * !!! файловые форматы не имеют автоматической валидации данных при записи
    * => достаточно легко ошибиться и записать данные в другом формате
    */
 
@@ -255,13 +250,13 @@ object Datasource_1 extends App {
 //  airportsDf
 //    .write
 //    .mode(SaveMode.Append)
-//    .json("src/main/resources/l_6/airports-6.multiformat")
+//    .json("src/main/resources/l_6/airports-7.multiformat")
 
   /** при попытке чтения данных как text получим все данные, т.к. формат json сохраняет все в виде JSON строк */
   val mixedTextDf: DataFrame =
     spark
       .read
-      .text("src/main/resources/l_6/airports-6.multiformat")
+      .text("src/main/resources/l_6/airports-7.multiformat")
 
   println("mixedTextDf: ")
   mixedTextDf.show(3, truncate = false)
@@ -270,10 +265,10 @@ object Datasource_1 extends App {
   val mixedJsonDf: DataFrame =
     spark
       .read
-      .json("src/main/resources/l_6/airports-6.multiformat")
-    /** можно читать только файлы определенного формата - *.'format' */
-//      .json("src/main/resources/l_6/airports-6.multiformat/*.json")
-//      .json("src/main/resources/l_6/airports-6.multiformat/*.txt")
+      .json("src/main/resources/l_6/airports-7.multiformat")
+    /** можно читать только файлы определенного формата - *.<format> */
+//      .json("src/main/resources/l_6/airports-7.multiformat/*.json")
+//      .json("src/main/resources/l_6/airports-7.multiformat/*.txt")
 
   println("mixedJsonDf: ")
   mixedJsonDf.printSchema()
@@ -281,20 +276,25 @@ object Datasource_1 extends App {
 
   /** отобразим невалидные JSON строки */
   println("invalid data: ")
+
+  /** начиная со Spark 2.3 нельзя выбирать только колонку _corrupt_record */
+  /*
+    Exception in thread "main" org.apache.spark.sql.AnalysisException: Since Spark 2.3, the queries from raw JSON/CSV files are disallowed when the
+    referenced columns only include the internal corrupt record column
+    (named _corrupt_record by default). For example:
+    spark.read.schema(schema).csv(file).filter($"_corrupt_record".isNotNull).count()
+    and spark.read.schema(schema).csv(file).select("_corrupt_record").show().
+    Instead, you can cache or save the parsed results and then send the same query.
+    For example, val df = spark.read.schema(schema).csv(file).cache() and then
+    df.filter($"_corrupt_record".isNotNull).count()
+   */
+//  mixedJsonDf
+//    .na.drop("all", Seq("_corrupt_record"))
+//    .select($"_corrupt_record")
+//    .show(3, truncate = false)
+
   mixedJsonDf
     .na.drop("all", Seq("_corrupt_record")) // у валидных строк _corrupt_record == null
-    /** начиная со Spark 2.3 нельзя выбирать только колонку _corrupt_record */
-    /*
-      Exception in thread "main" org.apache.spark.sql.AnalysisException: Since Spark 2.3, the queries from raw JSON/CSV files are disallowed when the
-      referenced columns only include the internal corrupt record column
-      (named _corrupt_record by default). For example:
-      spark.read.schema(schema).csv(file).filter($"_corrupt_record".isNotNull).count()
-      and spark.read.schema(schema).csv(file).select("_corrupt_record").show().
-      Instead, you can cache or save the parsed results and then send the same query.
-      For example, val df = spark.read.schema(schema).csv(file).cache() and then
-      df.filter($"_corrupt_record".isNotNull).count()
-     */
-//    .select($"_corrupt_record")
     .select($"_corrupt_record", $"ident")
     .show(3, truncate = false)
 
@@ -304,20 +304,21 @@ object Datasource_1 extends App {
    * без этой опции будут удаляться все партиции, а не только присутствующие в записываемом датасете
    */
   // v1
-//  spark.conf.set("spark.sql.sources.partitionOverwriteMode", "dynamic")
+  spark.conf.set("spark.sql.sources.partitionOverwriteMode", "dynamic")
 
-  airportsDf
-    .filter($"iso_country".isin("RU", "US")) // 1-й запуск
-//    .filter($"iso_country".isin("GB", "CN")) // 2-й запуск
-    .write
-    // !!! v2 - НЕ РАБОТАЕТ
-    .option("spark.sql.sources.partitionOverwriteMode", "dynamic")
-    .format("json")
-    .mode(SaveMode.Overwrite)
-    .partitionBy("iso_country")
-    .save("src/main/resources/l_6/airports-7.dynamicOverwrite")
+//  airportsDf
+//    .filter($"iso_country".isin("RU", "US")) // 1-й запуск
+////    .filter($"iso_country".isin("GB", "CN")) // 2-й запуск
+//    .write
+//    // v2
+////    .option("partitionOverwriteMode", "dynamic")
+//    .format("json")
+//    .mode(SaveMode.Overwrite)
+//    .partitionBy("iso_country")
+//    .save("src/main/resources/l_6/airports-8.dynamic_overwrite")
 
-  /** Семплирование - чтение определенной части данных для вывода схемы с типами */
+
+  /** Семплирование - чтение определенной части данных для вывода схемы */
   spark.time {
     val csvOptions: Map[String, String] = Map("header" -> "true", "inferSchema" -> "true", "samplingRatio" -> "0.1")
 
@@ -328,7 +329,7 @@ object Datasource_1 extends App {
         .csv("src/main/resources/l_3/airport-codes.csv")
 
     airportsDf.printSchema()
-  } // 135 ms
+  } // 170 ms
   println()
 
   spark.time {
@@ -341,7 +342,7 @@ object Datasource_1 extends App {
         .csv("src/main/resources/l_3/airport-codes.csv")
 
     airportsDf.printSchema
-  } // 187 ms
+  } // 205 ms
   println()
 
 

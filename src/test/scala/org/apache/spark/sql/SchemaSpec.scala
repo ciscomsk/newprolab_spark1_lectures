@@ -36,31 +36,30 @@ class SchemaSpec extends AnyFlatSpec with should.Matchers {
   def recursion(schema: DataType): DataType = {
     schema match {
       /** !!! AtomicType/FractionalType/IntegralType - доступны только в org.apache.spark.sql */
-      case a: AtomicType =>
-        println(s"This is atomic type of type ${a.simpleString}")
-        a
+      case atomic: AtomicType =>
+        println(s"This is atomic type of type ${atomic.simpleString}")
+        atomic
 
-      case s: StructType =>
-        println(s"This is struct which contains the following fields: ${s.fields.toList}")
+      case struct: StructType =>
+        println(s"This is struct which contains the following fields: ${struct.fields.toList}")
 
-        val res: Array[StructField] =
-          s
-            .fields
-            .map { field => StructField(field.name, recursion(field.dataType)) }
+        struct
+          .fields
+          .map { field => StructField(field.name, recursion(field.dataType)) }
 
-        StructType(res)
+        struct
 
-      case arr: ArrayType =>
-        println(s"This is array which contains elements of type ${arr.elementType.simpleString}")
-        recursion(arr.elementType)
+      case array: ArrayType =>
+        println(s"This is array which contains elements of type ${array.elementType.simpleString}")
+        recursion(array.elementType)
     }
   }
 
   "Schema recursion" should "work" in {
     val result: DataType = recursion(someSchema)
+    println()
 
     println(s"res: $result")
-    println()
   }
 
   /** sbt shell => testOnly org.apache.spark.sql.SchemaSpec */
@@ -76,7 +75,7 @@ class SchemaSpec extends AnyFlatSpec with should.Matchers {
             StructField(sf.name.toUpperCase, toUpperCase(struct), sf.nullable, sf.metadata)
         }
 
-    StructType(upperCaseFields.toSeq)
+    StructType(upperCaseFields)
   }
 
   "Schema uppercase" should "work" in {

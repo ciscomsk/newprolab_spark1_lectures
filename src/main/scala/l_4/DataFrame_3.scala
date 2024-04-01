@@ -60,9 +60,9 @@ object DataFrame_3 extends App {
 
   /**
    * !!! несмотря на то, что onlyRuAndHighDs является общим для всех действий ниже
-   * весь граф по его расчету будет выполняться при вызове каждого действия
+   * весь граф по его расчету будет выполняться при вызове каждого action
    *
-   * onlyRuAndHighDs в нашем случае будет рассчитан 4 раза - count/show/collect/groupBy->show
+   * onlyRuAndHighDs в нашем случае будет рассчитан 4 раза - show/count/collect/groupBy-show
    */
   val start1: Long = System.currentTimeMillis()
   onlyRuAndHighDs.show(numRows = 1, truncate = 100, vertical = true)
@@ -77,20 +77,22 @@ object DataFrame_3 extends App {
     .show()
 
   val end1: Long = System.currentTimeMillis()
-  println(s"time1: ${(end1.toDouble - start1) / 1000}") // 2.133s
+  println(s"time1: ${(end1.toDouble - start1) / 1000}") // 1.761s
   println()
 
   /**
    * !!! cache/persist - ленивые операции
-   * => best practice - после cache/persist выполнять count - т.к. будут рассчитаны все партиции => все партиции попадут в кэш
+   * => best practice - после cache/persist выполнять count - т.к. будут обработаны все партиции => все партиции попадут в кэш
    *
-   * !!! если после cache/persist будет show => рассчитана будет только 1 партиция => 1 партиция будет помещена в кэш
+   * !!! если после cache/persist будет show => будет обработана только 1 партиция => 1 партиция будет помещена в кэш
    * т.е. часть данных будет в виде снэпшота в кэше, часть в источнике (csv-файл)
    * => при обновлении данных в источнике теряется консистентность => partial caching (антипаттерн)
    *
    * после окончания работы с закешированными данными необходимо выполнить unpersist - для очистки памяти
    */
   onlyRuAndHighDs.cache()
+  onlyRuAndHighDs.count()
+
   val start2: Long = System.currentTimeMillis()
   onlyRuAndHighDs.show(numRows = 1, truncate = 100, vertical = true)
   onlyRuAndHighDs.count()
@@ -104,26 +106,25 @@ object DataFrame_3 extends App {
     .show()
 
   val end2: Long = System.currentTimeMillis()
-  println(s"time2: ${(end2.toDouble - start2) / 1000}") // 1.093s
+  println(s"time2: ${(end2.toDouble - start2) / 1000}") // 0.613s
   onlyRuAndHighDs.unpersist()
   println()
 
   /**
    * localcheckpoint ~= cache/persist
    *
-   * отличия localcheckpoint от cache/persist:
-   * 1. localcheckpoint - неленивая операция (по умолчанию)
-   * 2. использует стандартную систему кеширования Spark
-   * 3. после localcheckpoint требуется очистка - Spark сам будет принимать решение о времени очистки кэша (не всегда эффективно)
+   * 1. использует стандартную систему кеширования Spark
+   * 2. localcheckpoint - неленивая операция (по умолчанию)
+   * 3. Spark сам будет принимать решение о моменте очистки кэша (не всегда эффективно)
    * 4. localcheckpoint - стирает граф выполнения до localcheckpoint
    */
 
   /**
    * checkpoint
    *
-   * сheckpoint - сериализует представление датафрейма и сохраняет на диск, с возможностью дальнейшего чтения (в т.ч. другим spark приложением)
-   * сheckpoint - стирает граф выполнения до сheckpoint (как и localcheckpoint)
-   * сheckpoint - проприетарный формат => лучше сохранять данные в открытом формате (например - parquet)
+   * сheckpoint - сериализует датафрейм и сохраняет на диск, с возможностью дальнейшего чтения (в т.ч. другим spark приложением)
+   * сheckpoint - проприетарный формат Spark => лучше сохранять данные в открытом формате (например - parquet)
+   * сheckpoint - стирает граф выполнения до сheckpoint
    */
 
   /**
@@ -149,7 +150,7 @@ object DataFrame_3 extends App {
   /*
     == Physical Plan ==
     AdaptiveSparkPlan isFinalPlan=false
-    +- Exchange hashpartitioning(CASE WHEN (id#1247L < 900) THEN 0 ELSE 1 END, 10), REPARTITION_BY_NUM, [plan_id=343]
+    +- Exchange hashpartitioning(CASE WHEN (id#1564L < 900) THEN 0 ELSE 1 END, 10), REPARTITION_BY_NUM, [plan_id=393]
        +- Range (0, 1000, step=1, splits=8)
    */
 
@@ -160,7 +161,7 @@ object DataFrame_3 extends App {
   def printItemPerPartition[T](ds: Dataset[T]): Unit = {
     val resDf: DataFrame =
       ds
-        .mapPartitions { partition => Iterator(partition.length) } // col("value")
+        .mapPartitions(partition => Iterator(partition.length)) // col("value")
         .withColumnRenamed("value", "itemPerPartition")
 
     resDf.show(50, truncate = false)
@@ -193,12 +194,12 @@ object DataFrame_3 extends App {
   /*
     == Physical Plan ==
     AdaptiveSparkPlan isFinalPlan=false
-    +- Exchange RoundRobinPartitioning(20), REPARTITION_BY_NUM, [plan_id=701]
+    +- Exchange RoundRobinPartitioning(20), REPARTITION_BY_NUM, [plan_id=751]
        +- Range (0, 1000, step=1, splits=8)
    */
 
   /**
-   * 2. HashPartitioning - распределение по ключам заданных колонок
+   * 2. HashPartitioning - распределение по ключам (хэшам ключей) заданных колонок
    * позволяет оптимизировать граф вычислений
    * пример - при репартицировании по полям, по которым в дальнейшем будет производиться группировка => повторного репартицирования не будет
    */
@@ -211,7 +212,7 @@ object DataFrame_3 extends App {
   /*
     == Physical Plan ==
     AdaptiveSparkPlan isFinalPlan=false
-    +- Exchange hashpartitioning(id#1247L, 20), REPARTITION_BY_NUM, [plan_id=833]
+    +- Exchange hashpartitioning(id#1564L, 20), REPARTITION_BY_NUM, [plan_id=883]
        +- Range (0, 1000, step=1, splits=8)
    */
 
@@ -230,13 +231,13 @@ object DataFrame_3 extends App {
   /*
     == Physical Plan ==
     AdaptiveSparkPlan isFinalPlan=false
-    +- Sort [count#1315L DESC NULLS LAST], true, 0
-       +- Exchange rangepartitioning(count#1315L DESC NULLS LAST, 200), ENSURE_REQUIREMENTS, [plan_id=893]
-          +- Scan ExistingRDD[municipality#24,count#1315L]
+    +- Sort [count#1632L DESC NULLS LAST], true, 0
+       +- Exchange rangepartitioning(count#1632L DESC NULLS LAST, 200), ENSURE_REQUIREMENTS, [plan_id=943]
+          +- Scan ExistingRDD[municipality#24,count#1632L]
    */
 
 
-  /** coalesce */
+  /** Coalesce */
   val coalescedDf: Dataset[lang.Long] =
     skewDs
       .localCheckpoint()
@@ -250,7 +251,7 @@ object DataFrame_3 extends App {
   /*
     == Physical Plan ==
     Coalesce 3
-    +- *(1) Scan ExistingRDD[id#1247L]
+    +- *(1) Scan ExistingRDD[id#1564L]
    */
 
   /** без localCheckpoint */
@@ -272,8 +273,7 @@ object DataFrame_3 extends App {
     .groupBy($"type")
     .count()
     .orderBy($"count".desc)
-    /** max records in partition ~34k */
-    .show()
+    .show() // max records in partition ~34k
 
   /** Key salting */
   // saltModTen == [0 - 9]
@@ -285,14 +285,14 @@ object DataFrame_3 extends App {
   println(s"saltedDf partitions: ${saltedDf.rdd.getNumPartitions}")
   println()
 
-  /** 1-й этап - key salting */
+  /** 1-й этап */
   val firstStepDf: DataFrame =
     saltedDf
       .groupBy($"type", $"salt")
       .count()
       .orderBy($"count".desc)
 
-  /** max records in partition ~3.5k */
+  // max records in partition ~3.5k
   firstStepDf.show(200, truncate = false)
   println(s"firstStepDf partitions: ${firstStepDf.rdd.getNumPartitions}")
   println()
@@ -305,7 +305,7 @@ object DataFrame_3 extends App {
 
   /**
    * несмотря на то, что мы выполнили 2 группировки вместо 1, распределение данных по экзекьюторам стало более равномерным,
-   * что позволило избежать OOM на экзекьюторах
+   * что позволило избежать OOM
    */
   secondStepDf
     .orderBy($"count".desc)

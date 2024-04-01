@@ -69,10 +69,9 @@ object DataFrame_6 extends App {
       .localCheckpoint()
 
   val resDf2: DataFrame = leftDf2.join(broadcast(rightDf2), Seq("type"), "inner")
-
   printPhysicalPlan(resDf2)
-  /** BroadcastHashJoin - PO BroadcastHashJoin + BroadcastExchange_HashedRelationBroadcastMode */
 
+  /** BroadcastHash Join == PO BroadcastExchange HashedRelationBroadcastMode + PO BroadcastHashJoin */
   /** более читаемый план с localCheckpoint */
   /*
     AdaptiveSparkPlan isFinalPlan=false
@@ -97,7 +96,7 @@ object DataFrame_6 extends App {
   /** примеры non-equ join: */
   leftDf2.as("left").join(rightDf2.as("right"), expr("left.iso_country < right.type"))
   // ==
-  leftDf2.as("left").join(rightDf2.as("right"), expr("(left.iso_country < right.type) == true"))
+  leftDf2.as("left").join(rightDf2.as("right"), expr("(left.iso_country < right.type) = true"))
 
   /** автоматическое вычисление объема данных в датафрейме - часто работает некорректно => лучше отключить */
   spark.conf.set("spark.sql.autoBroadcastJoinThreshold", "-1")
@@ -125,16 +124,16 @@ object DataFrame_6 extends App {
   /** проблема джоина с перекошенными партициями - решается разделением датасета на более мелкие - их джоинами и последующим юнионом */
   /** вариант с партицированными данными: */
   /*
-    leftDf - partitionBy - y/m/d
-    rightDf - partitionBy - y/m/d
+    leftDf - partitionBy y/m/d
+    rightDf - partitionBy y/m/d
 
     val dates = List(...)
 
     dates
       .map { date =>
-        leftDf.filter(dateExpression).join(right.filter(dateExpression), Seq(...), "inner")
+        leftDf.filter(date_condition).join(right.filter(date_condition), Seq(...), "inner")
       }
-      .reduce { (df1, df2) => df1.unionAll(df2) }
+      .reduce((df1, df2) => df1.unionAll(df2))
 
     !!! unionAll - важен порядок колонок, есть unionByName
    */
@@ -153,9 +152,9 @@ object DataFrame_6 extends App {
 
   val resDf4: DataFrame = leftDf2.as("left").join(broadcast(rightDf2).as("right"), joinExpr, "inner")
   printPhysicalPlan(resDf4)
-  /** BroadcastNestedLoopJoin - PO BroadcastNestedLoopJoin + BroadcastExchange_IdentityBroadcastMode */
+  /** BroadcastNestedLoopJoin == PO BroadcastExchange IdentityBroadcastMode + PO BroadcastNestedLoopJoin */
   /*
-    // нет ни срезов ни проекций т.к. используется udf
+    // нет ни срезов (isnotnull) ни проекций т.к. используется udf
     AdaptiveSparkPlan isFinalPlan=false
     +- BroadcastNestedLoopJoin BuildRight, Inner, UDF(type#18, type#167)
        :- Scan ExistingRDD[type#18,ident#17,iso_country#22]
@@ -173,7 +172,7 @@ object DataFrame_6 extends App {
     +- *(2) Scan ExistingRDD[type#191,count#192L]
    */
 
-  /** Cartesian product num partitions == left num partitions * right num partitions */
+  /** cartesian product result num partitions == left df num partitions * right df num partitions */
   println(
     s"""Partition summary:
        |left=${leftDf2.rdd.getNumPartitions}
@@ -181,7 +180,6 @@ object DataFrame_6 extends App {
        |result=${resDf5.rdd.getNumPartitions}
        |""".stripMargin
   )
-
 
 
   println(sc.uiWebUrl)

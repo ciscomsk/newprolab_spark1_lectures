@@ -41,29 +41,29 @@ object Streaming_1 extends App {
       .format("rate")
       .load()
 
-  println(s"rateStreamDf.isStreaming: ${rateStreamDf.isStreaming}") // == true
+//  println(s"rateStreamDf.isStreaming: ${rateStreamDf.isStreaming}")
   println()
 
   /** err - org.apache.spark.sql.AnalysisException: Queries with streaming sources must be executed with writeStream.start() */
 //  println(rateStreamDf.rdd.getNumPartitions)
-  rateStreamDf.printSchema()
+//  rateStreamDf.printSchema()
   /*
     root
      |-- timestamp: timestamp (nullable = true)
      |-- value: long (nullable = true)
    */
 
-  rateStreamDf.explain(true)
+//  rateStreamDf.explain(true)
   /*
     == Parsed Logical Plan ==
-    StreamingRelationV2 org.apache.spark.sql.execution.streaming.sources.RateStreamProvider@1fcc3461, rate, org.apache.spark.sql.execution.streaming.sources.RateStreamTable@41bbb219, [], [timestamp#0, value#1L]
+    StreamingRelationV2 org.apache.spark.sql.execution.streaming.sources.RateStreamProvider@16c0be3b, rate, org.apache.spark.sql.execution.streaming.sources.RateStreamTable@1818d00b, [], [timestamp#0, value#1L]
 
     == Analyzed Logical Plan ==
     timestamp: timestamp, value: bigint
-    StreamingRelationV2 org.apache.spark.sql.execution.streaming.sources.RateStreamProvider@1fcc3461, rate, org.apache.spark.sql.execution.streaming.sources.RateStreamTable@41bbb219, [], [timestamp#0, value#1L]
+    StreamingRelationV2 org.apache.spark.sql.execution.streaming.sources.RateStreamProvider@16c0be3b, rate, org.apache.spark.sql.execution.streaming.sources.RateStreamTable@1818d00b, [], [timestamp#0, value#1L]
 
     == Optimized Logical Plan ==
-    StreamingRelationV2 org.apache.spark.sql.execution.streaming.sources.RateStreamProvider@1fcc3461, rate, org.apache.spark.sql.execution.streaming.sources.RateStreamTable@41bbb219, [], [timestamp#0, value#1L]
+    StreamingRelationV2 org.apache.spark.sql.execution.streaming.sources.RateStreamProvider@16c0be3b, rate, org.apache.spark.sql.execution.streaming.sources.RateStreamTable@1818d00b, [], [timestamp#0, value#1L]
 
     == Physical Plan ==
     StreamingRelation rate, [timestamp#0, value#1L]
@@ -72,13 +72,13 @@ object Streaming_1 extends App {
   val consoleSink: DataStreamWriter[Row] = createConsoleSink(rateStreamDf)
   /** !!! start() - запуск стрима, неблокирующая операция */
 //  val streamingQuery: StreamingQuery = consoleSink.start()
-//  Thread.sleep(12000L)
+//  Thread.sleep(12000)
   /** stop - остановка стрима */
 //  streamingQuery.stop()
 
   /**
-   * !!! AwaitTermination(time) - блокирует основной поток на указанный период времени time
-   * AwaitTermination(time) - позволяет каждый период времени time выполнять нашу логику
+   * !!! AwaitTermination(time) - блокирует основной поток на указанный период времени <time>
+   * позволяет каждый период времени <time> выполнять нашу логику
    */
 //  val streamIsStopped: Boolean = streamingQuery.awaitTermination(5000)
 //  println(s"streamIsStopped: $streamIsStopped")
@@ -109,7 +109,7 @@ object Streaming_1 extends App {
 //    }
 //  }
 
-  /** Мои попытки с tailrec */
+  /** мои попытки с tailrec */
 //  @tailrec
 //  def endlessAwaitTermination(sq: StreamingQuery): Unit = {
 //    sq.awaitTermination(5000)
@@ -134,7 +134,7 @@ object Streaming_1 extends App {
    * Остановка всех стримов
    * !!! это жесткая остановка - если попасть в момент записи батча (например в БД) => часть данных записана не будет
    *
-   * Чтобы безопасно (gracefully) остановить стрим нужен дополнительный код -> конец Streaming_4
+   * чтобы безопасно (gracefully) остановить стрим нужен дополнительный код -> конец Streaming_4
    */
   def killAllStream(): Unit =
     SparkSession
@@ -178,21 +178,21 @@ object Streaming_1 extends App {
    */
 
   /** стрим - выполняет запись в parquet */
-  def createParquetSink(df: DataFrame, fileName: String): DataStreamWriter[Row] =
+  def createParquetSink(df: DataFrame, streamName: String): DataStreamWriter[Row] =
     df
       .writeStream
       .queryName("rate-parquet")
       .format("parquet")
-      .option("path", s"src/main/resources/l_7/$fileName")
+      .option("path", s"src/main/resources/l_7/$streamName")
       /**
       * без checkpointLocation - err:
-      * AnalysisException: checkpointLocation must be specified either through option("checkpointLocation", ...) or SparkSession.conf.set("spark.sql.streaming.checkpointLocation", ...).
+      * AnalysisException: checkpointLocation must be specified either through option("checkpointLocation", ...) or SparkSession.conf.set("spark.sql.streaming.checkpointLocation", ...)
       */
-      .option("checkpointLocation", s"src/main/resources/l_7/chk/$fileName")
+      .option("checkpointLocation", s"src/main/resources/l_7/chk/$streamName")
       .trigger(Trigger.ProcessingTime("10 seconds"))
 
-  val parquetSink: DataStreamWriter[Row] = createParquetSink(rateStreamDf, "s1.parquet")
-//  val parquetSink: DataStreamWriter[Row] = createParquetSink(rateStreamDf.repartition(1), "s1.parquet")
+//  val parquetSink: DataStreamWriter[Row] = createParquetSink(rateStreamDf, "s1.parquet")
+//  val parquetSink: DataStreamWriter[Row] = createParquetSink(rateStreamDf.repartition(1), "s1.parquet_repartition")
 
 //  val streamingQuery2: StreamingQuery = parquetSink.start()
 //  streamingQuery2.awaitTermination(15000)
@@ -203,32 +203,32 @@ object Streaming_1 extends App {
 //  println(s"streamingQuery2.lastProgress: \n${streamingQuery2.lastProgress}")
   /*
     {
-      "id" : "058a0650-fe2f-4d74-a0ed-abefd4e8f844",
-      "runId" : "655f1c6c-edcd-4e34-aaa8-dc2703f4e19f",
+      "id" : "8b1f3c3a-c82e-4549-a73f-791131dd4b0d",
+      "runId" : "03193ddd-5c93-498c-b93e-915a4e6e4aec",
       "name" : "rate-parquet",
-      "timestamp" : "2023-11-12T13:52:50.001Z",
-      "batchId" : 6,
-      "numInputRows" : 9,
-      "inputRowsPerSecond" : 0.9570395576350489,
-      "processedRowsPerSecond" : 42.25352112676057,
+      "timestamp" : "2024-04-01T05:33:30.000Z",
+      "batchId" : 10,
+      "numInputRows" : 10,
+      "inputRowsPerSecond" : 1.0680337498664958,
+      "processedRowsPerSecond" : 40.98360655737705,
       "durationMs" : {
-        "addBatch" : 140,
+        "addBatch" : 171,
         "commitOffsets" : 18,
         "getBatch" : 0,
         "latestOffset" : 0,
-        "queryPlanning" : 10,
-        "triggerExecution" : 213,
-        "walCommit" : 42
+        "queryPlanning" : 9,
+        "triggerExecution" : 244,
+        "walCommit" : 44
       },
       "stateOperators" : [ ],
       "sources" : [ {
         "description" : "RateStreamV2[rowsPerSecond=1, rampUpTimeSeconds=0, numPartitions=default",
-        "startOffset" : 85,
-        "endOffset" : 94,
-        "latestOffset" : 94,
-        "numInputRows" : 9,
-        "inputRowsPerSecond" : 0.9570395576350489,
-        "processedRowsPerSecond" : 42.25352112676057
+        "startOffset" : 170,
+        "endOffset" : 180,
+        "latestOffset" : 180,
+        "numInputRows" : 10,
+        "inputRowsPerSecond" : 1.0680337498664958,
+        "processedRowsPerSecond" : 40.98360655737705
       } ],
       "sink" : {
         "description" : "FileSink[src/main/resources/l_7/s1.parquet]",
@@ -243,96 +243,96 @@ object Streaming_1 extends App {
 //  println(streamingQuery2.recentProgress.mkString("Array(", ", ", ")"))
   /*
     Array({
-      "id" : "058a0650-fe2f-4d74-a0ed-abefd4e8f844",
-      "runId" : "655f1c6c-edcd-4e34-aaa8-dc2703f4e19f",
+      "id" : "8b1f3c3a-c82e-4549-a73f-791131dd4b0d",
+      "runId" : "03193ddd-5c93-498c-b93e-915a4e6e4aec",
       "name" : "rate-parquet",
-      "timestamp" : "2023-11-12T13:52:38.624Z",
-      "batchId" : 4,
-      "numInputRows" : 59,
+      "timestamp" : "2024-04-01T05:33:18.969Z",
+      "batchId" : 8,
+      "numInputRows" : 29,
       "inputRowsPerSecond" : 0.0,
-      "processedRowsPerSecond" : 30.132788559754854,
+      "processedRowsPerSecond" : 17.56511205330103,
       "durationMs" : {
-        "addBatch" : 1754,
-        "commitOffsets" : 21,
-        "getBatch" : 3,
+        "addBatch" : 1466,
+        "commitOffsets" : 20,
+        "getBatch" : 2,
         "latestOffset" : 0,
-        "queryPlanning" : 40,
-        "triggerExecution" : 1958,
-        "walCommit" : 57
+        "queryPlanning" : 24,
+        "triggerExecution" : 1650,
+        "walCommit" : 49
       },
       "stateOperators" : [ ],
       "sources" : [ {
         "description" : "RateStreamV2[rowsPerSecond=1, rampUpTimeSeconds=0, numPartitions=default",
-        "startOffset" : 24,
-        "endOffset" : 83,
-        "latestOffset" : 83,
-        "numInputRows" : 59,
+        "startOffset" : 140,
+        "endOffset" : 169,
+        "latestOffset" : 169,
+        "numInputRows" : 29,
         "inputRowsPerSecond" : 0.0,
-        "processedRowsPerSecond" : 30.132788559754854
+        "processedRowsPerSecond" : 17.56511205330103
       } ],
       "sink" : {
         "description" : "FileSink[src/main/resources/l_7/s1.parquet]",
         "numOutputRows" : -1
       }
     }, {
-      "id" : "058a0650-fe2f-4d74-a0ed-abefd4e8f844",
-      "runId" : "655f1c6c-edcd-4e34-aaa8-dc2703f4e19f",
+      "id" : "8b1f3c3a-c82e-4549-a73f-791131dd4b0d",
+      "runId" : "03193ddd-5c93-498c-b93e-915a4e6e4aec",
       "name" : "rate-parquet",
-      "timestamp" : "2023-11-12T13:52:40.597Z",
-      "batchId" : 5,
-      "numInputRows" : 2,
-      "inputRowsPerSecond" : 1.0136847440446022,
-      "processedRowsPerSecond" : 9.852216748768472,
+      "timestamp" : "2024-04-01T05:33:20.637Z",
+      "batchId" : 9,
+      "numInputRows" : 1,
+      "inputRowsPerSecond" : 0.5995203836930456,
+      "processedRowsPerSecond" : 4.3478260869565215,
       "durationMs" : {
-        "addBatch" : 160,
-        "commitOffsets" : 16,
+        "addBatch" : 188,
+        "commitOffsets" : 17,
         "getBatch" : 0,
         "latestOffset" : 0,
-        "queryPlanning" : 8,
-        "triggerExecution" : 203,
-        "walCommit" : 15
+        "queryPlanning" : 7,
+        "triggerExecution" : 230,
+        "walCommit" : 16
       },
       "stateOperators" : [ ],
       "sources" : [ {
         "description" : "RateStreamV2[rowsPerSecond=1, rampUpTimeSeconds=0, numPartitions=default",
-        "startOffset" : 83,
-        "endOffset" : 85,
-        "latestOffset" : 85,
-        "numInputRows" : 2,
-        "inputRowsPerSecond" : 1.0136847440446022,
-        "processedRowsPerSecond" : 9.852216748768472
+        "startOffset" : 169,
+        "endOffset" : 170,
+        "latestOffset" : 170,
+        "numInputRows" : 1,
+        "inputRowsPerSecond" : 0.5995203836930456,
+        "processedRowsPerSecond" : 4.3478260869565215
       } ],
       "sink" : {
         "description" : "FileSink[src/main/resources/l_7/s1.parquet]",
         "numOutputRows" : -1
       }
     }, {
-      "id" : "058a0650-fe2f-4d74-a0ed-abefd4e8f844",
-      "runId" : "655f1c6c-edcd-4e34-aaa8-dc2703f4e19f",
+      "id" : "8b1f3c3a-c82e-4549-a73f-791131dd4b0d",
+      "runId" : "03193ddd-5c93-498c-b93e-915a4e6e4aec",
       "name" : "rate-parquet",
-      "timestamp" : "2023-11-12T13:52:50.001Z",
-      "batchId" : 6,
-      "numInputRows" : 9,
-      "inputRowsPerSecond" : 0.9570395576350489,
-      "processedRowsPerSecond" : 42.25352112676057,
+      "timestamp" : "2024-04-01T05:33:30.000Z",
+      "batchId" : 10,
+      "numInputRows" : 10,
+      "inputRowsPerSecond" : 1.0680337498664958,
+      "processedRowsPerSecond" : 40.98360655737705,
       "durationMs" : {
-        "addBatch" : 140,
+        "addBatch" : 171,
         "commitOffsets" : 18,
         "getBatch" : 0,
         "latestOffset" : 0,
-        "queryPlanning" : 10,
-        "triggerExecution" : 213,
-        "walCommit" : 42
+        "queryPlanning" : 9,
+        "triggerExecution" : 244,
+        "walCommit" : 44
       },
       "stateOperators" : [ ],
       "sources" : [ {
         "description" : "RateStreamV2[rowsPerSecond=1, rampUpTimeSeconds=0, numPartitions=default",
-        "startOffset" : 85,
-        "endOffset" : 94,
-        "latestOffset" : 94,
-        "numInputRows" : 9,
-        "inputRowsPerSecond" : 0.9570395576350489,
-        "processedRowsPerSecond" : 42.25352112676057
+        "startOffset" : 170,
+        "endOffset" : 180,
+        "latestOffset" : 180,
+        "numInputRows" : 10,
+        "inputRowsPerSecond" : 1.0680337498664958,
+        "processedRowsPerSecond" : 40.98360655737705
       } ],
       "sink" : {
         "description" : "FileSink[src/main/resources/l_7/s1.parquet]",
@@ -352,9 +352,13 @@ object Streaming_1 extends App {
    */
   println()
 
-//  val parquetStreamDf: DataFrame = spark.read.load("src/main/resources/l_7/s1.parquet")
+//  val parquetStreamDf: DataFrame = {
+////    spark.read.load("src/main/resources/l_7/s1.parquet")
+//    spark.read.load("src/main/resources/l_7/s1.parquet_repartition")
+//  }
+//
 //  println(parquetStreamDf.count())
-//  println()
+  println()
 
 //  parquetStreamDf.printSchema()
   /*
@@ -372,7 +376,7 @@ object Streaming_1 extends App {
 //
 //  uniqFilesDs.show(20, truncate = false)
 //  println(uniqFilesDs.count())
-//  println()
+  println()
 
 //  val csvOptions: Map[String, String] = Map("header" -> "true", "inferSchema" -> "true")
 //
@@ -406,15 +410,15 @@ object Streaming_1 extends App {
 //  val identParquetSink: DataStreamWriter[Row] = createParquetSink(identStreamDf, "s2.parquet")
 //  val identStreamQuery: StreamingQuery = identParquetSink.start()
 //  identStreamQuery.awaitTermination(15000)
-
+//
 //  val identParquetDf: DataFrame =
 //    spark
 //      .read
 //      .parquet("src/main/resources/l_7/s2.parquet")
 //
 //  println(s"identParquetDf.count(): ${identParquetDf.count()}")
-//  println()
-//
+  println()
+
 //  identParquetDf.printSchema()
   /*
     root

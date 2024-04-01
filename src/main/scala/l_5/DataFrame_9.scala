@@ -53,7 +53,7 @@ object DataFrame_9 extends App {
   airportPartPqDf.printSchema()
   println()
 
-  println("__Column projection: ")
+  println("__Column projection__: ")
   /**
    * 1. Column projection
    * в плане - ReadSchema
@@ -73,7 +73,7 @@ object DataFrame_9 extends App {
          // ReadSchema: struct<ident:string> - будет вычитана только колонка ident
          +- FileScan parquet [ident#92,iso_country#103] Batched: true, DataFilters: [], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<ident:string>
      */
-  } // 1002 ms
+  } // 1092 ms
   println()
 
   spark.time {
@@ -89,10 +89,10 @@ object DataFrame_9 extends App {
       // ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_region:string,m...
       +- FileScan parquet [ident#92,type#93,name#94,elevation_ft#95,continent#96,iso_region#97,municipality#98,gps_code#99,iata_code#100,local_code#101,coordinates#102,iso_country#103] Batched: true, DataFilters: [], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_region:string,m...
      */
-  } // 914 ms
+  } // 1066 ms
   println()
 
-  /** !!! Для текстовых форматов (например json) - ReadSchema будет указана в плане выполнения, но работать оптимизация не будет */
+  /** !!! для неколоночных форматов (например json) - ReadSchema будет указана в плане выполнения, но работать оптимизация не будет */
   spark
     .read
     .json("src/main/resources/l_5/airports_json")
@@ -106,13 +106,14 @@ object DataFrame_9 extends App {
    */
 
 
-  println("__Partition pruning: ")
+  println("__Partition pruning__: ")
   /**
    * 2. Partition pruning - df.write.partitionBy("iso_country")
    * в плане - PartitionFilters
    */
   spark.time {
-    val filteredDf: Dataset[Row] = airportPartPqDf.filter($"iso_country" > "RU")
+    val filteredDf: Dataset[Row] = airportPartPqDf.filter($"iso_country" === "RU")
+//    val filteredDf: Dataset[Row] = airportPartPqDf.filter($"iso_country" > "RU")
 //    val filteredDf: Dataset[Row] = airportPartPqDf.filter($"iso_country" === "RU" || $"iso_country" === "US")
 //    println(filteredDf.queryExecution.executedPlan.toJSON)
 
@@ -121,12 +122,11 @@ object DataFrame_9 extends App {
     printPhysicalPlan(filteredDf)
     /*
       *(1) ColumnarToRow
-      // PartitionFilters: [isnotnull(iso_country#103), (iso_country#103 = RU)] => будет прочитан только каталог RU
-      +- FileScan parquet [ident#92,type#93,name#94,elevation_ft#95,continent#96,iso_region#97,municipality#98,gps_code#99,iata_code#100,local_code#101,coordinates#102,iso_country#103] Batched: true, DataFilters: [], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [isnotnull(iso_country#103), (iso_country#103 = RU)], PushedFilters: [], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_region:string,m...
+      // PartitionFilters: [isnotnull(iso_country#52), (iso_country#52 = RU)] => будет прочитан только каталог RU
+      +- FileScan parquet [ident#41,type#42,name#43,elevation_ft#44,continent#45,iso_region#46,municipality#47,gps_code#48,iata_code#49,local_code#50,coordinates#51,iso_country#52] Batched: true, DataFilters: [], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [isnotnull(iso_country#52), (iso_country#52 = RU)], PushedFilters: [], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_region:string,m...
      */
-  } // 156 ms
+  } // 117 ms
   println()
-
 
 
   spark.time {
@@ -137,13 +137,13 @@ object DataFrame_9 extends App {
     /*
       *(1) ColumnarToRow
       // PartitionFilters: []
-      +- FileScan parquet [ident#92,type#93,name#94,elevation_ft#95,continent#96,iso_region#97,municipality#98,gps_code#99,iata_code#100,local_code#101,coordinates#102,iso_country#103] Batched: true, DataFilters: [], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_region:string,m...
+      +- FileScan parquet [ident#41,type#42,name#43,elevation_ft#44,continent#45,iso_region#46,municipality#47,gps_code#48,iata_code#49,local_code#50,coordinates#51,iso_country#52] Batched: true, DataFilters: [], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_region:string,m...
      */
-  } // 253 ms
+  } // 291 ms
   println()
 
 
-  println("__Predicate pushdown: ")
+  println("__Predicate pushdown__: ")
   /**
    * 3. Predicate pushdown
    * в плане - PushedFilters
@@ -155,19 +155,19 @@ object DataFrame_9 extends App {
     printPhysicalPlan(filteredDf)
     /*
       // Filter (isnotnull(iso_region#97) AND (iso_region#97 = RU))
-      *(1) Filter (isnotnull(iso_region#97) AND (iso_region#97 = RU))
+      *(1) Filter (isnotnull(iso_region#46) AND (iso_region#46 = RU))
       +- *(1) ColumnarToRow
          // PushedFilters: [IsNotNull(iso_region), EqualTo(iso_region,RU)]
-         +- FileScan parquet [ident#92,type#93,name#94,elevation_ft#95,continent#96,iso_region#97,municipality#98,gps_code#99,iata_code#100,local_code#101,coordinates#102,iso_country#103] Batched: true, DataFilters: [isnotnull(iso_region#97), (iso_region#97 = RU)], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [IsNotNull(iso_region), EqualTo(iso_region,RU)], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_region:string,m...
+         +- FileScan parquet [ident#41,type#42,name#43,elevation_ft#44,continent#45,iso_region#46,municipality#47,gps_code#48,iata_code#49,local_code#50,coordinates#51,iso_country#52] Batched: true, DataFilters: [isnotnull(iso_region#46), (iso_region#46 = RU)], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [IsNotNull(iso_region), EqualTo(iso_region,RU)], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_region:string,m...
      */
-  } // 364 ms
+  } // 410 ms
   println()
 
 
-  println("__Simplify casts: ")
+  println("__Simplify casts__: ")
   /**
    * 4. Simplify casts
-   * LongType.cast(LongType) => каста не будет
+   * LongType.cast(LongType) -> каста не будет
    */
   val resDf1: DataFrame =
     spark
@@ -187,7 +187,7 @@ object DataFrame_9 extends App {
 
     == Analyzed Logical Plan ==
     id: bigint
-    Project [cast(id#616L as bigint) AS id#618L]
+    Project [cast(id#565L as bigint) AS id#567L]
     +- Range (0, 10, step=1, splits=Some(8))
 
     == Optimized Logical Plan ==
@@ -205,15 +205,15 @@ object DataFrame_9 extends App {
 
   printPhysicalPlan(resDf2)
   /*
-    *(1) Project [cast(cast(id#620L as int) as bigint) AS id#623L]
+    *(1) Project [cast(cast(id#569L as int) as bigint) AS id#572L]
     +- *(1) Range (0, 10, step=1, splits=8)
    */
 
 
-  println("__Constant folding: ")
+  println("__Constant folding__: ")
   /**
    * 5. Constant folding
-   * (lit(3) > lit(0) => true
+   * lit(3) > lit(0) == true
    */
   val resDf3: Dataset[Row] =
     spark
@@ -222,27 +222,27 @@ object DataFrame_9 extends App {
 
   printPhysicalPlan(resDf3)
   /*
-    *(1) Project [true AS foo#627]
+    *(1) Project [true AS foo#576]
     +- *(1) Range (0, 10, step=1, splits=8)
    */
 
   resDf3.explain(true)
   /*
     == Parsed Logical Plan ==
-    Project [(3 > 0) AS foo#627]
+    Project [(3 > 0) AS foo#576]
     +- Range (0, 10, step=1, splits=Some(8))
 
     == Analyzed Logical Plan ==
     foo: boolean
-    Project [(3 > 0) AS foo#627]
+    Project [(3 > 0) AS foo#576]
     +- Range (0, 10, step=1, splits=Some(8))
 
     == Optimized Logical Plan ==
-    Project [true AS foo#627]
+    Project [true AS foo#576]
     +- Range (0, 10, step=1, splits=Some(8))
 
     == Physical Plan ==
-    *(1) Project [true AS foo#627]
+    *(1) Project [true AS foo#576]
     +- *(1) Range (0, 10, step=1, splits=8)
    */
 
@@ -253,15 +253,15 @@ object DataFrame_9 extends App {
 
   printPhysicalPlan(resDf4)
   /*
-    *(1) Project [(id#629L > 0) AS foo#631]
+    *(1) Project [(id#578L > 0) AS foo#580]
     +- *(1) Range (0, 10, step=1, splits=8)
    */
 
 
-  println("__Combine filters: ")
+  println("__Combine filters__: ")
   /**
    * 6. Combine filters
-   * .filter($"id" > 0) + .filter($"id" =!= 5) + .filter($"id" < 10) => Filter ((id#633L > 0) AND (NOT (id#633L = 5) AND (id#633L < 10)))
+   * filter($"id" > 0) + filter($"id" =!= 5) + filter($"id" < 10) -> Filter ((id#582L > 0) AND (NOT (id#582L = 5) AND (id#582L < 10)))
    */
   val resDf5: Dataset[Row] =
     spark
@@ -274,7 +274,7 @@ object DataFrame_9 extends App {
 
   printPhysicalPlan(resDf5)
   /*
-    *(1) Filter ((id#633L > 0) AND (NOT (id#633L = 5) AND (id#633L < 10)))
+    *(1) Filter ((id#582L > 0) AND (NOT (id#582L = 5) AND (id#582L < 10)))
     +- *(1) Range (0, 10, step=1, splits=8)
    */
 
@@ -282,25 +282,25 @@ object DataFrame_9 extends App {
   /*
     == Parsed Logical Plan ==
     'Filter ('id < 10)
-    +- Filter NOT (id#633L = cast(5 as bigint))
-       +- Project [id#633L]
-          +- Filter (id#633L > cast(0 as bigint))
+    +- Filter NOT (id#582L = cast(5 as bigint))
+       +- Project [id#582L]
+          +- Filter (id#582L > cast(0 as bigint))
              +- Range (0, 10, step=1, splits=Some(8))
 
     == Analyzed Logical Plan ==
     id: bigint
-    Filter (id#633L < cast(10 as bigint))
-    +- Filter NOT (id#633L = cast(5 as bigint))
-       +- Project [id#633L]
-          +- Filter (id#633L > cast(0 as bigint))
+    Filter (id#582L < cast(10 as bigint))
+    +- Filter NOT (id#582L = cast(5 as bigint))
+       +- Project [id#582L]
+          +- Filter (id#582L > cast(0 as bigint))
              +- Range (0, 10, step=1, splits=Some(8))
 
     == Optimized Logical Plan ==
-    Filter ((id#633L > 0) AND (NOT (id#633L = 5) AND (id#633L < 10)))
+    Filter ((id#582L > 0) AND (NOT (id#582L = 5) AND (id#582L < 10)))
     +- Range (0, 10, step=1, splits=Some(8))
 
     == Physical Plan ==
-    *(1) Filter ((id#633L > 0) AND (NOT (id#633L = 5) AND (id#633L < 10)))
+    *(1) Filter ((id#582L > 0) AND (NOT (id#582L = 5) AND (id#582L < 10)))
     +- *(1) Range (0, 10, step=1, splits=8)
    */
 

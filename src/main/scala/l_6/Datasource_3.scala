@@ -29,10 +29,11 @@ object Datasource_3 extends App {
   /**
    * Запуск в докере:
    *
-   * docker pull elasticsearch:8.10.4
-   * docker pull kibana:8.10.4
-   * docker run --name es-node01 --net elastic -m 16GB -p 9200:9200 -p 9300:9300 -e xpack.security.enabled=false -e discovery.type=single-node elasticsearch:8.10.4
-   * docker run --name kib-01 --net elastic -p 5601:5601 -e ELASTICSEARCH_HOSTS=http://es-node01:9200 kibana:8.10.4
+   * docker pull elasticsearch:8.12.1
+   * docker pull kibana:8.12.1
+   * docker network create elastic
+   * docker run --name es-node01 --net elastic -m 16GB -p 9200:9200 -p 9300:9300 -e xpack.security.enabled=false -e discovery.type=single-node elasticsearch:8.12.1
+   * docker run --name kib-01 --net elastic -p 5601:5601 -e ELASTICSEARCH_HOSTS=http://es-node01:9200 kibana:8.12.1
    *
    * docker ps
    * docker start 'containder_id'
@@ -103,34 +104,34 @@ object Datasource_3 extends App {
   esDf.show(1, 200, vertical = true)
 
   /**
-   * Количество партиций DF равно числу шардов индекса
+   * количество партиций DF равно числу шардов индекса
    * у нас индекс состоит из 1 шарда => 1 партиция
    */
   println(esDf.rdd.getNumPartitions)
   println()
 
-  /** к применяемым фильтрам применяется оптимизация filter pushdown */
+  /** к фильтрам применяется оптимизация predicate pushdown */
   esDf
     .filter($"iso_region" contains "RU") // contains - полнотекстовый поиск
     .explain(true)
   /*
     == Parsed Logical Plan ==
     'Filter Contains('iso_region, RU)
-    +- Relation [continent#161,coordinates#162,date#163L,elevation_ft#164L,foo#165,gps_code#166,iata_code#167,ident#168,iso_country#169,iso_region#170,local_code#171,municipality#172,name#173,ts#174,type#175] ElasticsearchRelation(Map(es.nodes -> localhost:9200, es.batch.write.refresh -> false, es.nodes.wan.only -> true, es.resource -> airports-*),org.apache.spark.sql.SQLContext@4973fb7d,None)
+    +- Relation [continent#161,coordinates#162,date#163L,elevation_ft#164L,foo#165,gps_code#166,iata_code#167,ident#168,iso_country#169,iso_region#170,local_code#171,municipality#172,name#173,ts#174,type#175] ElasticsearchRelation(Map(es.nodes -> localhost:9200, es.batch.write.refresh -> false, es.nodes.wan.only -> true, es.resource -> airports-*),org.apache.spark.sql.SQLContext@d012e18,None)
 
     == Analyzed Logical Plan ==
     continent: string, coordinates: string, date: bigint, elevation_ft: bigint, foo: string, gps_code: string, iata_code: string, ident: string, iso_country: string, iso_region: string, local_code: string, municipality: string, name: string, ts: timestamp, type: string
     Filter Contains(iso_region#170, RU)
-    +- Relation [continent#161,coordinates#162,date#163L,elevation_ft#164L,foo#165,gps_code#166,iata_code#167,ident#168,iso_country#169,iso_region#170,local_code#171,municipality#172,name#173,ts#174,type#175] ElasticsearchRelation(Map(es.nodes -> localhost:9200, es.batch.write.refresh -> false, es.nodes.wan.only -> true, es.resource -> airports-*),org.apache.spark.sql.SQLContext@4973fb7d,None)
+    +- Relation [continent#161,coordinates#162,date#163L,elevation_ft#164L,foo#165,gps_code#166,iata_code#167,ident#168,iso_country#169,iso_region#170,local_code#171,municipality#172,name#173,ts#174,type#175] ElasticsearchRelation(Map(es.nodes -> localhost:9200, es.batch.write.refresh -> false, es.nodes.wan.only -> true, es.resource -> airports-*),org.apache.spark.sql.SQLContext@d012e18,None)
 
     == Optimized Logical Plan ==
     Filter (isnotnull(iso_region#170) AND Contains(iso_region#170, RU))
-    +- Relation [continent#161,coordinates#162,date#163L,elevation_ft#164L,foo#165,gps_code#166,iata_code#167,ident#168,iso_country#169,iso_region#170,local_code#171,municipality#172,name#173,ts#174,type#175] ElasticsearchRelation(Map(es.nodes -> localhost:9200, es.batch.write.refresh -> false, es.nodes.wan.only -> true, es.resource -> airports-*),org.apache.spark.sql.SQLContext@4973fb7d,None)
+    +- Relation [continent#161,coordinates#162,date#163L,elevation_ft#164L,foo#165,gps_code#166,iata_code#167,ident#168,iso_country#169,iso_region#170,local_code#171,municipality#172,name#173,ts#174,type#175] ElasticsearchRelation(Map(es.nodes -> localhost:9200, es.batch.write.refresh -> false, es.nodes.wan.only -> true, es.resource -> airports-*),org.apache.spark.sql.SQLContext@d012e18,None)
 
     == Physical Plan ==
     *(1) Filter (isnotnull(iso_region#170) AND Contains(iso_region#170, RU))
     // PushedFilters: [IsNotNull(iso_region), StringContains(iso_region,RU)]
-    +- *(1) Scan ElasticsearchRelation(Map(es.nodes -> localhost:9200, es.batch.write.refresh -> false, es.nodes.wan.only -> true, es.resource -> airports-*),org.apache.spark.sql.SQLContext@4973fb7d,None) [continent#161,coordinates#162,date#163L,elevation_ft#164L,foo#165,gps_code#166,iata_code#167,ident#168,iso_country#169,iso_region#170,local_code#171,municipality#172,name#173,ts#174,type#175] PushedFilters: [IsNotNull(iso_region), StringContains(iso_region,RU)], ReadSchema: struct<continent:string,coordinates:string,date:bigint,elevation_ft:bigint,foo:string,gps_code:st...
+    +- *(1) Scan ElasticsearchRelation(Map(es.nodes -> localhost:9200, es.batch.write.refresh -> false, es.nodes.wan.only -> true, es.resource -> airports-*),org.apache.spark.sql.SQLContext@d012e18,None) [continent#161,coordinates#162,date#163L,elevation_ft#164L,foo#165,gps_code#166,iata_code#167,ident#168,iso_country#169,iso_region#170,local_code#171,municipality#172,name#173,ts#174,type#175] PushedFilters: [IsNotNull(iso_region), StringContains(iso_region,RU)], ReadSchema: struct<continent:string,coordinates:string,date:bigint,elevation_ft:bigint,foo:string,gps_code:st...
    */
 
   esDf
@@ -144,21 +145,21 @@ object Datasource_3 extends App {
   /*
     == Parsed Logical Plan ==
     'Filter (('ts >= cast(2020-06-01 16:57:30.000 as timestamp)) AND ('ts <= cast(2020-06-01 16:59:30.000 as timestamp)))
-    +- Relation [continent#161,coordinates#162,date#163L,elevation_ft#164L,foo#165,gps_code#166,iata_code#167,ident#168,iso_country#169,iso_region#170,local_code#171,municipality#172,name#173,ts#174,type#175] ElasticsearchRelation(Map(es.nodes -> localhost:9200, es.batch.write.refresh -> false, es.nodes.wan.only -> true, es.resource -> airports-*),org.apache.spark.sql.SQLContext@4973fb7d,None)
+    +- Relation [continent#161,coordinates#162,date#163L,elevation_ft#164L,foo#165,gps_code#166,iata_code#167,ident#168,iso_country#169,iso_region#170,local_code#171,municipality#172,name#173,ts#174,type#175] ElasticsearchRelation(Map(es.nodes -> localhost:9200, es.batch.write.refresh -> false, es.nodes.wan.only -> true, es.resource -> airports-*),org.apache.spark.sql.SQLContext@d012e18,None)
 
     == Analyzed Logical Plan ==
     continent: string, coordinates: string, date: bigint, elevation_ft: bigint, foo: string, gps_code: string, iata_code: string, ident: string, iso_country: string, iso_region: string, local_code: string, municipality: string, name: string, ts: timestamp, type: string
     Filter ((ts#174 >= cast(2020-06-01 16:57:30.000 as timestamp)) AND (ts#174 <= cast(2020-06-01 16:59:30.000 as timestamp)))
-    +- Relation [continent#161,coordinates#162,date#163L,elevation_ft#164L,foo#165,gps_code#166,iata_code#167,ident#168,iso_country#169,iso_region#170,local_code#171,municipality#172,name#173,ts#174,type#175] ElasticsearchRelation(Map(es.nodes -> localhost:9200, es.batch.write.refresh -> false, es.nodes.wan.only -> true, es.resource -> airports-*),org.apache.spark.sql.SQLContext@4973fb7d,None)
+    +- Relation [continent#161,coordinates#162,date#163L,elevation_ft#164L,foo#165,gps_code#166,iata_code#167,ident#168,iso_country#169,iso_region#170,local_code#171,municipality#172,name#173,ts#174,type#175] ElasticsearchRelation(Map(es.nodes -> localhost:9200, es.batch.write.refresh -> false, es.nodes.wan.only -> true, es.resource -> airports-*),org.apache.spark.sql.SQLContext@d012e18,None)
 
     == Optimized Logical Plan ==
     Filter (isnotnull(ts#174) AND ((ts#174 >= 2020-06-01 16:57:30) AND (ts#174 <= 2020-06-01 16:59:30)))
-    +- Relation [continent#161,coordinates#162,date#163L,elevation_ft#164L,foo#165,gps_code#166,iata_code#167,ident#168,iso_country#169,iso_region#170,local_code#171,municipality#172,name#173,ts#174,type#175] ElasticsearchRelation(Map(es.nodes -> localhost:9200, es.batch.write.refresh -> false, es.nodes.wan.only -> true, es.resource -> airports-*),org.apache.spark.sql.SQLContext@4973fb7d,None)
+    +- Relation [continent#161,coordinates#162,date#163L,elevation_ft#164L,foo#165,gps_code#166,iata_code#167,ident#168,iso_country#169,iso_region#170,local_code#171,municipality#172,name#173,ts#174,type#175] ElasticsearchRelation(Map(es.nodes -> localhost:9200, es.batch.write.refresh -> false, es.nodes.wan.only -> true, es.resource -> airports-*),org.apache.spark.sql.SQLContext@d012e18,None)
 
     == Physical Plan ==
     *(1) Filter ((isnotnull(ts#174) AND (ts#174 >= 2020-06-01 16:57:30)) AND (ts#174 <= 2020-06-01 16:59:30))
     // PushedFilters: [IsNotNull(ts), GreaterThanOrEqual(ts,2020-06-01 16:57:30.0), LessThanOrEqual(ts,2020-06-01 16:59...
-    +- *(1) Scan ElasticsearchRelation(Map(es.nodes -> localhost:9200, es.batch.write.refresh -> false, es.nodes.wan.only -> true, es.resource -> airports-*),org.apache.spark.sql.SQLContext@4973fb7d,None) [continent#161,coordinates#162,date#163L,elevation_ft#164L,foo#165,gps_code#166,iata_code#167,ident#168,iso_country#169,iso_region#170,local_code#171,municipality#172,name#173,ts#174,type#175] PushedFilters: [IsNotNull(ts), GreaterThanOrEqual(ts,2020-06-01 16:57:30.0), LessThanOrEqual(ts,2020-06-01 16:59..., ReadSchema: struct<continent:string,coordinates:string,date:bigint,elevation_ft:bigint,foo:string,gps_code:st...
+    +- *(1) Scan ElasticsearchRelation(Map(es.nodes -> localhost:9200, es.batch.write.refresh -> false, es.nodes.wan.only -> true, es.resource -> airports-*),org.apache.spark.sql.SQLContext@d012e18,None) [continent#161,coordinates#162,date#163L,elevation_ft#164L,foo#165,gps_code#166,iata_code#167,ident#168,iso_country#169,iso_region#170,local_code#171,municipality#172,name#173,ts#174,type#175] PushedFilters: [IsNotNull(ts), GreaterThanOrEqual(ts,2020-06-01 16:57:30.0), LessThanOrEqual(ts,2020-06-01 16:59..., ReadSchema: struct<continent:string,coordinates:string,date:bigint,elevation_ft:bigint,foo:string,gps_code:st...
    */
 
 

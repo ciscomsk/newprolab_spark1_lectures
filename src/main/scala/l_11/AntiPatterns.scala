@@ -76,7 +76,7 @@ object AntiPatterns extends App {
       .agg(max($"elevation_ft").alias("height"))
 //      .repartition(1)
       .repartition(2)
-      /** Если значения в row группах паркета хранятся отсортированными - меньше объем + быстрее чтение */
+      /** если значения в row группах паркета хранятся отсортированными - меньше объем + быстрее чтение */
 //      .orderBy($"height".asc)
       .sortWithinPartitions($"height".asc)
 
@@ -316,7 +316,7 @@ object AntiPatterns extends App {
 
 //    testDf1.show()
   }  // 10139 ms
-  /** В Spark 2.х ~ 30c */
+  /** В Spark 2.х ~30 c */
   println()
 
   spark.time {
@@ -352,7 +352,7 @@ object AntiPatterns extends App {
 
 //    testDf2.show()
   }  // 10130 ms
-  /** В Spark 2.х ~ 30c */
+  /** В Spark 2.х ~30 c */
   println()
 
   /** Решение - asNondeterministic */
@@ -391,7 +391,7 @@ object AntiPatterns extends App {
 
 //    testDf3.show()
   }  // 10138 ms
-  /** В Spark 2.х ~ 10 c */
+  /** В Spark 2.х ~10 c */
   println()
 
 
@@ -403,7 +403,7 @@ object AntiPatterns extends App {
         .withColumn("foo", mega_udf2())
         .coalesce(1)
     /**
-     * Фактически (несмотря на правильный физический план) превращается  в
+     * фактически (несмотря на правильный физический план) превращается  в
      *
      * spark.
      *   .range(0, 10, 1, 2)

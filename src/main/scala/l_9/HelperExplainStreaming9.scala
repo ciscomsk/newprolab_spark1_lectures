@@ -7,7 +7,7 @@ import org.apache.spark.sql.streaming.{DataStreamWriter, Trigger}
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{Column, DataFrame, Dataset, Row, SparkSession}
 
-object HelperExplain_Streaming_9 extends App {
+object HelperExplainStreaming9 extends App {
   val spark: SparkSession =
     SparkSession
       .builder()

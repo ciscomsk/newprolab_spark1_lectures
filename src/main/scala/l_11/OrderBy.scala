@@ -1,9 +1,7 @@
 package l_11
 
-import org.apache.spark.sql.{DataFrame, Dataset, SaveMode, SparkSession}
+import org.apache.spark.sql.{DataFrame, Dataset, Row, SaveMode, SparkSession}
 import org.apache.spark.sql.functions.{col, rand, round}
-
-import java.lang
 
 object OrderBy extends App {
   val spark: SparkSession =
@@ -46,7 +44,7 @@ object OrderBy extends App {
 //  val readDf = spark.read.parquet("src/main/resources/l_11/sort/order_by")
 
   /**  */
-  val sortWithinPartitionsRes =
+  val sortWithinPartitionsRes: Dataset[Row] =
     testDf
       .repartition(2)
       .sortWithinPartitions("id", "value")
@@ -58,7 +56,7 @@ object OrderBy extends App {
     .mode(SaveMode.Overwrite)
     .parquet("src/main/resources/l_11/sort/sort_within_partitions")
 
-  val readDf =
+  val readDf: Dataset[Row] =
     spark
       .read
       .parquet("src/main/resources/l_11/sort/sort_within_partitions")
@@ -68,6 +66,5 @@ object OrderBy extends App {
     .write
     .mode(SaveMode.Overwrite)
     .parquet("src/main/resources/l_11/sort/saved_again")
-
 
 }

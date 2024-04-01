@@ -31,7 +31,7 @@ object Streaming_3 extends App {
   import spark.implicits._
 
   /**
-   * https://github.com/confluentinc/cp-docker-images/issues/801
+   * //https://github.com/confluentinc/cp-docker-images/issues/801
    *
    * запуск в докере:
    * docker run --rm -p 2181:2181 --name=test_zoo -e ZOOKEEPER_CLIENT_PORT=2181 confluentinc/cp-zookeeper
@@ -113,8 +113,8 @@ object Streaming_3 extends App {
      |-- timestampType: integer (nullable = true)
    */
   kafkaStaticDf.cache()
-  println(kafkaStaticDf.count()) // == 224
-  kafkaStaticDf.select(max(col("offset"))).show() // == 223
+  println(kafkaStaticDf.count()) // == 96 (0 + 95)
+  kafkaStaticDf.select(max(col("offset"))).show() // == 95
   kafkaStaticDf.show()
 
   /** Парсинг данных из Kafka */
@@ -131,19 +131,20 @@ object Streaming_3 extends App {
    */
   jsonDs.show(truncate = false)
 
-  val parsedDf: DataFrame =
+  val parsedDf1: DataFrame =
     spark
       .read
       .json(jsonDs)
 
-  parsedDf.printSchema()
+  println("parsedDf1: ")
+  parsedDf1.printSchema()
   /*
     root
      |-- ident: string (nullable = true)
      |-- timestamp: string (nullable = true)
      |-- value: long (nullable = true)
    */
-  parsedDf.show(truncate = false)
+  parsedDf1.show(truncate = false)
 
   /**
    * v2 - более производительное решение
@@ -183,18 +184,18 @@ object Streaming_3 extends App {
       "subscribe" -> "test_topic0",
       /** возьмем 2 случайных оффсета */
       /** если читается больше 1 топика - оффсеты нужно указать для всех */
-      "startingOffsets" -> """ { "test_topic0": { "0": 200 } } """,
+      "startingOffsets" -> """ { "test_topic0": { "0": 90 } } """,
       /**
-       * !!! не включая 224-й оффсет
+       * !!! не включая 96-й оффсет
        * https://kafka.apache.org/35/javadoc/org/apache/kafka/clients/consumer/KafkaConsumer.html
        * endOffsets - end offset is the high watermark ...
        *
-       * если указать 225 - будет висеть, пока не будет записано еще 1 сообщение
+       * если указать 97 - будет висеть, пока не будет записано еще 1 сообщение
        *
        * если указать startingOffsets = 0 и endingOffsets = 0 - будет пустой DF
        * если указать startingOffsets = 0 и endingOffsets = 1 - будет DF с 1-й строкой (с нулевым оффсетом)
        */
-      "endingOffsets" -> """ { "test_topic0": { "0": 224 } } """
+      "endingOffsets" -> """ { "test_topic0": { "0": 96 } } """
     )
 
   val kafkaStaticWithOffsetsDf: DataFrame =
@@ -246,7 +247,7 @@ object Streaming_3 extends App {
       .map(tpi => new TopicPartition(topicDesc.name(), tpi.partition()))
       .asJavaCollection
 
-  Using(new KafkaConsumer[String, String](consumerProps)) { consumer =>
+  Using.resource(new KafkaConsumer[String, String](consumerProps)) { consumer =>
     println(s"endOffsets: ${consumer.endOffsets(topicPartitions)}") // endOffsets: {test_topic0-0=224}
   }
 
