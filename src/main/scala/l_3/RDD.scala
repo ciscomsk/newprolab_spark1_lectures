@@ -27,6 +27,8 @@ object RDD extends App {
 
   /** RDD[T] */
   /*
+    package org.apache.spark.rdd
+
     abstract class RDD[T: ClassTag](
       @transient private var _sc: SparkContext,
       @transient private var deps: Seq[Dependency[_]]
@@ -94,7 +96,7 @@ object RDD extends App {
 
   /**
    * take - передача N первых элементов RDD на драйвер
-   * элементы берутся из одной партиции - если в ней хватает элементов, если нет - будут вычитываться следующие партиции => оптимизация
+   * элементы берутся из одной партиции - если в ней хватает элементов, если нет - будут вычитываться следующие партиции -> оптимизация
    */
   val twoFirstElements: Array[String] = startsWithM.take(2)
   println(s"Two first elements of the RDD are: ${twoFirstElements.mkString(", ")}")
@@ -112,6 +114,8 @@ object RDD extends App {
 
 
   /*
+    package scala.collection.immutable
+
     final class WrappedString(private val self: String)
       extends AbstractSeq[Char]
       with IndexedSeq[Char]
@@ -119,7 +123,7 @@ object RDD extends App {
       with Serializable
 
     String ~= IndexedSeq[Char]
-    "String".toVector == Vector(S, t, r, i, n, g)
+    "String".toVector = Vector(S, t, r, i, n, g)
    */
   val mappedList: List[Vector[Char]] = List("String").map(_.toVector)
   println(s"List(\"String\").map(_.toVector): $mappedList")
@@ -132,7 +136,7 @@ object RDD extends App {
   val mappedCollect: Array[Vector[Char]] = mappedRdd.collect()
   println(s"rdd.map(_.toVector): ${mappedCollect.mkString(", ")}")
 
-  val flatMappedRdd: RDD[Char] = rdd.flatMap(_.toLowerCase) // == rdd.map(_.toLowerCase).flatten
+  val flatMappedRdd: RDD[Char] = rdd.flatMap(_.toLowerCase) // = rdd.map(_.toLowerCase).flatten
   flatMappedRdd.cache()
   flatMappedRdd.count()
   val flatMappedCollect: Array[Char] = flatMappedRdd.collect()
@@ -142,7 +146,7 @@ object RDD extends App {
   /**
    * distinct - двухэтапный transformation
    * 1. distinct выполняется в каждой партиции
-   * 2. выполняется шафл(== репартиционирование/перемешивание) - данные перемещаются в новые партиции по значению хэша
+   * 2. выполняется шафл(= репартиционирование/перемешивание) - данные перемещаются в новые партиции по значению хэша
    * 3. повторное выполнение distinct в каждой партиции
    */
   val uniqueLettersRdd: RDD[Char] =
@@ -210,15 +214,16 @@ object RDD extends App {
   println()
 
   val opt1: Option[Int] = Some(1)
-//  val opt2: Option[Int] = Some(2)
-  val opt2: Option[Int] = None
+
+  val opt2: Option[Int] = Some(2)
+//  val opt2: Option[Int] = None
 
   val forOpt: Option[Int] =
     for {
       v1 <- opt1
       v2 <- opt2
     } yield v1 + v2
-  // ==
+  // =
   opt1.flatMap { v1 =>
     opt2.map(v2 => v2 + v1)
   }
@@ -228,6 +233,9 @@ object RDD extends App {
   // safe get value - v1 - getOrElse
   println(None.getOrElse(0))
   println(None.contains(3))
+  println()
+
+  println(s"opt2: $opt2")
   println(opt2.map(_ + 1))
   println(opt2.contains(2))
   println(opt2.contains(3))
@@ -250,8 +258,8 @@ object RDD extends App {
       .parallelize(favoriteLetters)
       .map(el => (el, 1))
 
-  // letterCountRdd == (p,1), ( ,1), (a,2), (i,2), (y,1), (r,3), (s,2), (k,1), (c,1), (d,3), (l,1), (e,1), (m,2), (n,3), (w,2), (o,5)
-  // favLetRdd == (a,1), (d,1), (o,1)
+  // letterCountRdd = (p,1), ( ,1), (a,2), (i,2), (y,1), (r,3), (s,2), (k,1), (c,1), (d,3), (l,1), (e,1), (m,2), (n,3), (w,2), (o,5)
+  // favLetRdd = (a,1), (d,1), (o,1)
   // (Int, Option[Int]) - Option[Int] т.к. left join
   val joinedRdd: RDD[(Char, (Int, Option[Int]))] = letterCountRdd.leftOuterJoin(favLetRdd)
   joinedRdd.cache()
@@ -297,33 +305,33 @@ object RDD extends App {
   /*
     map
 
-    def f(el: A): B = _
-    rdd2.map(f)
-    =>
+    def func(el: A): B = _
+    rdd2.map(func)
+    ->
     partition0: Iterator[A]
     partition1: Iterator[A]
     partition2: Iterator[A]
     partition3: Iterator[A]
-    =>
+    ->
     в каждой партиции будет выполнен цикл:
     while (partition.hasNext) {
-      f(partition.next())
+      func(partition.next())
     }
    */
 
   /*
     mapPartition
 
-    def f(part: Iterator[A]): Iterator[B] = _
-    rdd2.mapPartitions(f) { (p: Iterator[A} => ... }
-    =>
-    partition0: Iterator[T]
-    partition1: Iterator[T]
-    partition2: Iterator[T]
-    partition3: Iterator[T]
-    =>
+    def func(part: Iterator[A]): Iterator[B] = _
+    rdd2.mapPartitions(func) { (p: Iterator[A} => ... }
+    ->
+    partition0: Iterator[A]
+    partition1: Iterator[A]
+    partition2: Iterator[A]
+    partition3: Iterator[A]
+    ->
     на каждой партиции будет выполнена функция:
-    f(p)
+    func(p)
    */
 
   /**
@@ -369,7 +377,7 @@ object RDD extends App {
    * с помощью метода textFile можно читать файлы/директории с файлами/архивы
    */
   val rdd3: RDD[String] = sc.textFile("src/main/resources/l_3/airport-codes.csv")
-  println(rdd3.getNumPartitions)
+  println(s"rdd3.getNumPartitions: ${rdd3.getNumPartitions}")
   rdd3.cache()
   rdd3.count()
 
@@ -406,7 +414,7 @@ object RDD extends App {
        * при работе в local mode - будет выполняться ОЧЕНЬ долго
        */
 //      .filter(_ != rdd3.first())
-      .map(_.replaceAll("\"", "")) // \" == символ "
+      .map(_.replaceAll("\"", "")) // \" = символ "
 
   noHeaderRdd.cache()
   noHeaderRdd.count()
@@ -449,7 +457,7 @@ object RDD extends App {
    *
    * err: scala.MatchError - означает, что размер массива полученного после операции split != количеству переменных,
    * указанных в распаковке val Array(...) = airportArr
-   * => используем Option
+   * -> используем Option
    */
 //  airportRdd.count()
 
@@ -479,7 +487,7 @@ object RDD extends App {
           )
         )
 
-      case _ => Option.empty[Airport] // == None
+      case _ => Option.empty[Airport] // = None
     }
   }
 
@@ -491,13 +499,13 @@ object RDD extends App {
   println()
 
   println(s"airportOptRdd.getNumPartitions: ${airportOptRdd.getNumPartitions}")
-  println(s"airportOptRdd.count(): ${airportOptRdd.count()}") // == 55113
+  println(s"airportOptRdd.count(): ${airportOptRdd.count()}") // = 55113
   airportOptRdd.unpersist()
   println()
 
   /** flatMap в данном случае отфильтрует None */
   val airportRdd2: RDD[Airport] = noHeaderRdd.flatMap(toAirportOpt)
-  println(s"airportRdd2.count(): ${airportRdd2.count()}") // == 54944
+  println(s"airportRdd2.count(): ${airportRdd2.count()}") // = 54944
   println()
 
   case class AirportTyped(
@@ -546,8 +554,8 @@ object RDD extends App {
   val airportTypedRdd: RDD[AirportTyped] = noHeaderRdd.flatMap(toAirportTyped)
 
   /**
-   * err: NumberFormatException - не все строки приводятся к числам
-   * => используем Try
+   * err: java.lang.NumberFormatException - не все строки приводятся к числам
+   * -> используем Try
    */
 //  println(airportTypedRdd.count())
 
@@ -600,7 +608,7 @@ object RDD extends App {
           ident = ident,
           `type` = aType,
           name = name,
-          elevationFt = Try { elevationFt.toInt }.toOption,
+          elevationFt = Try(elevationFt.toInt).toOption,
           continent = continent,
           isoCountry = isoCountry,
           isoRegion = isoRegion,
@@ -608,8 +616,8 @@ object RDD extends App {
           gpsCode = gpsCode,
           iataCode = iataCode,
           localCode = localCode,
-          longitude = Try { longitude.toDouble }.toOption,
-          latitude = Try {latitude.toDouble }.toOption
+          longitude = Try(longitude.toDouble).toOption,
+          latitude = Try(latitude.toDouble).toOption
         ))
 
       case _ => None
@@ -629,7 +637,7 @@ object RDD extends App {
   pairAirportRdd.cache()
   pairAirportRdd.count()
   airportFinalRdd.unpersist()
-  println(s"pairAirport.first(): ${pairAirportRdd.first()}") // == (US,Some(11))
+  println(s"pairAirport.first(): ${pairAirportRdd.first()}") // = (US,Some(11))
 
 
   /** нужно перейти от Option[Int] к Int для удобного сравнения */
@@ -648,16 +656,16 @@ object RDD extends App {
       case (k, None) => (k, Int.MinValue)
     }
 
-  println(s"fixedElevation1.first(): ${fixedElevationRdd1.first()}") // == (US,11)
+  println(s"fixedElevation1.first(): ${fixedElevationRdd1.first()}") // = (US,11)
   println()
 
   val result: Array[(String, Int)] =
     fixedElevationRdd1
-      .reduceByKey(Math.max) // Math.max == (x, y) => if (x > y) x else y
+      .reduceByKey(Math.max) // Math.max = (x, y) => if (x > y) x else y
       .collect()
-      .sortBy { case (_, elevationFt) => -elevationFt } // - == desc
-      // ==
-//      .sortBy(-_._2) // -_._2 == desc
+      .sortBy { case (_, elevationFt) => -elevationFt } // -elevationFt = desc
+      // =
+//      .sortBy(-_._2) // -_._2 = desc
 
   fixedElevationRdd1.unpersist()
   result.take(10).foreach(println)
@@ -725,7 +733,7 @@ object RDD extends App {
   println(s"uiRes: $uiRes")
 
 
-  Thread.sleep(1000000)
+  Thread.sleep(1_000_000)
 
   /** Освобождаем ресурсы кластера */
   spark.stop()

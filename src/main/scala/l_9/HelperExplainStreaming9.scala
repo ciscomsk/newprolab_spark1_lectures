@@ -100,5 +100,5 @@ object HelperExplainStreaming9 extends App {
    */
 
 
-  Thread.sleep(100000)
+  Thread.sleep(1_000_000)
 }

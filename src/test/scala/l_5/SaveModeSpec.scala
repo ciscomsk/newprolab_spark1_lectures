@@ -33,7 +33,7 @@ object SaveModeSpec extends App {
 //      .partitionBy("iso_country")
 //      .save("src/test/resources/l_5/airports")
 
-  val diffFormats =
+  val diffFormats: DataFrame =
     spark
       .read
       .format("json")

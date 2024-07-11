@@ -104,8 +104,8 @@ object Streaming_3 extends App {
   kafkaStaticDf.printSchema()
   /*
     root
-     |-- key: binary (nullable = true)
-     |-- value: binary (nullable = true)
+     |-- key: binary (nullable = true) // BINARY
+     |-- value: binary (nullable = true) // BINARY
      |-- topic: string (nullable = true)
      |-- partition: integer (nullable = true)
      |-- offset: long (nullable = true)
@@ -113,12 +113,12 @@ object Streaming_3 extends App {
      |-- timestampType: integer (nullable = true)
    */
   kafkaStaticDf.cache()
-  println(kafkaStaticDf.count()) // == 96 (0 + 95)
-  kafkaStaticDf.select(max(col("offset"))).show() // == 95
+  println(kafkaStaticDf.count()) // = 1008 (0 + 1007)
+  kafkaStaticDf.select(max(col("offset"))).show() // = 1007
   kafkaStaticDf.show()
 
   /** Парсинг данных из Kafka */
-  /** v1 - дорого + не подходит для стримов */
+  /** v1 - дорого + не подходит для стримов(?) */
   val jsonDs: Dataset[String] =
     kafkaStaticDf
       .select($"value".cast(StringType))
@@ -148,7 +148,7 @@ object Streaming_3 extends App {
 
   /**
    * v2 - более производительное решение
-   * .cast(StringType) == BinaryType -> StringType
+   * .cast(StringType) = BinaryType -> StringType
    */
   val jsonDf2: DataFrame = kafkaStaticDf.select($"value".cast(StringType).alias("value"))
   val schema: StructType = identParquetDf.schema
@@ -184,18 +184,18 @@ object Streaming_3 extends App {
       "subscribe" -> "test_topic0",
       /** возьмем 2 случайных оффсета */
       /** если читается больше 1 топика - оффсеты нужно указать для всех */
-      "startingOffsets" -> """ { "test_topic0": { "0": 90 } } """,
+      "startingOffsets" -> """ { "test_topic0": { "0": 1000 } } """,
       /**
-       * !!! не включая 96-й оффсет
-       * https://kafka.apache.org/35/javadoc/org/apache/kafka/clients/consumer/KafkaConsumer.html
+       * !!! не включая 1008-й оффсет
+       * https://kafka.apache.org/37/javadoc/org/apache/kafka/clients/consumer/KafkaConsumer.html
        * endOffsets - end offset is the high watermark ...
        *
-       * если указать 97 - будет висеть, пока не будет записано еще 1 сообщение
+       * если указать 1009 - будет висеть, пока не будет записано еще 1 сообщение
        *
        * если указать startingOffsets = 0 и endingOffsets = 0 - будет пустой DF
        * если указать startingOffsets = 0 и endingOffsets = 1 - будет DF с 1-й строкой (с нулевым оффсетом)
        */
-      "endingOffsets" -> """ { "test_topic0": { "0": 96 } } """
+      "endingOffsets" -> """ { "test_topic0": { "0": 1008 } } """
     )
 
   val kafkaStaticWithOffsetsDf: DataFrame =
@@ -248,11 +248,11 @@ object Streaming_3 extends App {
       .asJavaCollection
 
   Using.resource(new KafkaConsumer[String, String](consumerProps)) { consumer =>
-    println(s"endOffsets: ${consumer.endOffsets(topicPartitions)}") // endOffsets: {test_topic0-0=224}
+    println(s"endOffsets: ${consumer.endOffsets(topicPartitions)}") // endOffsets: {test_topic0-0=1008}
   }
 
 
-  Thread.sleep(1000000)
+  Thread.sleep(1_000_000)
 
   spark.stop()
 }

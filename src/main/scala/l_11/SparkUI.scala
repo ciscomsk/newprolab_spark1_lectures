@@ -5,11 +5,6 @@ import org.apache.spark.SparkContext
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 object SparkUI extends App {
-  // не работает в Spark 3.4.0
-//  Logger
-//    .getLogger("org")
-//    .setLevel(Level.ERROR)
-
   val spark: SparkSession =
     SparkSession
       .builder()
@@ -18,7 +13,7 @@ object SparkUI extends App {
       .getOrCreate()
 
   val sc: SparkContext = spark.sparkContext
-  sc.setLogLevel("ERROR")
+//  sc.setLogLevel("ERROR")
 
   import spark.implicits._
 
@@ -27,6 +22,11 @@ object SparkUI extends App {
   println(sparkUiUrl)
   println(appId)
   println()
+
+  /*
+    curl -s http://192.168.1.252:4043/api/v1/applications
+    curl -s http://192.168.1.252:4043/api/v1/applications/local-1716801784573
+   */
 
   val csvOptions: Map[String, String] = Map("header" -> "true", "inferSchema" -> "true")
 
@@ -60,14 +60,14 @@ object SparkUI extends App {
 
   airportsDf
     /**
-     * Проекция колонки type будет вынесена на уровень чтения источника
+     * проекция колонки type будет вынесена на уровень чтения источника
      * (1) Scan csv - ReadSchema: struct<type:string>
      */
     .groupBy($"type")
     .count()
     .count()
 
-  /** !!! Кэширование - ленивая операция, выполняется после первого action */
+  /** !!! кэширование - ленивая операция, выполняется после первого action */
   airportsDf.cache()
 
   /** !!! Partial caching - закэшируется только 1 партиция */
@@ -79,7 +79,7 @@ object SparkUI extends App {
 
 
   println(sc.uiWebUrl)
-  Thread.sleep(1000000)
+  Thread.sleep(1_000_000)
 
   spark.stop()
 }

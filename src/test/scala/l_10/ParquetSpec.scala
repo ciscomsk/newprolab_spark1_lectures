@@ -8,10 +8,10 @@ import org.scalatest.matchers.should
 
 import java.lang
 
-/** sbt_shell => testOnly l_10.ParquetSpec */
+/** sbt_shell -> testOnly l_10.ParquetSpec */
 class ParquetSpec extends AnyFlatSpec with should.Matchers with SparkSupport {
   "Parquet" should "be" in {
-    val df: Dataset[lang.Long] = spark.range(0, 10000, 1, 10)
+    val df: Dataset[lang.Long] = spark.range(0, 10_000, 1, 10)
 
 //    df
 //      .write
@@ -23,6 +23,8 @@ class ParquetSpec extends AnyFlatSpec with should.Matchers with SparkSupport {
         .read
         .parquet("src/main/resources/l_10/test.parquet")
 
+    println(dataDf.rdd.getNumPartitions)
+    println()
     dataDf.printSchema()
     dataDf.show()
 
@@ -31,7 +33,8 @@ class ParquetSpec extends AnyFlatSpec with should.Matchers with SparkSupport {
         .rdd
         .partitions
 
-    partitions.foreach(println)  // FilePartition(0,[Lorg.apache.spark.sql.execution.datasources.PartitionedFile;@3555d804)...
+    partitions.foreach(println)  // FilePartition(0,[Lorg.apache.spark.sql.execution.datasources.PartitionedFile;@7b6e196e)
+    println()
     println(partitions.head.getClass.getCanonicalName)  // org.apache.spark.sql.execution.datasources.FilePartition
     println()
 
@@ -41,8 +44,10 @@ class ParquetSpec extends AnyFlatSpec with should.Matchers with SparkSupport {
         .map(_.files.mkString("\n"))
 
     arr.foreach(println)
-    // path: file:///home/mike/_learn/repos/newprolab/spark_1/lectures/src/main/resources/l_10/test.parquet/part-00005-e8a807fd-1288-4671-8923-cdc555d7292b-c000.snappy.parquet, range: 0-4491, partition values: [empty row]...
-    println(arr.head.getClass.getCanonicalName)  // java.lang.String
+    // path: file:///home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/resources/l_10/test.parquet/part-00005-3b6804ff-9473-4153-b1bb-b987d4099d31-c000.snappy.parquet, range: 0-4491, partition values: [empty row]
+    println()
+
+    println(arr.head.getClass.getCanonicalName) // java.lang.String
   }
 
 }

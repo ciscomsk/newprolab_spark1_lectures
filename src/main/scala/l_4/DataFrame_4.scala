@@ -25,17 +25,17 @@ object DataFrame_4 extends App {
 
   /** Built-in functions */
   val df: Dataset[lang.Long] = spark.range(0, 10)
-  val newColFunc: Column = pmod(col("id"), lit(2))
-  // ==
-  val newColExpr: Column = expr("pmod(id, 2)")
+  val colFunc: Column = pmod(col("id"), lit(2))
+  // =
+  val exprFunc: Column = expr("pmod(id, 2)")
   println()
 
   df
-    .withColumn("pmod", newColFunc)
+    .withColumn("pmod", colFunc)
     .show()
 
   df
-    .withColumn("pmod", newColExpr)
+    .withColumn("pmod", exprFunc)
     .show()
 
   println()
@@ -45,7 +45,7 @@ object DataFrame_4 extends App {
    * User-defined functions
    * при написании udf можно использовать монады - Option[T]/Try[T]
    *
-   * при необходимости работать с DB/IO в udf - @transient lazy val pattern
+   * при необходимости работать с DB/IO(диск/сеть) в udf - @transient lazy val pattern
    */
   val plusOne: UserDefinedFunction = udf { (value: Long) => value + 1 }
 
@@ -59,7 +59,7 @@ object DataFrame_4 extends App {
     .withColumn("hostname", hostname())
     .show(10, truncate = false)
 
-  /** !!! None => null в DF */
+  /** !!! None = null в DF */
   val divideTwoBy: UserDefinedFunction = udf { (inputValue: Long) => Try(2L / inputValue).toOption }
 
   val resultDf: DataFrame = df.withColumn("divideTwoBy", divideTwoBy(col("id")))
@@ -109,19 +109,20 @@ object DataFrame_4 extends App {
   println("innerJoinDf: ")
   innerJoinDf.show(5, truncate = false)
 
-  val leftJoinDf: DataFrame = airportsDf.join(innerJoinDf, Seq("iso_country", "type"), "left")
-
-  println("leftJoinDf: ")
-  leftJoinDf
-    .select(
+  val leftJoinDf: DataFrame =
+    airportsDf
+      .join(innerJoinDf, Seq("iso_country", "type"), "left")
+      .select(
       $"ident",
       $"iso_country",
       $"type",
       $"percent"
-    )
-    /** sample(0.2) - выборка 20% значений из разных партиций */
-    .sample(0.2)
-    .show(20, truncate = false)
+      )
+      /** sample(0.2) - выборка 20% значений из разных партиций */
+      .sample(0.2)
+
+  println("leftJoinDf: ")
+  leftJoinDf.show(20, truncate = false)
 
   Try {
     spark
@@ -137,7 +138,7 @@ object DataFrame_4 extends App {
 
   val joinCondition: Column =
     col("left_id") === col("right_id") and col("left_foo") === col("right_foo")
-  // ==
+  // =
   val joinConditionExpr: Column =
     expr("left.id = right.id and left.foo = right.foo")
 
@@ -175,18 +176,18 @@ object DataFrame_4 extends App {
       .withColumn("cnt_country_type", count("*").over(windowTypeCountry))
       .withColumn("percent", round(lit(100) * $"cnt_country_type" / $"cnt_country", 2))
 
-    res2Df.explain()
-    /*
-      == Physical Plan ==
-      AdaptiveSparkPlan isFinalPlan=false
-      +- Project [ident#90, type#91, name#92, elevation_ft#93, continent#94, iso_country#95, iso_region#96, municipality#97, gps_code#98, iata_code#99, local_code#100, coordinates#101, cnt_country#325L, cnt_country_type#341L, round((cast((100 * cnt_country_type#341L) as double) / cast(cnt_country#325L as double)), 2) AS percent#356]
-         +- Window [count(1) windowspecdefinition(iso_country#95, type#91, specifiedwindowframe(RowFrame, unboundedpreceding$(), unboundedfollowing$())) AS cnt_country_type#341L], [iso_country#95, type#91]
-            +- Sort [iso_country#95 ASC NULLS FIRST, type#91 ASC NULLS FIRST], false, 0
-               +- Window [count(1) windowspecdefinition(iso_country#95, specifiedwindowframe(RowFrame, unboundedpreceding$(), unboundedfollowing$())) AS cnt_country#325L], [iso_country#95]
-                  +- Sort [iso_country#95 ASC NULLS FIRST], false, 0
-                     +- Exchange hashpartitioning(iso_country#95, 200), ENSURE_REQUIREMENTS, [plan_id=751]
-                        +- FileScan csv [ident#90,type#91,name#92,elevation_ft#93,continent#94,iso_country#95,iso_region#96,municipality#97,gps_code#98,iata_code#99,local_code#100,coordinates#101] Batched: false, DataFilters: [], Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_country:string,...
-     */
+  res2Df.explain()
+  /*
+    == Physical Plan ==
+    AdaptiveSparkPlan isFinalPlan=false
+    +- Project [ident#90, type#91, name#92, elevation_ft#93, continent#94, iso_country#95, iso_region#96, municipality#97, gps_code#98, iata_code#99, local_code#100, coordinates#101, cnt_country#325L, cnt_country_type#341L, round((cast((100 * cnt_country_type#341L) as double) / cast(cnt_country#325L as double)), 2) AS percent#356]
+       +- Window [count(1) windowspecdefinition(iso_country#95, type#91, specifiedwindowframe(RowFrame, unboundedpreceding$(), unboundedfollowing$())) AS cnt_country_type#341L], [iso_country#95, type#91]
+          +- Sort [iso_country#95 ASC NULLS FIRST, type#91 ASC NULLS FIRST], false, 0
+             +- Window [count(1) windowspecdefinition(iso_country#95, specifiedwindowframe(RowFrame, unboundedpreceding$(), unboundedfollowing$())) AS cnt_country#325L], [iso_country#95]
+                +- Sort [iso_country#95 ASC NULLS FIRST], false, 0
+                   +- Exchange hashpartitioning(iso_country#95, 200), ENSURE_REQUIREMENTS, [plan_id=751]
+                      +- FileScan csv [ident#90,type#91,name#92,elevation_ft#93,continent#94,iso_country#95,iso_region#96,municipality#97,gps_code#98,iata_code#99,local_code#100,coordinates#101] Batched: false, DataFilters: [], Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_country:string,...
+   */
 
   res2Df
     .select(
@@ -225,21 +226,22 @@ object DataFrame_4 extends App {
   val cntCountryType: Column = count("*").over(windowTypeCountry).alias("cnt_country_type")
   val percent: Column = round(lit(100) * cntCountryType / cntCountry).alias("percent")
 
-  val res3Df: DataFrame = airportsDf.select($"*", percent)
+  val res3Df: DataFrame =
+    airportsDf
+      .select($"*", percent)
+      .select(
+        $"ident",
+        $"iso_country",
+        $"type",
+        $"percent"
+      )
+      .sample(0.2)
 
-  res3Df
-    .select(
-      $"ident",
-      $"iso_country",
-      $"type",
-      $"percent"
-    )
-    .sample(0.2)
-    .show(20, truncate = false)
+  res3Df.show(20, truncate = false)
 
 
   println(sc.uiWebUrl)
-  Thread.sleep(1000000)
+  Thread.sleep(1_000_000)
 
   spark.stop()
 }

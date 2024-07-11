@@ -8,7 +8,7 @@ import scala.language.postfixOps
 
 "some string" toUpperCase Locale.getDefault()  // ok
 
-//Some("a".toInt)
+//Some("a".toInt) // java.lang.NumberFormatException
 
-//Nil.head
-//Nil.tail
+//Nil.head // java.util.NoSuchElementException
+//Nil.tail // java.lang.UnsupportedOperationException

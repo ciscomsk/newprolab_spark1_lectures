@@ -46,5 +46,5 @@ object RepartitionTest extends App {
   repDf.explain()
 
   println(spark.sparkContext.uiWebUrl)
-  Thread.sleep(1000000)
+  Thread.sleep(1_000_000)
 }

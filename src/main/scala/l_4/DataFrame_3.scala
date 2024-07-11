@@ -77,16 +77,16 @@ object DataFrame_3 extends App {
     .show()
 
   val end1: Long = System.currentTimeMillis()
-  println(s"time1: ${(end1.toDouble - start1) / 1000}") // 1.761s
+  println(s"time1: ${(end1.toDouble - start1) / 1000}") // 1.781s
   println()
 
   /**
    * !!! cache/persist - ленивые операции
-   * => best practice - после cache/persist выполнять count - т.к. будут обработаны все партиции => все партиции попадут в кэш
+   * best practice: после cache/persist выполнять count - т.к. будут обработаны все партиции => все партиции попадут в кэш
    *
-   * !!! если после cache/persist будет show => будет обработана только 1 партиция => 1 партиция будет помещена в кэш
-   * т.е. часть данных будет в виде снэпшота в кэше, часть в источнике (csv-файл)
-   * => при обновлении данных в источнике теряется консистентность => partial caching (антипаттерн)
+   * !!! если после cache/persist будет show - будет обработана только 1 партиция => 1 партиция будет помещена в кэш
+   * т.е. часть данных будет в виде снэпшота в кэше, часть в источнике (в нашем случае - csv-файл)
+   * при обновлении данных в источнике теряется консистентность -> partial caching (антипаттерн)
    *
    * после окончания работы с закешированными данными необходимо выполнить unpersist - для очистки памяти
    */
@@ -106,7 +106,7 @@ object DataFrame_3 extends App {
     .show()
 
   val end2: Long = System.currentTimeMillis()
-  println(s"time2: ${(end2.toDouble - start2) / 1000}") // 0.613s
+  println(s"time2: ${(end2.toDouble - start2) / 1000}") // 0.472s
   onlyRuAndHighDs.unpersist()
   println()
 
@@ -118,14 +118,16 @@ object DataFrame_3 extends App {
    * 3. Spark сам будет принимать решение о моменте очистки кэша (не всегда эффективно)
    * 4. localcheckpoint - стирает граф выполнения до localcheckpoint
    */
+//  onlyRuAndHighDs.localCheckpoint()
 
   /**
    * checkpoint
    *
-   * сheckpoint - сериализует датафрейм и сохраняет на диск, с возможностью дальнейшего чтения (в т.ч. другим spark приложением)
-   * сheckpoint - проприетарный формат Spark => лучше сохранять данные в открытом формате (например - parquet)
-   * сheckpoint - стирает граф выполнения до сheckpoint
+   * checkpoint - сериализует датафрейм и сохраняет на диск, с возможностью дальнейшего чтения (в т.ч. другим Spark приложением)
+   * checkpoint - проприетарный формат Spark => лучше сохранять данные в открытом формате (например - parquet)
+   * checkpoint - стирает граф выполнения до checkpoint
    */
+//  onlyRuAndHighDs.checkpoint()
 
   /**
    * память, выделенная экзекьютору, делится на области:
@@ -142,7 +144,7 @@ object DataFrame_3 extends App {
   val skewDs: Dataset[lang.Long] =
     spark
       .range(0, 1000) // col("id")
-      // будет 2 непустых партиции c 900 и 100 элементами => датасет с перекосом данных
+      // будет 2 непустых партиции c 900 и 100 элементами - датасет с перекосом данных
       .repartition(10, skewColumn)
 
   println("skewDs: ")
@@ -201,7 +203,7 @@ object DataFrame_3 extends App {
   /**
    * 2. HashPartitioning - распределение по ключам (хэшам ключей) заданных колонок
    * позволяет оптимизировать граф вычислений
-   * пример - при репартицировании по полям, по которым в дальнейшем будет производиться группировка => повторного репартицирования не будет
+   * пример - при репартицировании по полям, по которым в дальнейшем будет производиться группировка -> повторного репартицирования не будет
    */
   val repartitionedDf2: Dataset[lang.Long] = skewDs.repartition(20, col("id"))
   println("printItemPerPartition[java.lang.Long](repartitionedDf2): ")
@@ -276,7 +278,7 @@ object DataFrame_3 extends App {
     .show() // max records in partition ~34k
 
   /** Key salting */
-  // saltModTen == [0 - 9]
+  // saltModTen = [0 - 9]
   val saltModTen: Column = pmod(round(rand() * 100, 0), lit(10)).cast(IntegerType)
 
   val saltedDf: DataFrame = airportsDf.withColumn("salt", saltModTen)
@@ -297,7 +299,7 @@ object DataFrame_3 extends App {
   println(s"firstStepDf partitions: ${firstStepDf.rdd.getNumPartitions}")
   println()
 
-  /** 2-й этап - финальная агрегация (в этом конкретном случае - суммирование) */
+  /** 2-й этап - финальная агрегация (в нашем случае - суммирование) */
   val secondStepDf: DataFrame =
     firstStepDf
       .groupBy($"type")
@@ -313,7 +315,7 @@ object DataFrame_3 extends App {
 
 
   println(sc.uiWebUrl)
-  Thread.sleep(1000000)
+  Thread.sleep(1_000_000)
 
   spark.stop()
 }

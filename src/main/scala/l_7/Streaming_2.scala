@@ -37,17 +37,17 @@ object Streaming_2 extends App {
       .format("parquet")
     /**
      * В директорию могут попасть любые данные, а DF должен иметь фиксированную схему
-     * => Spark не дает создать streamingDf на основе файлов без указания схемы
+     * -> Spark не дает создать streamingDf на основе файлов без указания схемы
      *
      * без schema - err:
      * SparkIllegalArgumentException: Schema must be specified when creating a streaming source DataFrame.
      * If some files already exist in the directory, then depending on the file format you may be able to create
-     * a static DataFrame on that directory with 'spark.read.load(directory)' and infer schema from it
+     * a static DataFrame on that directory with 'spark.read.load(directory)' and infer schema from it.
      */
     // v1
     .schema(StructType.fromDDL("timestamp TIMESTAMP,value BIGINT,ident STRING"))
     // v2
-//    .schema(DataType.fromJson(someJson)))
+//    .schema(DataType.fromJson(jsonSchema)))
     /** maxFilesPerTrigger - количество файлов, которое будет вычитано за микробатч */
     .option("maxFilesPerTrigger", "1")
     /** path - можно указать вложенные директории - с помощью "*" */
@@ -69,7 +69,7 @@ object Streaming_2 extends App {
 
 
   println(sc.uiWebUrl)
-  Thread.sleep(1000000)
+  Thread.sleep(1_000_000)
 
   spark.stop()
 }

@@ -13,6 +13,11 @@ object Datasource_2 extends App {
       .builder()
       .master("local[*]")
       .appName("l_6")
+      /**
+       * java.lang.IllegalArgumentException: Unable to instantiate SparkSession with Hive support because Hive classes are not found
+       * -> build.sbt "spark-hive"
+       */
+      .enableHiveSupport()
       .getOrCreate()
 
   val sc: SparkContext = spark.sparkContext
@@ -52,16 +57,16 @@ object Datasource_2 extends App {
   println(parquetDf.rdd.getNumPartitions)
   println()
 
-  /** в каждой row group для каждой колонки рассчитываются min/max значения => фильтр будет спущен в PushedFilters */
+  /** в каждой row group для каждой колонки рассчитываются min/max значения -> фильтр будет спущен в PushedFilters */
   parquetDf
     .filter($"iso_country" === "RU")
     .explain()
   /*
     == Physical Plan ==
-    *(1) Filter (isnotnull(iso_country#87) AND (iso_country#87 = RU))
+    *(1) Filter (isnotnull(iso_country#63) AND (iso_country#63 = RU))
     +- *(1) ColumnarToRow
        // PushedFilters: [IsNotNull(iso_country), EqualTo(iso_country,RU)]
-       +- FileScan parquet [ident#82,type#83,name#84,elevation_ft#85,continent#86,iso_country#87,iso_region#88,municipality#89,gps_code#90,iata_code#91,local_code#92,coordinates#93] Batched: true, DataFilters: [isnotnull(iso_country#87), (iso_country#87 = RU)], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [IsNotNull(iso_country), EqualTo(iso_country,RU)], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_country:string,...
+       +- FileScan parquet [ident#58,type#59,name#60,elevation_ft#61,continent#62,iso_country#63,iso_region#64,municipality#65,gps_code#66,iata_code#67,local_code#68,coordinates#69] Batched: true, DataFilters: [isnotnull(iso_country#63), (iso_country#63 = RU)], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [IsNotNull(iso_country), EqualTo(iso_country,RU)], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_country:string,...
    */
 
 
@@ -95,7 +100,7 @@ object Datasource_2 extends App {
   applesDfNoMerge.show()
 
   /**
-   * !!! spark.sql.parquet.mergeSchema == true - будут прочитаны схемы всех паркет файлов и создана ОБЪЕДИНЕННАЯ схема
+   * !!! spark.sql.parquet.mergeSchema = true - будут прочитаны схемы всех паркет файлов и создана ОБЪЕДИНЕННАЯ схема
    * false - будет прочитан 1 случайный паркет файл и из него будет прочитана схема
    */
   spark.conf.set("spark.sql.parquet.mergeSchema", "true")
@@ -137,6 +142,7 @@ object Datasource_2 extends App {
 //      .parquet("src/main/resources/l_6/apples-11")
 
   /** !!! печать всех доступных опций для parquet */
+  /** scala.ScalaReflectionException: object org.apache.spark.sql.hive.HiveUtils not found -> build.sbt "spark-hive" */
   val optionDf: Dataset[Row] =
     spark
       .sql("SET -v")
@@ -154,8 +160,8 @@ object Datasource_2 extends App {
 //        .mode(SaveMode.Append)
 //        .parquet("src/main/resources/l_6/speed-test-12/parquet")
 //    }
-//  } // 13993 ms
-
+//  } // 14068 ms
+//
 //  spark.time {
 //    1 to 40 foreach { _ =>
 //      airportsDf
@@ -164,8 +170,8 @@ object Datasource_2 extends App {
 //        .mode(SaveMode.Append)
 //        .orc("src/main/resources/l_6/speed-test-12/orc")
 //    }
-//  } // 14327 ms
-
+//  } // 14869 ms
+//
 //  spark.time {
 //    1 to 40 foreach { _ =>
 //      airportsDf
@@ -174,7 +180,7 @@ object Datasource_2 extends App {
 //        .mode(SaveMode.Append)
 //        .json("src/main/resources/l_6/speed-test-12/json")
 //    }
-//  } // 10153 ms
+//  } // 10269 ms
 
   println()
 
@@ -204,15 +210,15 @@ object Datasource_2 extends App {
   /*
     Running parquet:
     16400
-    Time taken: 508 ms
+    Time taken: 521 ms
 
     Running orc:
     16400
-    Time taken: 556 ms
+    Time taken: 516 ms
 
     Running json:
     16400
-    Time taken: 1244 ms
+    Time taken: 1272 ms
    */
 
 //  datasets.foreach { dsf =>
@@ -222,13 +228,13 @@ object Datasource_2 extends App {
 //  }
   /*
     Running parquet
-    Time taken: 106 ms
+    Time taken: 171 ms
 
     Running orc
-    Time taken: 124 ms
+    Time taken: 228 ms
 
     Running json
-    Time taken: 1034 ms
+    Time taken: 1245 ms
    */
 
   /** json лучше хранить в паркете */
@@ -247,7 +253,7 @@ object Datasource_2 extends App {
 
 
   println(sc.uiWebUrl)
-  Thread.sleep(1000000)
+  Thread.sleep(1_000_000)
 
   spark.stop()
 }

@@ -26,21 +26,21 @@ class InternalRowSpec extends AnyFlatSpec with should.Matchers {
   val schema: StructType = df.schema
   println(schema)
 
-  val rdd: RDD[InternalRow] =
+  val iRdd: RDD[InternalRow] =
     df
       .queryExecution
       .toRdd
 
-  println(rdd)
+  println(iRdd)
 
-  val thisRow: InternalRow =
-    rdd
+  val iRow: InternalRow =
+    iRdd
       .collect()
       .head
 
-  println(s"thisRow: $thisRow")
+  println(s"iRow: $iRow")
 
-  val data: Seq[Any] = thisRow.toSeq(schema)
+  val data: Seq[Any] = iRow.toSeq(schema)
   println(s"data: $data")
 
 //  data.foreach {

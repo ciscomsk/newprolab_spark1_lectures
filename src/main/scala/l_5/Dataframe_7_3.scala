@@ -53,7 +53,7 @@ object Dataframe_7_3 extends App {
    */
   spark.time {
     /** repartition ~= persist(StorageLevel.DISK_ONLY) */
-    val airportsRepDf: Dataset[Row] = airportsDf.repartition(10, col("type"))
+    val airportsRepDf: Dataset[Row] = airportsDf.repartition(10, col("type")) // repartition = 10
 
     val leftDf: Dataset[Row] = airportsRepDf
 
@@ -86,7 +86,7 @@ object Dataframe_7_3 extends App {
 
     /** план в SQL/DataFrame показан для joinedDf.count(), а не joinedDf */
     joinedDf.count()
-  } // 3415 ms
+  } // 2807 ms
   println()
 
 

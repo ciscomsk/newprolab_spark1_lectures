@@ -49,11 +49,11 @@ object Dataframe_7_2 extends App {
    * -1 Scan csv - т.к. результат репартицирования это файлы на файловой системе воркеров (~persist DISK_ONLY) => второе чтение из источника не нужно
    * -1 Exchange hashpartitioning - т.к. репартицирование по нужному ключу уже было
    *
-   * skipped stage == ранее был шаффл, который подходит для продолжения выполнения графа
+   * skipped stage = ранее был шаффл, который подходит для продолжения выполнения графа
    */
   spark.time {
     /** repartition ~= persist(StorageLevel.DISK_ONLY) */
-    val airportsRepDf: Dataset[Row] = airportsDf.repartition(200, col("type"))
+    val airportsRepDf: Dataset[Row] = airportsDf.repartition(200, col("type")) // repartition = 200
 
     val leftDf: Dataset[Row] = airportsRepDf
 
@@ -80,13 +80,14 @@ object Dataframe_7_2 extends App {
                      +- Exchange hashpartitioning(type#42, 200), REPARTITION_BY_NUM, [plan_id=40]
                         +- Filter isnotnull(type#42)
                            +- FileScan csv [type#42] Batched: false, DataFilters: [isnotnull(type#42)], Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [IsNotNull(type)], ReadSchema: struct<type:string>
+
      */
 
 //    joinedDf.show(numRows = 1)
 
     /** план в SQL/DataFrame показан для joinedDf.count(), а не joinedDf */
     joinedDf.count()
-  } // 3922 ms
+  } // 3662 ms
   println()
 
 

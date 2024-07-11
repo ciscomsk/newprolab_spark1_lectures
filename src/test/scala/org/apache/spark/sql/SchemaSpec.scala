@@ -35,7 +35,7 @@ class SchemaSpec extends AnyFlatSpec with should.Matchers {
 
   def recursion(schema: DataType): DataType = {
     schema match {
-      /** !!! AtomicType/FractionalType/IntegralType - доступны только в org.apache.spark.sql */
+      /** !!! AtomicType/FractionalType/IntegralType - protected[sql] => доступны только в org.apache.spark.sql */
       case atomic: AtomicType =>
         println(s"This is atomic type of type ${atomic.simpleString}")
         atomic
@@ -45,7 +45,7 @@ class SchemaSpec extends AnyFlatSpec with should.Matchers {
 
         struct
           .fields
-          .map { field => StructField(field.name, recursion(field.dataType)) }
+          .map(field => StructField(field.name, recursion(field.dataType)))
 
         struct
 

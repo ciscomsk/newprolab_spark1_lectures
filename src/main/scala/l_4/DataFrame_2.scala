@@ -70,7 +70,7 @@ object DataFrame_2 extends App {
    */
   aggListDf.show(numRows = 10, truncate = 100, vertical = true)
 
-  // col("st.*") - выборка всех колонки структуры
+  // col("s.*") - выборка всех колонки структуры s
   val structDf: DataFrame = aggListDf.select(struct($"continent", $"countries").as("s"))
   println("structDf: ")
   structDf.show(10, truncate = false)
@@ -120,7 +120,7 @@ object DataFrame_2 extends App {
     // конвертация Java object (String) => Internal row
     +- SerializeFromObject [staticinvoke(class org.apache.spark.unsafe.types.UTF8String, StringType, fromString, input[0, java.lang.String, true], true, false, true) AS value#175]
        // применение функции к Java object (String)
-       +- MapPartitions org.apache.spark.sql.Dataset$$Lambda$3509/0x0000000801602840@7aa1e86b, obj#174: java.lang.String
+       +- MapPartitions org.apache.spark.sql.Dataset$$Lambda$3532/0x000000080159d040@aecfc07, obj#174: java.lang.String
           // конвертация Internal row => Java object (String)
           +- DeserializeToObject createexternalrow(continent#0.toString, mapobjects(lambdavariable(MapObject, StringType, false, -1), lambdavariable(MapObject, StringType, false, -1).toString, countries#102, Some(class scala.collection.mutable.ArraySeq)), StructField(continent,StringType,true), StructField(countries,ArrayType(StringType,false),false)), obj#173: org.apache.spark.sql.Row
              +- ObjectHashAggregate(keys=[continent#0], functions=[collect_list(country#1, 0, 0)])
@@ -163,7 +163,7 @@ object DataFrame_2 extends App {
     +-------+--------+--------+---------+
    */
 
-  /** spark.sql.shuffle.partitions == 200 (по умолчанию) */
+  /** spark.sql.shuffle.partitions = 200 (по умолчанию) */
 //  spark.conf.set("spark.sql.shuffle.partitions", 150)
 
   cleanDataDf

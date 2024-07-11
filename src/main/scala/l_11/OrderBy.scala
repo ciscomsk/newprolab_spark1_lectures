@@ -12,7 +12,7 @@ object OrderBy extends App {
       .getOrCreate()
 
   val sc = spark.sparkContext
-  sc.setLogLevel("ERROR")
+//  sc.setLogLevel("ERROR")
 
   spark.conf.set("spark.sql.adaptive.enabled", "false")
 
@@ -66,5 +66,4 @@ object OrderBy extends App {
     .write
     .mode(SaveMode.Overwrite)
     .parquet("src/main/resources/l_11/sort/saved_again")
-
 }

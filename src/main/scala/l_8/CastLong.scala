@@ -17,11 +17,12 @@ object CastLong extends App {
 
   df
     .withColumn("ts", current_timestamp)
-    .withColumn("timestamp.cast(LongType)", col("ts").cast(LongType))
-    .withColumn("timestamp.cast(LongType) / 60", col("ts").cast(LongType) / 60) // == 28332303.066666667
-    .withColumn("(timestamp.cast(LongType) / 60).cast(LongType)", (col("ts").cast(LongType) / 60).cast(LongType))
-    .withColumn("(timestamp.cast(LongType) / 60).cast(LongType) * 60", (col("ts").cast(LongType) / 60).cast(LongType) * 60)
-    .withColumn("((timestamp.cast(LongType) / 60).cast(LongType) * 60).cast(TimestampType)", ((col("ts").cast(LongType) / 60).cast(LongType) * 60).cast(TimestampType))
+    .withColumn("timestamp.cast(LongType)",                                                    col("ts").cast(LongType)                                                )
+    .withColumn("timestamp.cast(LongType) / 60",                                               col("ts").cast(LongType) / 60                                           )
+    .withColumn("timestamp.cast(LongType) / 60 dec",                                          (col("ts").cast(LongType) / 60).cast("Decimal(10,2)")                    )
+    .withColumn("(timestamp.cast(LongType) / 60).cast(LongType)",                             (col("ts").cast(LongType) / 60).cast(LongType)                           )
+    .withColumn("(timestamp.cast(LongType) / 60).cast(LongType) * 60",                        (col("ts").cast(LongType) / 60).cast(LongType) * 60                      )
+    .withColumn("((timestamp.cast(LongType) / 60).cast(LongType) * 60).cast(TimestampType)", ((col("ts").cast(LongType) / 60).cast(LongType) * 60).cast(TimestampType) )
     .show(truncate = false)
 
 }

@@ -82,8 +82,8 @@ object Streaming_4 extends App {
     streamingDf
       /**
        * без .cast(StringType) - err:
-       * AnalysisException: [DATATYPE_MISMATCH.UNEXPECTED_INPUT_TYPE] Cannot resolve "from_json(value)" due to data type mismatch: Parameter 1 requires the "STRING" type, however "value" has the type "BINARY"
-       * due to data type mismatch: Parameter 1 requires the "STRING" type, however "value" has the type "BINARY"
+       * AnalysisException: [DATATYPE_MISMATCH.UNEXPECTED_INPUT_TYPE]
+       * Cannot resolve "from_json(value)" due to data type mismatch: Parameter 1 requires the "STRING" type, however "value" has the type "BINARY"
        */
 //      .withColumn("value", from_json($"value", schema))
       .withColumn("value", from_json($"value".cast(StringType), schema))
@@ -134,28 +134,28 @@ object Streaming_4 extends App {
       .writeStream
       .format("console")
 
-  val streamingQuery: StreamingQuery = gracefulSink.start()
+//  val streamingQueryGraceful: StreamingQuery = gracefulSink.start()
   Thread.sleep(5000)
 
   /** isTriggerActive будет false, как только батч будет полностью обработан (т.е. произведена запись в sink) */
-//  while (streamingQuery.status.isTriggerActive) {
+//  while (streamingQueryGraceful.status.isTriggerActive) {
 //    println("processing is active")
 //  }
 //  println("waiting for next trigger")
   /** как только isTriggerActive станет false - останавливаем стрим */
-//  streamingQuery.stop()
+//  streamingQueryGraceful.stop()
 
   /** пример с маркер-файлом */
 //  val isStopFile: Boolean = true
-//  while (streamingQuery.status.isTriggerActive || !isStopFile) {
-//    streamingQuery.awaitTermination(5000)
+//  while (streamingQueryGraceful.status.isTriggerActive || !isStopFile) {
+//    streamingQueryGraceful.awaitTermination(5000)
 //  }
-//  streamingQuery.stop()
+//  streamingQueryGraceful.stop()
 
   /** более безопасно можно останавливать стрим с помощью foreachBatch - описание алгоритма с 2-50-00 */
 
 
-  Thread.sleep(1000000)
+  Thread.sleep(1_000_000)
 
   spark.stop()
 }

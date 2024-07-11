@@ -11,14 +11,14 @@ import org.apache.spark.sql.types.{LongType, StringType, StructType, TimestampTy
 import org.apache.spark.unsafe.types.UTF8String
 
 class MyDataSinkProvider extends StreamSinkProvider with Logging {
-  /** Для работы логирования нужно добавить класс/package в log4j2.properties */
+  /** Для работы логирования нужно добавить настройки для пакета или класса в log4j2.properties */
   log.info(s"${this.logName} has been created")
 
   override def createSink(
-                           sqlContext: SQLContext,  // ~SparkSession
-                           parameters: Map[String, String],  // то, что передается в writeStream.options
-                           partitionColumns: Seq[String],  // то, что передается в writeStream.partitionBy
-                           outputMode: OutputMode
+                           sqlContext: SQLContext, // ~SparkSession
+                           parameters: Map[String, String], // то, что было передано в writeStream.options
+                           partitionColumns: Seq[String], // то, что было передано в writeStream.partitionBy
+                           outputMode: OutputMode // то, что было передано в writeStream.outputMode
                          ): Sink = {
 
     log.info(s"parameters: ${parameters.mkString(" ")}")
@@ -36,18 +36,17 @@ class MyDataSink extends Sink with Logging {
     log.info(s"batchId: $batchId, data: $data")
 
     /**
-     * err - MicroBatchExecution: Query [id = a03afb7b-61e3-4437-95bb-9465eea3c962, runId = 4c2c21d1-f004-450b-ac84-b43c301b98a5]
-     * terminated with error
+     * ERROR MicroBatchExecution: Query [id = f7a20aaa-97d9-4324-b738-359f166b12d5, runId = 4dbd164b-8a05-4aad-b4bd-777471c6df52] terminated with error
      * org.apache.spark.sql.AnalysisException: Queries with streaming sources must be executed with writeStream.start()
+     *
+     * !!! Ошибки при вызове show/getNumPartitions - говорят о том, что датафрейм стримовый
      */
 //    data.show()
-//    log.info(s"data.rdd.getNumPartitions: ${data.rdd.getNumPartitions}")  // true
-
-    /** Ошибки при вызове show/getNumPartitions - говорят о том, что датафрейм стримовый  */
-//    log.info(s"df.isStreaming: ${data.isStreaming}")  // true
+//    log.info(s"data.rdd.getNumPartitions: ${data.rdd.getNumPartitions}")
+    log.info(s"df.isStreaming: ${data.isStreaming}") // true
 
     val schema: StructType = data.schema
-//    println(schema)  // StructType(StructField(timestamp,TimestampType,true),StructField(value,LongType,true))
+//    println(schema) // StructType(StructField(timestamp,TimestampType,true),StructField(value,LongType,true))
     val rdd: RDD[InternalRow] = data.queryExecution.toRdd
 
     rdd.foreachPartition { partition =>
@@ -65,13 +64,13 @@ class MyDataSink extends Sink with Logging {
 
       /** Для v3 */
       val fieldNames: String = schema.map(_.name).mkString(", ")
-
+//
       while(partition.hasNext) {
         val nextItem: InternalRow = thisPartition.next()
 
         /** Получаем данные из InternalRow - схема берется из датафрейма */
         val columns: Seq[Any] = nextItem.toSeq(schema)
-//        println(columns) // ArraySeq(1682502093947000, 61760)
+//        println(columns) // ArraySeq(1716453864131000, 2)
 
         /**
          * Далее пишется логика преобразования данных к формату, который потребляет синк
@@ -84,6 +83,10 @@ class MyDataSink extends Sink with Logging {
 //          .foreach { case (item, field) =>
 //            println(s"field: ${field.name}, type: ${field.dataType.simpleString}, value: $item")
 //          }
+        /*
+          field: timestamp, type: timestamp, value: 1716453864131000
+          field: value, type: bigint, value: 2
+         */
 
         /** v2 - заготовка для записи в синк с матчингом по типу колонки */
 //        columns
@@ -94,7 +97,7 @@ class MyDataSink extends Sink with Logging {
 //                println(s"name: ${field.name}, type: ${field.dataType.simpleString}, value: $value")
 //
 //              case (value: java.lang.Long, TimestampType) =>
-//                println(s"name: ${field.name}, type: ${field.dataType.simpleString}, value: $value")  // value: 1682502219947000
+//                println(s"name: ${field.name}, type: ${field.dataType.simpleString}, value: $value")
 //
 //              case (value: UTF8String, StringType) =>
 //                println(s"name: ${field.name}, type: ${field.dataType.simpleString}, value: $value")
@@ -103,6 +106,10 @@ class MyDataSink extends Sink with Logging {
 //                throw new UnsupportedOperationException(s"$value of type ${fieldType.simpleString} is not supported")
 //            }
 //          }
+        /*
+          name: timestamp, type: timestamp, value: 1716453864131000
+          name: value, type: bigint, value: 2
+         */
 
         /** v3 - пример с генерацией запроса для записи в БД */
         val fieldValues: String =
@@ -119,17 +126,17 @@ class MyDataSink extends Sink with Logging {
                 s"""'${value.toString}'"""
 
               /**
-               * В случае сложных типов:
-               * 1. struct => value: InternalRow
-               * 2. array => value: ArrayData
+               * Для сложных типов:
+               * 1. struct -> value: InternalRow
+               * 2. array -> value: ArrayData
                */
             }
             .mkString(", ")
 
         val insertQuery: String = s"INSERT INTO TABLE foo ($fieldNames) VALUE ($fieldValues)"
         println(insertQuery)
+        // INSERT INTO TABLE foo (timestamp, value) VALUE (ts:1716453864131000, 2L)
       }
     }
-
   }
 }

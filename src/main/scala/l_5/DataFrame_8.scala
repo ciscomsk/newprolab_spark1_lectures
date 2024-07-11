@@ -44,7 +44,7 @@ object DataFrame_8 extends App {
 
   /** apply - получение поля по имени/индексу */
   val field1: StructField = schema("ident")
-  // ==
+  // =
   val field2: StructField = schema(0)
   println(field1)
   println(field2)
@@ -82,7 +82,7 @@ object DataFrame_8 extends App {
 
   println("DataType: ")
   val ddlSchema: String = schema.toDDL
-  val schemaFromDtDDL: DataType = DataType.fromDDL(ddlSchema)
+  val schemaFromDtDDL: DataType = DataType.fromDDL(ddlSchema)  // Dt = DataType
   println(ddlSchema)
   println(schemaFromDtDDL)
   println()
@@ -193,16 +193,12 @@ object DataFrame_8 extends App {
    * !!! возвращает null при некорректном касте
    */
   airportsDf
-    .select($"elevation_ft".cast(StringType)) // StringType == string
+    .select($"elevation_ft".cast(StringType)) // StringType = string
     .printSchema()
 
-  airportsDf
-    .select($"type".cast("float"))
-    .printSchema()
-
-  airportsDf
-    .select($"type".cast("float"))
-    .show(1, truncate = false)
+  val floatDf = airportsDf.select($"type".cast("float"))
+  floatDf.printSchema()
+  floatDf.show(1, truncate = false)
 
   /**
    * !!! cast может менять названия/типы колонок внутри структуры
@@ -212,7 +208,7 @@ object DataFrame_8 extends App {
 
 
   println(sc.uiWebUrl)
-  Thread.sleep(1000000)
+  Thread.sleep(1_000_000)
 
   spark.stop()
 }

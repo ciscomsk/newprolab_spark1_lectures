@@ -68,12 +68,12 @@ object DataFrame_9 extends App {
 
     printPhysicalPlan(selectedDf)
     /*
-      *(1) Project [ident#92]
+      *(1) Project [ident#41]
       +- *(1) ColumnarToRow
          // ReadSchema: struct<ident:string> - будет вычитана только колонка ident
-         +- FileScan parquet [ident#92,iso_country#103] Batched: true, DataFilters: [], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<ident:string>
+         +- FileScan parquet [ident#41,iso_country#52] Batched: true, DataFilters: [], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<ident:string>
      */
-  } // 1092 ms
+  } // 1264 ms
   println()
 
   spark.time {
@@ -87,9 +87,9 @@ object DataFrame_9 extends App {
     /*
       *(1) ColumnarToRow
       // ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_region:string,m...
-      +- FileScan parquet [ident#92,type#93,name#94,elevation_ft#95,continent#96,iso_region#97,municipality#98,gps_code#99,iata_code#100,local_code#101,coordinates#102,iso_country#103] Batched: true, DataFilters: [], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_region:string,m...
+      +- FileScan parquet [ident#41,type#42,name#43,elevation_ft#44,continent#45,iso_region#46,municipality#47,gps_code#48,iata_code#49,local_code#50,coordinates#51,iso_country#52] Batched: true, DataFilters: [], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_region:string,m...
      */
-  } // 1066 ms
+  } // 854 ms
   println()
 
   /** !!! для неколоночных форматов (например json) - ReadSchema будет указана в плане выполнения, но работать оптимизация не будет */
@@ -100,9 +100,9 @@ object DataFrame_9 extends App {
     .explain()
   /*
     == Physical Plan ==
-    *(1) Project [ident#544]
+    *(1) Project [ident#493]
     // ReadSchema: struct<ident:string>
-    +- FileScan json [ident#544,iso_country#550] Batched: false, DataFilters: [], Format: JSON, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<ident:string>
+    +- FileScan json [ident#493,iso_country#499] Batched: false, DataFilters: [], Format: JSON, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<ident:string>
    */
 
 
@@ -122,7 +122,7 @@ object DataFrame_9 extends App {
     printPhysicalPlan(filteredDf)
     /*
       *(1) ColumnarToRow
-      // PartitionFilters: [isnotnull(iso_country#52), (iso_country#52 = RU)] => будет прочитан только каталог RU
+      // PartitionFilters: [isnotnull(iso_country#52), (iso_country#52 = RU)] -> будет прочитан только каталог RU
       +- FileScan parquet [ident#41,type#42,name#43,elevation_ft#44,continent#45,iso_region#46,municipality#47,gps_code#48,iata_code#49,local_code#50,coordinates#51,iso_country#52] Batched: true, DataFilters: [], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [isnotnull(iso_country#52), (iso_country#52 = RU)], PushedFilters: [], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_region:string,m...
      */
   } // 117 ms
@@ -138,8 +138,9 @@ object DataFrame_9 extends App {
       *(1) ColumnarToRow
       // PartitionFilters: []
       +- FileScan parquet [ident#41,type#42,name#43,elevation_ft#44,continent#45,iso_region#46,municipality#47,gps_code#48,iata_code#49,local_code#50,coordinates#51,iso_country#52] Batched: true, DataFilters: [], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_region:string,m...
+
      */
-  } // 291 ms
+  } // 256 ms
   println()
 
 
@@ -154,13 +155,13 @@ object DataFrame_9 extends App {
 
     printPhysicalPlan(filteredDf)
     /*
-      // Filter (isnotnull(iso_region#97) AND (iso_region#97 = RU))
+      // Filter (isnotnull(iso_region#46) AND (iso_region#46 = RU))
       *(1) Filter (isnotnull(iso_region#46) AND (iso_region#46 = RU))
       +- *(1) ColumnarToRow
          // PushedFilters: [IsNotNull(iso_region), EqualTo(iso_region,RU)]
          +- FileScan parquet [ident#41,type#42,name#43,elevation_ft#44,continent#45,iso_region#46,municipality#47,gps_code#48,iata_code#49,local_code#50,coordinates#51,iso_country#52] Batched: true, DataFilters: [isnotnull(iso_region#46), (iso_region#46 = RU)], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [IsNotNull(iso_region), EqualTo(iso_region,RU)], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_region:string,m...
      */
-  } // 410 ms
+  } // 386 ms
   println()
 
 
@@ -213,7 +214,7 @@ object DataFrame_9 extends App {
   println("__Constant folding__: ")
   /**
    * 5. Constant folding
-   * lit(3) > lit(0) == true
+   * lit(3) > lit(0) -> true
    */
   val resDf3: Dataset[Row] =
     spark
@@ -306,7 +307,7 @@ object DataFrame_9 extends App {
 
 
   println(sc.uiWebUrl)
-  Thread.sleep(1000000)
+  Thread.sleep(1_000_000)
 
   spark.stop()
 }

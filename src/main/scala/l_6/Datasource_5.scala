@@ -121,7 +121,7 @@ object Datasource_5 extends App {
 
   postgresPartDf.printSchema()
   postgresPartDf.show(1, 200, vertical = true)
-  println(postgresPartDf.rdd.getNumPartitions) // == 200
+  println(postgresPartDf.rdd.getNumPartitions) // = 200
   println()
 
   /** Проверка распределения данных по партициям */
@@ -138,7 +138,7 @@ object Datasource_5 extends App {
 
 
   println(sc.uiWebUrl)
-  Thread.sleep(1000000)
+  Thread.sleep(1_000_000)
 
   spark.stop()
 }

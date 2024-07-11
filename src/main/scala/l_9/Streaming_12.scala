@@ -46,7 +46,7 @@ object Streaming_12 extends App {
       .csv("src/main/resources/l_3/airport-codes.csv")
   }
 
-  def getRandomIdent(): Column = {
+  def getRandomIdent: Column = {
     val idents: Array[String] =
       airportsDf()
         .select($"ident")
@@ -75,20 +75,20 @@ object Streaming_12 extends App {
       .readStream
       .format("rate")
       .load()
-      .withColumn("ident", getRandomIdent())
+      .withColumn("ident", getRandomIdent)
 
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
   def waitFunc(n: Int): Boolean = { Thread.sleep(n); true }
 
-  println(waitFunc(1000))  // == true
-  println(Option(waitFunc(1000)))  // == Some(true)
-  println(Try(waitFunc(1000)))  // == Success(true)
-  println(Future(waitFunc(1000)))  // == Future(<not completed>)
+  println(waitFunc(1000))  // = true
+  println(Option(waitFunc(1000)))  // = Some(true)
+  println(Try(waitFunc(1000)))  // = Success(true)
+  println(Future(waitFunc(1000)))  // = Future(<not completed>)
   println()
 
-  val future1: Future[Boolean] = Future { waitFunc(1000) }
+  val future1: Future[Boolean] = Future { waitFunc(3000) }
 
   future1
     .map(el => !el)
@@ -103,7 +103,7 @@ object Streaming_12 extends App {
   val future4: Future[Boolean] = Future { waitFunc(3000) }
   val listFutures: List[Future[Boolean]] = List(future3, future4)
 
-  /** sequence == List[Future[A] => Future[List[A]] */
+  /** sequence = List[Future[A] -> Future[List[A]] */
   val futureList: Future[List[Boolean]] = Future.sequence(listFutures)
   println(s"Await futureList: ${Await.result(futureList, 20 seconds)}")
   println()
@@ -112,7 +112,7 @@ object Streaming_12 extends App {
   /** Перепишем обработку стрима с par на Future */
   val udf_wait: UserDefinedFunction = udf { () => Thread.sleep(1000); true }
 
-  /** List[Int] => List[String] без использования map */
+  /** List[Int] -> List[String] без использования map */
   def recursiveFunctionExample(list: List[Int]): List[String] = {
     val head: Int = list.head
     val tail: List[Int] = list.tail
@@ -185,8 +185,8 @@ object Streaming_12 extends App {
   }
 
 //  createSink("state9_rec_v1", myStreamDf) { (df, id) =>
-  createSink("state9_rec_v2", myStreamDf) { (df, id) =>
-//  createSink("state9_tailrec", myStreamDf) { (df, id) =>
+//  createSink("state9_rec_v2", myStreamDf) { (df, id) =>
+  createSink("state9_tailrec", myStreamDf) { (df, id) =>
     df.cache()
     val count: Long = df.count()
     val schema: StructType = df.schema
@@ -217,7 +217,7 @@ object Streaming_12 extends App {
      */
 //    if (categories.nonEmpty) {
 //      val listFutures: List[Future[Unit]] =
-//        recAction(categories.toList, coalescedDf) :+ Future { df.show(20, truncate = false) }
+//        recAction_v1(categories.toList, coalescedDf) :+ Future { df.show(20, truncate = false) }
 //
 //      val futureList: Future[List[Unit]] = Future.sequence(listFutures)
 //
@@ -226,26 +226,26 @@ object Streaming_12 extends App {
 //    }
 
     /** recAction_v2  */
-    val listFutures: List[Future[Unit]] =
-    Future {df.show(20, truncate = false)} :: recAction_v2(categories.toList, coalescedDf)
-
-    val futureList: Future[List[Unit]] = Future.sequence(listFutures)
-    Await.result(futureList, 60 seconds)
-
-    /** tailrecAction */
 //    val listFutures: List[Future[Unit]] =
-//      Future { df.show(20, truncate = false) } :: tailrecAction(categories.toList, coalescedDf)
+//    Future {df.show(20, truncate = false)} :: recAction_v2(categories.toList, coalescedDf)
 //
 //    val futureList: Future[List[Unit]] = Future.sequence(listFutures)
 //    Await.result(futureList, 60 seconds)
 
+    /** tailrecAction */
+    val listFutures: List[Future[Unit]] =
+      Future(df.show(20, truncate = false)) :: tailrecAction(categories.toList, coalescedDf)
+
+    val futureList: Future[List[Unit]] = Future.sequence(listFutures)
+    Await.result(futureList, 60 seconds)
+
     withSymbolDf.unpersist()
     df.unpersist()
   }
-  .start()
+//  .start()
 
 
-  Thread.sleep(1000000)
+  Thread.sleep(1_000_000)
 
   spark.stop()
 }

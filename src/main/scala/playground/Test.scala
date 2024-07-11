@@ -146,18 +146,9 @@ object Test extends App {
   result.filter(!_.isEmpty).reduce((df1, df2) => df1.union(df2)).show()
 
   // dataPathNotExistError
-
-
-
-
   println()
-
-
 
 //  val succ = res.collect { case res if res.isSuccess => res.get }
 //  println(succ)
 //  succ.tail.foldLeft(succ.head)((acc, el) => acc.union(el)).show()
-
-
-
 }

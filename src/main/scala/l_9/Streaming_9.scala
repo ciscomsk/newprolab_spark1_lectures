@@ -84,10 +84,11 @@ object Streaming_9 extends App {
 
     val withSymbolDf: DataFrame = df.withColumn("name", split($"ident", "")(2))
 
+    println("withSymbolDf: ")
 //    withSymbolDf.explain()
     /*
       == Physical Plan ==
-      *(1) Project [timestamp#0, value#1L, ident#51, split(ident#51, , -1)[2] AS name#166]
+      *(1) Project [timestamp#0, value#1L, ident#51, split(ident#51, , -1)[2] AS name#873]
       +- InMemoryTableScan [ident#51, timestamp#0, value#1L]
             +- InMemoryRelation [timestamp#0, value#1L, ident#51], StorageLevel(disk, memory, deserialized, 1 replicas)
                   +- *(1) Scan ExistingRDD[timestamp#0,value#1L,ident#51]
@@ -105,15 +106,16 @@ object Streaming_9 extends App {
         .count()
         .as[Category]
 
+    println("categoriesDs: ")
 //    categoriesDs.explain()
     /*
       == Physical Plan ==
-      *(2) HashAggregate(keys=[name#166], functions=[count(1)])
-      +- Exchange hashpartitioning(name#166, 200), ENSURE_REQUIREMENTS, [plan_id=164]
-         +- *(1) HashAggregate(keys=[name#166], functions=[partial_count(1)])
-            +- InMemoryTableScan [name#166]
-                  +- InMemoryRelation [timestamp#0, value#1L, ident#51, name#166], StorageLevel(disk, memory, deserialized, 1 replicas)
-                        +- *(1) Project [timestamp#0, value#1L, ident#51, split(ident#51, , -1)[2] AS name#166]
+      *(2) HashAggregate(keys=[name#873], functions=[count(1)])
+      +- Exchange hashpartitioning(name#873, 200), ENSURE_REQUIREMENTS, [plan_id=346]
+         +- *(1) HashAggregate(keys=[name#873], functions=[partial_count(1)])
+            +- InMemoryTableScan [name#873]
+                  +- InMemoryRelation [timestamp#0, value#1L, ident#51, name#873], StorageLevel(disk, memory, deserialized, 1 replicas)
+                        +- *(1) Project [timestamp#0, value#1L, ident#51, split(ident#51, , -1)[2] AS name#873]
                            +- InMemoryTableScan [ident#51, timestamp#0, value#1L]
                                  +- InMemoryRelation [timestamp#0, value#1L, ident#51], StorageLevel(disk, memory, deserialized, 1 replicas)
                                        +- *(1) Scan ExistingRDD[timestamp#0,value#1L,ident#51]
@@ -127,20 +129,21 @@ object Streaming_9 extends App {
      */
     val coalescedDf: Dataset[Row] = withSymbolDf.coalesce(1)
 
+    println("coalescedDf: ")
 //    coalescedDf.explain()
     /*
       == Physical Plan ==
       Coalesce 1
-      +- InMemoryTableScan [timestamp#0, value#1L, ident#51, name#166]
-            +- InMemoryRelation [timestamp#0, value#1L, ident#51, name#166], StorageLevel(disk, memory, deserialized, 1 replicas)
-                  +- *(1) Project [timestamp#0, value#1L, ident#51, split(ident#51, , -1)[2] AS name#166]
+      +- InMemoryTableScan [timestamp#0, value#1L, ident#51, name#873]
+            +- InMemoryRelation [timestamp#0, value#1L, ident#51, name#873], StorageLevel(disk, memory, deserialized, 1 replicas)
+                  +- *(1) Project [timestamp#0, value#1L, ident#51, split(ident#51, , -1)[2] AS name#873]
                      +- InMemoryTableScan [ident#51, timestamp#0, value#1L]
                            +- InMemoryRelation [timestamp#0, value#1L, ident#51], StorageLevel(disk, memory, deserialized, 1 replicas)
                                  +- *(1) Scan ExistingRDD[timestamp#0,value#1L,ident#51]
      */
 
     coalescedDf.cache()
-    /** count - 1 task (т.к. coalesce == 1) */
+    /** count - 1 task (т.к. coalesce = 1) */
     coalescedDf.count()
     withSymbolDf.unpersist()
 
@@ -151,6 +154,7 @@ object Streaming_9 extends App {
       /** udf_wait - искусственное замедление, так проблема лучше видна в Spark UI */
       val resDf: DataFrame = filteredDf.withColumn("wait", udf_wait())
 
+      println("resDf: ")
 //      resDf.explain()
       /*
         == Physical Plan ==
@@ -170,7 +174,7 @@ object Streaming_9 extends App {
       /**
        * !!! Запись выполняется последовательно в 1 ПОТОК (т.к. coalesce(1)) и является БЛОКИРУЮЩЕЙ операцией (остальные ядра в этот момент простаивают)
        * !!! пока не закончится запись определенный ident - запись следующего не начнется
-       * Spark UI => Executors => Cores/Active Tasks
+       * Spark UI -> Executors -> Cores/Active Tasks
        */
       resDf
         .write
@@ -179,6 +183,7 @@ object Streaming_9 extends App {
     }
 
     coalescedDf.unpersist()
+    println()
   }
 //    .start()
 
@@ -226,10 +231,10 @@ object Streaming_9 extends App {
 
     coalescedDf.unpersist()
   }
-//    .start()
+    .start()
 
 
-  Thread.sleep(1000000)
+  Thread.sleep(1_000_000)
 
   spark.stop()
 }

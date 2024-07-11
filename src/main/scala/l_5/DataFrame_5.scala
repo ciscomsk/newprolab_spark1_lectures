@@ -6,7 +6,7 @@ import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.execution.{CodegenMode, CostMode}
 import org.apache.spark.sql.execution.command.ExplainCommand
-/** Spark 3.5.0 */
+/** Spark 3.5.1 */
 import org.apache.spark.sql.execution.ExtendedMode
 /** 2.4.8 */
 import org.apache.spark.sql.{DataFrame, SparkSession}
@@ -30,14 +30,14 @@ object DataFrame_5 extends App {
     spark
       .read
       .options(csvOptions)
-      /** чтение любого вида файлов == Physical Operator (PO) File scan <format> */
+      /** чтение любого вида файлов = Physical Operator (PO) File scan <format> */
       .csv("src/main/resources/l_3/airport-codes.csv")
 
   /** План выполнения */
   println()
   airportsDf.printSchema()
 
-  /** show == PO CollectLimit */
+  /** show = PO CollectLimit */
   airportsDf.show(numRows = 1, truncate = 100, vertical = true)
 
   airportsDf.explain(extended = true)
@@ -79,7 +79,7 @@ object DataFrame_5 extends App {
    */
   println()
 
-  /** terminal => echo '<json>' | jq */
+  /** terminal -> echo '<json>' | jq */
   /*
     [
       {
@@ -365,7 +365,7 @@ object DataFrame_5 extends App {
    */
 
   /**
-   * filter == PO Filter - каталист добавляет фильтр isnotnull
+   * filter = PO Filter - каталист добавляет в фильтр условие isnotnull
    * isnotnull - высокопроизводительный фильтр, который часто можно запушдаунить в источник
    */
   printPhysicalPlan(airportsDf.filter($"type" === "small_airport"))
@@ -375,7 +375,7 @@ object DataFrame_5 extends App {
    */
 
   /**
-   * groupBy($"iso_country").count == 3 PO: 2 HashAggregate + Exchange hashpartitioning
+   * groupBy($"iso_country").count = 3 PO: 2 HashAggregate + Exchange hashpartitioning
    *
    * 1-й HashAggregate содержит функцию partial_count(1) - это означает, что внутри каждой партиции будет выполнен
    * подсчет строк по каждому ключу (аналогично методу RDD reduceByKey)
@@ -403,7 +403,7 @@ object DataFrame_5 extends App {
                    +- FileScan csv [type#18,iso_country#22] Batched: false, DataFilters: [isnotnull(type#18), (type#18 = small_airport)], Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [IsNotNull(type), EqualTo(type,small_airport)], ReadSchema: struct<type:string,iso_country:string>
    */
 
-  /** == ExtendedMode */
+  /** = ExtendedMode */
 //  airportsDf
 //    .filter($"type" === "small_airport")
 //    .groupBy($"iso_country")
@@ -412,10 +412,10 @@ object DataFrame_5 extends App {
 
 
   val groupedDf: DataFrame =
-  airportsDf
-    .filter($"type" === "small_airport")
-    .groupBy($"iso_country")
-    .count()
+    airportsDf
+      .filter($"type" === "small_airport")
+      .groupBy($"iso_country")
+      .count()
 
   /** при необходимости можно прочитать java код, который был сгенерирован */
   def printCodeGen(ds: Dataset[_]): Unit = {
@@ -456,7 +456,7 @@ object DataFrame_5 extends App {
 
 
   println(sc.uiWebUrl)
-  Thread.sleep(1000000)
+  Thread.sleep(1_000_000)
 
   spark.stop()
 }

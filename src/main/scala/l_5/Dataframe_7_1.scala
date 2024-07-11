@@ -78,12 +78,12 @@ object Dataframe_7_1 extends App {
 
     /** план в SQL/DataFrame показан для joinedDf.count(), а не joinedDf */
     joinedDf.count()
-  } // 2972 ms
+  } // 2590 ms
   println()
 
 
   println(sc.uiWebUrl)
-  Thread.sleep(1000000)
+  Thread.sleep(1_000_000)
 
   spark.stop()
 }

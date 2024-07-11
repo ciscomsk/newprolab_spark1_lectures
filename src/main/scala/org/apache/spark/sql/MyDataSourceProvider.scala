@@ -52,9 +52,9 @@ class MyDataSourceProvider extends StreamSourceProvider with Logging {
 class MyDataSource(sourceSchema: StructType) extends Source with Logging {
   log.info(s"${this.logName} has been created")
 
-  val spark: SparkSession = SparkSession.active
-  val sc: SparkContext = spark.sparkContext
   var batchCounter: Int = 0
+  val spark: SparkSession = SparkSession.active
+
   override def schema: StructType = sourceSchema
 
   /**
@@ -64,7 +64,7 @@ class MyDataSource(sourceSchema: StructType) extends Source with Logging {
    * если метод возвращает Some(value) и value != предыдущему оффсету - будет вызван getBatch(предыдущий оффсет, value)
    *
    * при сравнении оффсетов вызывается метод equals
-   * если строки currentOffset.json() и previousOffset.json() не равны => в стриме есть новые данные => будет вызван getBatch
+   * если строки currentOffset.json() и previousOffset.json() не равны -> в стриме есть новые данные -> будет вызван getBatch
    */
   override def getOffset: Option[Offset] = {
     log.info("getOffset call")
@@ -72,27 +72,28 @@ class MyDataSource(sourceSchema: StructType) extends Source with Logging {
 //    None
 //    Some(MyOffset(0))
     val offset: Some[MyOffset] = Some(MyOffset(batchCounter))
-    log.info(s"New offset is $offset")
+    log.info(s"New offset: $offset")
 
     offset
   }
 
   /** getBatch - получает данные для микробатча */
   override def getBatch(start: Option[Offset], end: Offset): DataFrame = {
-    log.info(s"getBatch call: start: $start, end: $end")  // Some(MyOffset(0)) => start: None, end: 0
+    log.info(s"getBatch call: start: $start, end: $end") // Some(MyOffset(0)) -> getBatch call: start: None, end: 0
+
+    // java.lang.AssertionError: assertion failed: DataFrame returned by getBatch from org.apache.spark.sql.MyDataSource@57c2272d did not have isStreaming=true
+//    spark.range(10).toDF()
 
     val rddIRow: RDD[InternalRow] = new MyRdd(this.schema)
+//    println(s"rddIRow: $rddIRow")
     val df: DataFrame = spark.internalCreateDataFrame(rddIRow, this.schema, isStreaming = true)
-
-//    spark.range(10).toDF()
+//    println("after df:")
 
     batchCounter += 1
     df
   }
 
-  override def stop(): Unit = {
-    log.info("The stream has been stopped!")
-  }
+  override def stop(): Unit = log.info("The stream has been stopped!")
 }
 
 case class MyOffset(i: Int) extends Offset {
@@ -108,7 +109,7 @@ class MyRdd(sourceSchema: StructType) extends RDD[InternalRow](SparkSession.acti
 
     val rnd: Random.type = scala.util.Random
 
-    /** !!! Алгоритм чтения данных из источника */
+    /** !!! алгоритм чтения данных из источника */
     new Iterator[InternalRow] {
       var i: Int = 0
       val last: Int = 2
@@ -118,31 +119,33 @@ class MyRdd(sourceSchema: StructType) extends RDD[InternalRow](SparkSession.acti
       override def next(): InternalRow = {
         /**
          * err - java.lang.ArrayIndexOutOfBoundsException: Index 1 out of bounds for length 1
-         * - несоответствие количества элементов в InternalRow и заданной схеме
+         * -> несоответствие количества элементов в InternalRow и заданной схеме
          */
-//        val data: Seq[Int] = List(rnd.nextInt())
+//        val data: Seq[Int] = Seq(rnd.nextInt())
 
         /**
          * err - java.lang.ClassCastException: class java.lang.Integer cannot be cast to class org.apache.spark.unsafe.types.UTF8String
-         * - несоответствие типов элементов в InternalRow и заданной схеме
+         * -> несоответствие типов элементов в InternalRow и заданной схеме
          */
-//        val data: Seq[Int] = List(rnd.nextInt(), rnd.nextInt())
+//        val data: Seq[Int] = Seq(rnd.nextInt(), rnd.nextInt())
 
         /**
          * err - java.lang.ClassCastException: class java.lang.String cannot be cast to class org.apache.spark.unsafe.types.UTF8String
-         * - String автоматически не конвертируется в UTF8String, который используется в датафреймах
+         * -> String автоматически не конвертируется в UTF8String, который используется в датафреймах
          */
-//        val data: Seq[Any] = List(rnd.nextInt(), rnd.nextInt().toString)
+//        val data: Seq[Any] = Seq(rnd.nextInt(), rnd.nextInt().toString)
 
-        val data: Seq[Any] = List(rnd.nextInt(), UTF8String.fromString(rnd.nextInt().toString))
+        val data: Seq[Any] = Seq(rnd.nextInt(), UTF8String.fromString(rnd.nextInt().toString))
+
+//        println(s"data: $data")
+
         val iRow: InternalRow = InternalRow.fromSeq(data)
+//        println(s"iRow: $iRow")
         i += 1
 
         iRow
       }
     }
-
-
   }
 
   /** getPartitions - формирует набор партиций, вызывается на драйвере */

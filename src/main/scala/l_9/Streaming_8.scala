@@ -43,7 +43,7 @@ object Streaming_8 extends App {
         val description: String = stream.lastProgress.sources.head.description
 
         stream.stop()
-        println(s"Stopped $description")
+        println(s"Stopped: $description")
       }
 
   def airportsDf(): DataFrame = {
@@ -90,14 +90,14 @@ object Streaming_8 extends App {
    *
    *
    * без queryName:
-   * WARN StreamingQueryManager:
-   * Stopping existing streaming query [id=bff1f8c2-bb1a-423b-bc32-42e92f0042db, runId=287c8153-8aa6-4f8b-b1f5-807c78f00da8],
+   * WARN StreamingQueryManager: Stopping existing streaming query [id=03ac4435-a637-4a5f-8c71-9cdd3367a2de, runId=c465828e-8815-4eb2-8e88-96d8b7cfa872],
    * as a new run is being started
    */
-//  Thread.sleep(3000)
+//  Thread.sleep(5000)
 //  createConsoleSink("state1", myStreamDf).start()
 
-//  Thread.sleep(3000)
+  /** на разных чекпоинтах - ок */
+//  Thread.sleep(5000)
 //  createConsoleSink("state2", myStreamDf).start()
 
   /** ForeachBatch sink */
@@ -124,7 +124,7 @@ object Streaming_8 extends App {
     df.cache()
     df.count()
 
-    println(s"This is BatchId: $id")
+    println(s"BatchId: $id")
     df.show(1, truncate = false)
     df.unpersist()
   }
@@ -254,10 +254,10 @@ object Streaming_8 extends App {
 
     coalescedDf.unpersist()
   }
-    .start()
+//    .start()
 
 
-  Thread.sleep(1000000)
+  Thread.sleep(1_000_000)
 
   spark.stop()
 }

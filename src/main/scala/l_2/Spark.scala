@@ -13,8 +13,8 @@ object Spark extends App {
   val spark: SparkSession =
     SparkSession
       .builder()
-      .master("local[*]")
       .appName("l_2")
+      .master("local[*]")
       .getOrCreate()
 
   // работает в Spark 3.5

@@ -45,7 +45,7 @@ object Streaming_5 extends App {
             .description
 
         stream.stop()
-        println(s"Stopped $description")
+        println(s"Stopped: $description")
       }
 
   def getAirportsDf: DataFrame = {
@@ -62,7 +62,7 @@ object Streaming_5 extends App {
       getAirportsDf
         .select($"ident")
         .limit(20)
-        .distinct
+        .distinct()
         .as[String]
         .collect()
 
@@ -83,6 +83,7 @@ object Streaming_5 extends App {
 //  createConsoleSink("state1_WithDuplicates", streamDfWithDuplicates).start()
 
   /** Удаление дубликатов */
+
   /** v1 - без использования watermark */
   val streamingDfWithoutDuplicates: DataFrame =
     spark
@@ -102,12 +103,13 @@ object Streaming_5 extends App {
       .load()
       .withColumn("ident", getRandomIdent)
       /**
-       * задаем watermark и threshold
-       * фильтр1 - отбрасывает старые данные (в них могли быть и дубликаты)
+       * указываем колонку для watermark - "timestamp"
+       * и threshold - "10 minutes"
        */
+      /** фильтр 1 - отбрасывает старые данные (в них могли быть и дубликаты) */
       .withWatermark("timestamp", "10 minutes")
       /**
-       * фильтр2 - удаляет дубликаты по полям ident и timestamp
+       * фильтр 2 - удаляет дубликаты по полям ident и timestamp
        * + удаляет хэши от старых событий (которые точно уже не подойдут по watermark)
        */
       .dropDuplicates(Seq("ident", "timestamp"))
@@ -138,7 +140,7 @@ object Streaming_5 extends App {
 //  createConsoleSink("state4_WithoutDuplicatesWatermarkRound", streamingDfWithoutDuplicatesWatermarkRounded).start()
 
 
-  Thread.sleep(1000000)
+  Thread.sleep(1_000_000)
 
   spark.stop()
 }

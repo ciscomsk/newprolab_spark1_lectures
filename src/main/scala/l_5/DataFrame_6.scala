@@ -71,7 +71,7 @@ object DataFrame_6 extends App {
   val resDf2: DataFrame = leftDf2.join(broadcast(rightDf2), Seq("type"), "inner")
   printPhysicalPlan(resDf2)
 
-  /** BroadcastHash Join == PO BroadcastExchange HashedRelationBroadcastMode + PO BroadcastHashJoin */
+  /** BroadcastHash Join = PO BroadcastExchange HashedRelationBroadcastMode + PO BroadcastHashJoin */
   /** более читаемый план с localCheckpoint */
   /*
     AdaptiveSparkPlan isFinalPlan=false
@@ -95,7 +95,7 @@ object DataFrame_6 extends App {
 
   /** примеры non-equ join: */
   leftDf2.as("left").join(rightDf2.as("right"), expr("left.iso_country < right.type"))
-  // ==
+  // =
   leftDf2.as("left").join(rightDf2.as("right"), expr("(left.iso_country < right.type) = true"))
 
   /** автоматическое вычисление объема данных в датафрейме - часто работает некорректно => лучше отключить */
@@ -142,17 +142,16 @@ object DataFrame_6 extends App {
   /** BroadcastNestedLoop Join */
   /**
    * несмотря на то, что udf проверяет на равенство два ключа (т.е. фактически equ-join), Spark ничего не знает про логику udf
-   * и не может применить BroadcastHashJoin/SortMergeJoin => применится BroadcastNestedLoopJoin/CartesianProduct
+   * и не может применить BroadcastHashJoin/SortMergeJoin -> применится BroadcastNestedLoopJoin/CartesianProduct
    *
    * через udf можно сделать null-safe join
    */
   val compareUdf: UserDefinedFunction = udf { (leftVal: String, rightVal: String) => leftVal == rightVal }
-
   val joinExpr: Column = compareUdf(col("left.type"), col("right.type"))
 
   val resDf4: DataFrame = leftDf2.as("left").join(broadcast(rightDf2).as("right"), joinExpr, "inner")
   printPhysicalPlan(resDf4)
-  /** BroadcastNestedLoopJoin == PO BroadcastExchange IdentityBroadcastMode + PO BroadcastNestedLoopJoin */
+  /** BroadcastNestedLoopJoin = PO BroadcastExchange IdentityBroadcastMode + PO BroadcastNestedLoopJoin */
   /*
     // нет ни срезов (isnotnull) ни проекций т.к. используется udf
     AdaptiveSparkPlan isFinalPlan=false
@@ -172,7 +171,7 @@ object DataFrame_6 extends App {
     +- *(2) Scan ExistingRDD[type#191,count#192L]
    */
 
-  /** cartesian product result num partitions == left df num partitions * right df num partitions */
+  /** cartesian product result num partitions = left df num partitions * right df num partitions */
   println(
     s"""Partition summary:
        |left=${leftDf2.rdd.getNumPartitions}
@@ -183,7 +182,7 @@ object DataFrame_6 extends App {
 
 
   println(sc.uiWebUrl)
-  Thread.sleep(1000000)
+  Thread.sleep(1_000_000)
 
   spark.stop()
 }

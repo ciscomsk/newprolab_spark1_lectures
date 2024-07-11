@@ -40,9 +40,9 @@ object Datasource_1 extends App {
 //    .csv("src/main/resources/l_6/airports-2.csv")
   /**
    * !!! т.к. запись распределенная - Spark удаляет заголовок из csv файла
-   * при попытке чтения ("header" -> "true") таких данных - в качестве схемы Spark возьмет одну из строк, содержащую данные
+   * при попытке чтения таких данных с "header" -> "true"  - в качестве схемы Spark возьмет одну из строк, содержащую данные
    *
-   * схему нужно сохранять (например в БД)
+   * схему можно сохранить (например в БД)
    */
 
   val airportsReadDf: DataFrame =
@@ -89,7 +89,7 @@ object Datasource_1 extends App {
   println(s"firstLineWritedDf: $firstLineWritedDf")
   println()
 
-  /** если прочитать с header == false - названия колонок будут сгенерированы автоматически - _с0/_с1/... */
+  /** если прочитать с header = false - названия колонок будут сгенерированы автоматически -> _с0/_с1/... */
   val csvOptions2: Map[String, String] = Map("header" -> "false", "inferSchema" -> "true")
 
   spark
@@ -179,7 +179,7 @@ object Datasource_1 extends App {
       .split("\n")
       .length
 
-  println(lsCount)
+  println(s"lsCount: $lsCount")
   println()
 
   val ls: String = "ls -lah src/main/resources/l_6/airports-4.json_partitioned/iso_region=AD-04/iso_country=AD".!!
@@ -189,7 +189,7 @@ object Datasource_1 extends App {
   val cat: String =
     "cat src/main/resources/l_6/airports-4.json_partitioned/iso_region=AD-04/iso_country=AD/part-00000-6b21a22e-2f06-4813-8f75-59b4cb7a41a8.c000.json".!!
 
-  println(cat)
+  println(s"cat: $cat")
 
 
   /**
@@ -243,7 +243,7 @@ object Datasource_1 extends App {
 
   /**
    * !!! файловые форматы не имеют автоматической валидации данных при записи
-   * => достаточно легко ошибиться и записать данные в другом формате
+   * -> достаточно легко ошибиться и записать данные в другом формате
    */
 
   /** "по ошибке" запишем данные в формате json в папку с text - SaveMode.Append */
@@ -294,7 +294,7 @@ object Datasource_1 extends App {
 //    .show(3, truncate = false)
 
   mixedJsonDf
-    .na.drop("all", Seq("_corrupt_record")) // у валидных строк _corrupt_record == null
+    .na.drop("all", Seq("_corrupt_record")) // у валидных строк _corrupt_record = null
     .select($"_corrupt_record", $"ident")
     .show(3, truncate = false)
 
@@ -329,7 +329,7 @@ object Datasource_1 extends App {
         .csv("src/main/resources/l_3/airport-codes.csv")
 
     airportsDf.printSchema()
-  } // 170 ms
+  } // 189 ms
   println()
 
   spark.time {
@@ -342,12 +342,12 @@ object Datasource_1 extends App {
         .csv("src/main/resources/l_3/airport-codes.csv")
 
     airportsDf.printSchema
-  } // 205 ms
+  } // 187 ms
   println()
 
 
   println(sc.uiWebUrl)
-  Thread.sleep(1000000)
+  Thread.sleep(1_000_000)
 
   spark.stop()
 }

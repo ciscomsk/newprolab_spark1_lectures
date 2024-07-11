@@ -84,7 +84,7 @@ object Datasource_4 extends App {
    * Сколько хостов должно дать одинаковый ответ, для того, чтобы запрос на запись считался успешным:
    * 1. ANY - любой из хостов подтверждает запись (данные не будут потеряны даже в случае отсутствии хостов,
    * на которые по хэшу должны были попасть эти данные, но они не будут доступные до поднятия хотя бы 1 такого хоста)
-   * 2. QUORUM - нужен ответ от кворума хостов
+   * 2. QUORUM - координатор будет ждать ответ от кворума хостов
    * 3. ALL - нужен ответ от всех хостов
    */
   spark.conf.set("spark.cassandra.output.consistency.level", "ANY")
@@ -143,7 +143,7 @@ object Datasource_4 extends App {
     cassandraDf
       .filter(col("ident") === "22WV")
       .show(1, 200, vertical = true)
-  }  // 117 ms
+  }  // 99 ms
   println()
 
   cassandraDf
@@ -175,7 +175,7 @@ object Datasource_4 extends App {
     cassandraDf
       .filter(col("iso_country") === "RU")
       .show(1, 200, vertical = true)
-  }  // 210 ms
+  }  // 187 ms
   println()
 
   cassandraDf
@@ -207,11 +207,11 @@ object Datasource_4 extends App {
     cassandraDf
       .filter(lower(col("iso_country")) === "ru")
       .show(1, 200, vertical = true)
-  }  // 183 ms
+  }  // 173 ms
 
 
   println(sc.uiWebUrl)
-  Thread.sleep(1000000)
+  Thread.sleep(1_000_000)
 
   spark.stop()
 }

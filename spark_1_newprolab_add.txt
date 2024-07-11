@@ -1,62 +1,63 @@
 ADD
-__ZOOKEEPER+
-++https://zookeeper.apache.org/
+__ZOOKEEPER
+https://zookeeper.apache.org/
 
 
-__HADOOP+
-++https://hadoop.apache.org/docs/stable/index.html
+__HADOOP
+https://hadoop.apache.org/docs/stable/index.html
 
-++https://hadoop.apache.org/docs/current/api/org/apache/hadoop/fs/FileSystem.html
++https://hadoop.apache.org/docs/current/api/org/apache/hadoop/fs/FileSystem.html
 
 FileSystem - getFileBlockLocations
-++https://hadoop.apache.org/docs/current/api/org/apache/hadoop/fs/FileSystem.html#getFileBlockLocations-org.apache.hadoop.fs.FileStatus-long-long-
+https://hadoop.apache.org/docs/current/api/org/apache/hadoop/fs/FileSystem.html#getFileBlockLocations-org.apache.hadoop.fs.FileStatus-long-long-
 
 FileSystem - create FSDataOutputStream
-++https://hadoop.apache.org/docs/current/api/org/apache/hadoop/fs/FileSystem.html#create-org.apache.hadoop.fs.Path-boolean-
+https://hadoop.apache.org/docs/current/api/org/apache/hadoop/fs/FileSystem.html#create-org.apache.hadoop.fs.Path-boolean-
 
 FSDataInputStream
-++https://hadoop.apache.org/docs/current/api/org/apache/hadoop/fs/FSDataInputStream.html
+https://hadoop.apache.org/docs/current/api/org/apache/hadoop/fs/FSDataInputStream.html
 
 FileSystem
-++https://github.com/apache/hadoop/blob/trunk/hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/FileSystem.java
+https://github.com/apache/hadoop/blob/trunk/hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/FileSystem.java
 
 Configuring Mountable HDFS (FUSE - Filesystem in Userspace)
-++https://docs.cloudera.com/documentation/enterprise/6/6.3/topics/cdh_ig_hdfs_mountable.html
+https://docs.cloudera.com/documentation/enterprise/6/6.3/topics/cdh_ig_hdfs_mountable.html
 
 
 __COMPUTER_SCIENCE+
 The Google File System
-++https://static.googleusercontent.com/media/research.google.com/en//archive/gfs-sosp2003.pdf
++https://static.googleusercontent.com/media/research.google.com/en//archive/gfs-sosp2003.pdf
 
 MapReduce: Simplified Data Processing on Large Clusters
-++https://static.googleusercontent.com/media/research.google.com/en//archive/mapreduce-osdi04.pdf
++https://static.googleusercontent.com/media/research.google.com/en//archive/mapreduce-osdi04.pdf
 
 
 __MAPREDUCE+
 MapReduce WordCount example
-++https://github.com/naver/hadoop/blob/master/hadoop-mapreduce-project/hadoop-mapreduce-examples/src/main/java/org/apache/hadoop/examples/WordCount.java
++https://github.com/naver/hadoop/blob/master/hadoop-mapreduce-project/hadoop-mapreduce-examples/src/main/java/org/apache/hadoop/examples/WordCount.java
 
 
-__HIVE+
-++https://cwiki.apache.org/confluence/display/Hive/Home
-++https://cwiki.apache.org/confluence/display/Hive/HiveServer2+Overview
+__HIVE
+https://cwiki.apache.org/confluence/display/Hive/Home
+https://cwiki.apache.org/confluence/display/Hive/HiveServer2+Overview
 
 
-__DATA_FORMATS+
-++https://parquet.apache.org/docs/
-++https://mvnrepository.com/artifact/org.apache.parquet/parquet-tools
-++https://rangareddy.github.io/ParquetTools/
-++https://pypi.org/project/parquet-tools/
+__DATA_FORMATS
+https://parquet.apache.org/docs/
++https://pypi.org/project/parquet-tools/
+https://mvnrepository.com/artifact/org.apache.parquet/parquet-tools
+https://rangareddy.github.io/ParquetTools/
+
 
 Как класть Parquet - Фёдор Лаврентьев, Moscow Spark #5
-++https://www.youtube.com/watch?v=VHsvr10b63c&t=512s
++https://www.youtube.com/watch?v=VHsvr10b63c&t=512s
 
-++https://cwiki.apache.org/confluence/display/hive/languagemanual+orc
++https://cwiki.apache.org/confluence/display/hive/languagemanual+orc
 
-++https://avro.apache.org/docs/
+https://avro.apache.org/docs/
 
 
-__IDEA+
+__IDEA
 Idea => Settings => Build, Execution, Deployment => Build Tools => sbt
 sbt shell => use for:
 1. project reload
@@ -66,40 +67,40 @@ Implicit hints
 https://www.jetbrains.com/help/idea/scala-features-overview-scala.html#scala_hints
 
 
-__SCALA_LEARNING+
-++https://www.scala-lang.org/download/
+__SCALA_LEARNING
+https://www.scala-lang.org/download/
 
-++https://docs.scala-lang.org/api/all.html
-++https://www.scala-lang.org/api/2.13.12/
++https://docs.scala-lang.org/api/all.html
++https://www.scala-lang.org/api/2.13.14
 
 https://docs.scala-lang.org/tour/tour-of-scala.html
 
-++https://www.scala-exercises.org/
++https://www.scala-exercises.org/
 
 https://www.scala-lang.org/api/2.13.0/scala-compiler/scala/tools/reflect/ToolBox.html?search=ToolBox
 
 https://docs.scala-lang.org/overviews/quasiquotes/intro.html
 
-++https://stackoverflow.com/questions/8000903/what-are-all-the-uses-of-an-underscore-in-scala
++https://stackoverflow.com/questions/8000903/what-are-all-the-uses-of-an-underscore-in-scala
 
-++https://stackoverflow.com/questions/32199989/what-are-the-differences-between-final-class-and-sealed-class-in-scala
++https://stackoverflow.com/questions/32199989/what-are-the-differences-between-final-class-and-sealed-class-in-scala
 
-++https://www.baeldung.com/scala/for-comprehension
++https://www.baeldung.com/scala/for-comprehension
 
-++https://docs.scala-lang.org/overviews/collections-2.13/performance-characteristics.html
++https://docs.scala-lang.org/overviews/collections-2.13/performance-characteristics.html
 
-++https://www.lihaoyi.com/post/BenchmarkingScalaCollections.html
+https://www.lihaoyi.com/post/BenchmarkingScalaCollections.html
 https://github.com/mslinn/scala-bench
 
-++https://www.scala-lang.org/files/archive/spec/2.13/05-classes-and-objects.html
++https://www.scala-lang.org/files/archive/spec/2.13/05-classes-and-objects.html
 
-++http://www.jesperdj.com/2016/01/08/scala-access-modifiers-and-qualifiers-in-detail/
++http://www.jesperdj.com/2016/01/08/scala-access-modifiers-and-qualifiers-in-detail/
 
-++https://alvinalexander.com/
++https://alvinalexander.com/
 http://scalacookbook.com/
 
 
-__SCALA_TOOLS+
+__SCALA_TOOLS
 https://www.scala-sbt.org/
 sbt_shell: clean/compile/run
 
@@ -108,15 +109,15 @@ sbt_shell: clean/compile/run
 2. javap <file>.class - покажет дизассемблированный код результата
 
 
-__SCALA_LIBRARIES+
+__SCALA_LIBRARIES
 https://github.com/pureconfig/pureconfig
 
-++https://github.com/lightbend/config
+https://github.com/lightbend/config
 
 https://json4s.org/index.html
 https://github.com/json4s/json4s
 
-++https://circe.github.io/circe/
+https://circe.github.io/circe/
 https://github.com/circe/circe
 
 https://www.scalatest.org/
@@ -126,18 +127,18 @@ http://typelevel.org/frameless/
 https://github.com/twitter/scalding
 
 
-__SCALA_ECOSYSTEM+
-++https://www.jetbrains.com/idea/download/?section=linux
+__SCALA_ECOSYSTEM
++https://www.jetbrains.com/idea/download/?section=linux
 https://docs.scala-lang.org/getting-started/index.html#open-hello-world-project
 
-++http://ammonite.io/
++http://ammonite.io/
 
-++https://scastie.scala-lang.org/
++https://scastie.scala-lang.org/
 https://scalafiddle.io/ - не работает
 
 
-__JAVA_ECOSYSTEM+
-++http://janino-compiler.github.io/janino/
+__JAVA_ECOSYSTEM
++http://janino-compiler.github.io/janino/
 
 jvm -D
 https://stackoverflow.com/questions/44745261/why-do-jvm-arguments-start-with-d
@@ -150,15 +151,15 @@ https://mageswaran1989.medium.com/spark-jargon-for-starters-af1fd8117ada
 Spark does not support nested RDDs or performing Spark actions inside of transformations
 +https://issues.apache.org/jira/browse/SPARK-5063
 
-+https://nathankleyn.com/2017/12/29/using-transient-and-lazy-vals-to-avoid-spark-serialisation-issues/
+https://nathankleyn.com/2017/12/29/using-transient-and-lazy-vals-to-avoid-spark-serialisation-issues/
 
-++https://www.linkedin.com/pulse/beyond-traditional-join-apache-spark-kirill-pavlov/
-++https://www.waitingforcode.com/apache-spark-sql/sort-merge-join-spark-sql/read
++https://www.linkedin.com/pulse/beyond-traditional-join-apache-spark-kirill-pavlov/
++https://www.waitingforcode.com/apache-spark-sql/sort-merge-join-spark-sql/read
 
 Optimizing Apache Spark SQL Joins: Spark Summit East talk by Vida Ha
-++https://www.youtube.com/watch?v=fp53QhSfQcI
++https://www.youtube.com/watch?v=fp53QhSfQcI
 
-+https://stackoverflow.com/questions/34580662/what-does-stage-skipped-mean-in-apache-spark-web-ui
+https://stackoverflow.com/questions/34580662/what-does-stage-skipped-mean-in-apache-spark-web-ui
 
 Шаблоны конфигов
 https://github.com/apache/spark/tree/branch-3.4/conf
@@ -167,59 +168,62 @@ https://spark.apache.org/docs/latest/configuration.html#dynamically-loading-spar
 
 +https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/DataFrameReader.html
 
-+https://spark.apache.org/docs/latest/sql-data-sources.html
+https://spark.apache.org/docs/latest/sql-data-sources.html
 https://spark.apache.org/docs/latest/sql-data-sources-generic-options.html
 
-++https://spark.apache.org/docs/latest/sql-data-sources-csv.html
-++https://spark.apache.org/docs/latest/sql-data-sources-csv.html#data-source-option
-++https://spark.apache.org/docs/latest/sql-data-sources-json.html
-+https://spark.apache.org/docs/latest/sql-data-sources-text.html
++https://spark.apache.org/docs/latest/sql-data-sources-csv.html
+https://spark.apache.org/docs/latest/sql-data-sources-csv.html#data-source-option
++https://spark.apache.org/docs/latest/sql-data-sources-json.html
+https://spark.apache.org/docs/latest/sql-data-sources-text.html
 
-++https://spark.apache.org/docs/latest/sql-data-sources-parquet.html
-+https://spark.apache.org/docs/latest/sql-data-sources-parquet.html#data-source-option
-++https://spark.apache.org/docs/latest/sql-data-sources-orc.html
++https://spark.apache.org/docs/latest/sql-data-sources-parquet.html
+https://spark.apache.org/docs/latest/sql-data-sources-parquet.html#data-source-option
++https://spark.apache.org/docs/latest/sql-data-sources-orc.html
 
-++https://spark.apache.org/docs/latest/sql-data-sources-jdbc.html
++https://spark.apache.org/docs/latest/sql-data-sources-jdbc.html
 +https://mvnrepository.com/artifact/org.postgresql/postgresql
 
-++https://www.elastic.co/guide/en/elasticsearch/hadoop/current/spark.html
-++https://www.elastic.co/guide/en/elasticsearch/hadoop/current/spark.html#spark-sql
++https://www.elastic.co/guide/en/elasticsearch/hadoop/current/spark.html
++https://www.elastic.co/guide/en/elasticsearch/hadoop/current/spark.html#spark-sql
 +https://mvnrepository.com/artifact/org.elasticsearch/elasticsearch-spark-30
 
-++https://github.com/datastax/spark-cassandra-connector#documentation
-++https://github.com/datastax/spark-cassandra-connector/blob/master/doc/14_data_frames.md
++https://github.com/datastax/spark-cassandra-connector#documentation
++https://github.com/datastax/spark-cassandra-connector/blob/master/doc/14_data_frames.md
 +https://mvnrepository.com/artifact/com.datastax.spark/spark-cassandra-connector
 
-++https://github.com/RedisLabs/spark-redis/blob/master/doc/dataframe.md
+https://github.com/RedisLabs/spark-redis/blob/master/doc/dataframe.md
 
-++https://www.mongodb.com/docs/spark-connector/upcoming/
-+https://www.mongodb.com/products/integrations/spark-connector
-+https://github.com/mongodb/mongo-spark
++https://www.mongodb.com/docs/spark-connector/upcoming/
+https://www.mongodb.com/products/integrations/spark-connector
+https://github.com/mongodb/mongo-spark
 
 
-++https://spark.apache.org/docs/latest/rdd-programming-guide.html
-++https://spark.apache.org/docs/latest/rdd-programming-guide.html#rdd-persistence
++https://spark.apache.org/docs/latest/rdd-programming-guide.html
++https://spark.apache.org/docs/latest/rdd-programming-guide.html#rdd-persistence
 
-++https://spark.apache.org/docs/latest/api/scala/org/apache/spark/rdd/RDD.html
-++https://spark.apache.org/docs/latest/api/scala/org/apache/spark/rdd/PairRDDFunctions.html
++https://spark.apache.org/docs/latest/api/scala/org/apache/spark/rdd/RDD.html
++https://spark.apache.org/docs/latest/api/scala/org/apache/spark/rdd/PairRDDFunctions.html
 
-++https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/Dataset.html
++https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/Dataset.html
 
 https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/Row.html
 https://github.com/apache/spark/blob/master/sql/catalyst/src/main/scala/org/apache/spark/sql/catalyst/InternalRow.scala
 
-++https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/Column.html
-++https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/TypedColumn.html
++https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/Column.html
++https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/TypedColumn.html
 
-++https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/types/index.html
-++https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/types/DateType.html
-++https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/types/TimestampType.html
++https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/types/index.html
++https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/types/DateType.html
++https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/types/TimestampType.html
 
-++https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/functions$.html
-++https://spark.apache.org/docs/latest/api/sql/index.html
-++https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/DataFrameNaFunctions.html
-++https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/RelationalGroupedDataset.html
-++https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/expressions/Window$.html
++https://spark.apache.org/docs/latest/sql-ref.html
++https://spark.apache.org/docs/latest/sql-ref-datatypes.html#data-types
+
++https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/functions$.html
++https://spark.apache.org/docs/latest/api/sql/index.html
++https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/DataFrameNaFunctions.html
++https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/RelationalGroupedDataset.html
++https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/expressions/Window$.html
 +https://spark.apache.org/docs/latest/api/scala/org/apache/spark/sql/expressions/WindowSpec.html
 
 
@@ -228,19 +232,18 @@ __SQL
 https://habr.com/ru/companies/otus/articles/490296/
 
 
-__SPARK_STREAMING+
+__SPARK_STREAMING
 Spark Structured Streaming graceful shutdown — Что в этом сложного и как это правильно делать?
 https://habr.com/ru/articles/569898/
 
-++https://spark.apache.org/docs/latest/structured-streaming-kafka-integration.html
-++https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#input-sources
-++https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#output-sinks
++https://spark.apache.org/docs/latest/structured-streaming-kafka-integration.html
++https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#input-sources
++https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#output-sinks
 
-https://mvnrepository.com/artifact/org.apache.spark/spark-sql-kafka-0-10
++https://mvnrepository.com/artifact/org.apache.spark/spark-sql-kafka-0-10
 
 
-__STATEFUL STREAMING+
-
+__STATEFUL STREAMING
 https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#state-store
 
 https://medium.com/@vndhya/stateful-processing-in-spark-structured-streaming-memory-aspects-964bc6414346
@@ -257,18 +260,18 @@ https://ru.wikipedia.org/wiki/%D0%90%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC_R
 
 
 __DELTA
-++https://docs.delta.io/latest/quick-start.html
++https://docs.delta.io/latest/quick-start.html
 
 
-__ELASTIC+
-++https://www.elastic.co/
-++https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-cli-run-dev-mode
-++https://www.elastic.co/guide/en/kibana/current/docker.html#_running_kibana_on_docker_for_development
+__ELASTIC
++https://www.elastic.co/
++https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-cli-run-dev-mode
++https://www.elastic.co/guide/en/kibana/current/docker.html#_running_kibana_on_docker_for_development
 
 
-__CASSANDRA+
-++https://cassandra.apache.org/_/index.html
-++https://cassandra.apache.org/doc/stable/cassandra/architecture/dynamo.html#dataset-partitioning-consistent-hashing
+__CASSANDRA
++https://cassandra.apache.org/_/index.html
++https://cassandra.apache.org/doc/stable/cassandra/architecture/dynamo.html#dataset-partitioning-consistent-hashing
 
 https://thenewstack.io/an-apache-cassandra-breakthrough-acid-transactions-at-scale/
 https://cwiki.apache.org/confluence/display/CASSANDRA/CEP-15%3A+General+Purpose+Transactions
@@ -276,7 +279,7 @@ https://cwiki.apache.org/confluence/display/CASSANDRA/CEP-15%3A+General+Purpose+
 https://www.guru99.com/cassandra-query-language-cql-insert-update-delete-read-data.html
 
 
-__JUPYTER_NOTEBOOK+
+__JUPYTER_NOTEBOOK
 jupyter notebook - запустить Jupyter Notebook
 
 https://www.8host.com/blog/ustanovka-jupyter-notebook-dlya-python-3-v-ubuntu-20-04-i-podklyuchenie-po-ssh-tunnelyu/
@@ -320,11 +323,12 @@ DataFrame_2
 в плане нет struct + to_json (?)
 
 5.
-l_5.DataFrame_5 => В Spark 3+ - не работает => Found 0 WholeStageCodegen subtrees (?)
+l_5.DataFrame_5 - В Spark 3+ - не работает -> Found 0 WholeStageCodegen subtrees (?)
 
 6.
 l_6/Datasource_2.scala => spark.sql("SET -v")
 WARN SQLConf: SQL configurations from Hive module is not loaded
+-> build.sbt "spark-hive"
 
 Размер будет больше ... (?) - размер получился меньше
 
@@ -368,10 +372,10 @@ https://spark.apache.org/docs/latest/configuration.html#scheduling
 
 
 __1
-4-00 => 40-35 - введение
-1-48-55 => 2-01-25
-2-12-15 => 2-22-05 - HDFS cli demo
-=> 3-33-20
+4-00 -> 40-35 - введение
+1-48-55 -> 2-01-25
+2-12-15 -> 2-22-05 - HDFS cli demo
+3-33-20
 
 
 Под словом Hadoop могут подразумеваться:
@@ -385,22 +389,26 @@ __1
 3. управление ресурсами
 
 Модели обработки данных:
-1. ETL == Extract Transform Load - DWH
+1. ETL = Extract Transform Load -> DWH
++ выверенные и максимально детальные сущности
++ быстрые операции над сущностями
+- необходимость поддерживать/дорабатывать модель данных
 - при ETL трансформации скорее всего будут утеряны/изменены исходные данные
-2. ELT == Extract Load Transform - Data Lake
+- более сложные трансформации (необходимо соответствовать модели данных)
+2. ELT = Extract Load Transform -> Data Lake
 + быстрое подключение источников
 
 Архитектуры хранилищ:
-1. DWH - schema on write - схема задается при записи данных
-2. Data Lake - schema on read - схема задается при чтении данных - удобно хранить слабо/неструктурированные данных (text/csv/json/...)
+1. DWH = schema on write - схема задается при записи данных
+2. Data Lake = schema on read - схема задается при чтении данных - удобно хранить слабо/неструктурированные данных (text/csv/json/...)
 
 Разделение schema on write/read не является строгим, в DWH есть стейджинговые зоны для хранения неструктурированных данных, в Data Lake - можно задавать схему при записи (пример - parquet)
 
-Концепции DWH и Data Lake не являются взаимоисключающими - чаще всего DWH строится рядом с Data Lake по какой-либо модели (data vault/anchor model/...)
+Концепции DWH и Data Lake не являются взаимоисключающими - чаще всего DWH строится над Data Lake   по какой-либо модели (inmon/kimball/data vault/anchor model/...)
 
 Core сервисы Hadoop:
-1. HDFS == Hadoop Distributed File System - распределенная файловая система
-2. YARN == Yet Another Resource Negotiator - менеджер ресурсов
+1. HDFS = Hadoop Distributed File System - распределенная файловая система
+2. YARN = Yet Another Resource Negotiator - менеджер ресурсов
 3. MapReduce - фреймворк для распределенных вычислений
 
 1. Data ingestion (поглощение) tools - инструменты импорта/экспорта данных между источниками и HDFS
@@ -416,12 +424,11 @@ Core сервисы Hadoop:
 5. Zookeeper - metadata storage
    Используется месте с HDFS/Kafka (переходит на Raft)/YARN/ClickHouse/HBase
 6. Cassandra
-7. ZooKeeper
 
 
-Zookeeper - это централизованная служба для поддержки информации о конфигурации, именования, обеспечения распределенной синхронизации и представления групповых служб
+Zookeeper - это централизованная служба (single source of truth) для поддержки информации о конфигурации, именования, обеспечения распределенной синхронизации и представления групповых служб
 Zookeeper - это каталог, хранящий метаинформацию в z-нодах
-Примеры: данные о мастер ноде/воркерах/тасках/...
+Примеры: идентификатор мастер ноды/список воркеров/выполняющиеся таски/...
 
 Линеаризуемость - события должны передаваться/обрабатываться в порядке их поступления
 Линеаризуемость - одна из гарантий консистентности данных
@@ -432,7 +439,7 @@ CAP теорема - система может соответствовать т
 
 1. CA - нераспределенная система
 2. AP - распределенная система, главная цель - Availability
-Пример - горячие кэши - лучше иметь дублирующиеся/отличающиеся кэши в разных частях системы, чем не иметь их вообще => большая нагрузка на БД
+Пример - горячие кэши - лучше иметь дублирующиеся/отличающиеся кэши в разных частях системы, чем не иметь их вообще (тк будет большая нагрузка на БД)
 3. CP - распределенная система, главная цель - Consistency
 В случае возникновения неконсистентного состояния в части системы - эта часть (ноды в этой части) отключается, чтобы избежать split brain
 
@@ -443,7 +450,7 @@ etcd/consul - системы близкие по назначению с Zookeep
 HDFS - файловая система, предназначенная для хранения файлов большого размера, поблочно распределенных между узлами вычислительного кластера
 
 Элементы архитектуры HDFS:
-1. Name node - хранит метаданные (маппинги имя файла - список блоков/список реплик/...) - единая точка отказа
+1. Name node - хранит метаданные (маппинги имя файла -> список блоков/список реплик/...) - единая точка отказа
 2. Data node - хранит блоки данных
 Увеличивая количество дата нод => масштабируем отказоустойчивость/скорость чтения и записи
 
@@ -451,12 +458,12 @@ HDFS - файловая система, предназначенная для х
 Содержимое файла хранится в нескольких блоках одинакового размера (зависит от размера блока в HDFS) на дата нодах
 Метаинформация о файле размером 50Кб будет занимать такой же объем в оперативной памяти нейм ноды, как и файл размером в дефолтный размер блока
 
-Клиент выполняет чтение/запись напрямую на дата нодах (данные не перегоняются через нэйм ноду - у нее запрашиваются только метаданные) => большая пропускная способность
+Клиент выполняет чтение/запись напрямую на дата нодах (данные не перемещаются через нэйм ноду - у нее запрашиваются только метаданные) => большая пропускная способность
 
 Поблочная запись обеспечивает параллельное чтение (не ограничиваемся пропускной способностью 1-й ноды) + равномерная утилизация свободного места
 Перекосы блоков на нодах исправляются балансировщиком (фоновый процесс)
 
-Фактор репликации (работает на уровне блоков) по умолчанию == 3
+Фактор репликации (работает на уровне блоков) по умолчанию = 3
 HDFS умеет различать не только разные ноды, но и разные стойки (rack awareness) - топология конфигурируется (принадлежность блока к стойке) => одна из копий блока будет создаваться в другой стойке. Возможна настройка отказоустойчивости на уровне датацентра
 
 Чтение из HDFS - Java API:
@@ -475,7 +482,7 @@ HDFS умеет различать не только разные ноды, но
 6. FSDataOutputStream.close
 7. complete on name node
 
-High availability (HA) HDFS cluster - используется 2 нэйм ноды (active + standby)
+High Availability (HA) HDFS cluster - используется 2 нэйм ноды (active + standby)
 В z-ноде зукипера хранится id активной нэйм ноды
 
 3. Secondary Name node - нэйм нода передает сюда fsimage и логи, отбратно возвращается fsimage c вмерженными из логов изменениями 
@@ -486,11 +493,13 @@ ZKFC определяют какая нэйм нода является акти
 
 Name node federation
 
-Если используется HA HDFS кластер - клиенту нужно подложить конфиги (hdfs-site.xml/core-site.xml из /etc/hadoop/conf) => active нэйм нода будет определяться автоматически
+Если используется HA HDFS кластер - клиенту нужно подложить конфиги (hdfs-site.xml/core-site.xml из /etc/hadoop/conf) в resources => active нэйм нода будет определяться автоматически
 Путь к файлам конфигурации HDFS/YARN - /etc/hadoop/conf
 
+hdfs://name_node:port/object_path - если нейм нода одна (не HA)
+
 Особенности HDFS:
-1. не любит мелкие файлы - нагрузка на ram в нэйм ноде (1 файл == 1 запись в ram нэйм ноды)
+1. не любит мелкие файлы - нагрузка на ram в нэйм ноде (1 файл = 1 запись в ram нэйм ноды)
 => желательно репартицировать ~под размер блока
 2. не поддерживает редактирование файла - исходный файл удаляется и записывается новый
 3. работает на дешевом железе
@@ -501,14 +510,13 @@ HDFS API:
 3. WebHDFS/HttpFS - REST API
 4. HDFS CLI - hdfs dfs -<command>
 
-hdfs://name_node:port/object_path
-
-При удалении из HDFS - файлы сначала помещаются в .Trash (т.е. можно отменить удаление - переместив из .Trash) - затем автоматически (через ~24 часа) удаляются
+При удалении из HDFS - файлы сначала помещаются в .Trash (т.е. можно отменить удаление - переместив их из .Trash) - затем автоматически (через ~24 часа) удаляются
 
 HDFS - это object storage
 
 Типы хранилищ:
 1. Object storage - работают по своим протоколам/api, а не на уровне фс
+Упрощенно - key (path): value (object)
 Object storage менее производительны, но являются более универсальными/масштабируемыми чем block storage
 2. Block storage - работают на уровне фс - ~большой диск
 3. File storage
@@ -524,7 +532,7 @@ Oбъектные хранилища:
 6. Apache Ozone - развитие HDFS
 
 
-Системы контейнеризации - отвечают за управление ресурсами + изоляцию работающих процессов:
+Системы контейнеризации - отвечают за управление ресурсами и изоляцию работающих процессов:
 1. YARN
 2. Kubernetes
 3. Mesos
@@ -535,13 +543,13 @@ Resource manager - управляет ресурсами кластера
 Node manager - управляет ресурсами конкретной ноды (физической машины)
 
 Механизм запуска приложения в YARN:
-1. Client =(job submission - .jar)=> Resource manager
-2. Resource manager => Node manager => разворачивается контейнер Application master
-3. Application master =(resource request)=> Resource manager (success) => Node manager => разворачиваются контейнеры для обработки задачи (воркеры)
+1. Client -(job submission - .jar)-> Resource manager
+2. Resource manager -> Node manager -> разворачивается контейнер Application master
+3. Application master -(resource request)-> Resource manager (success) -> Node manager -> разворачиваются контейнеры для обработки задачи (воркеры)
 
 Обмен сообщениями:
-1. Воркер =(work status)=> Application master
-2. Node manager =(node status)=> Resource manager
+1. Воркер -(work status)-> Application master
+2. Node manager -(node status)-> Resource manager
 
 В YARN используется двухэтапный планировщик ресурсов:
 1. Клиент при запуске приложения указывает необходимые ресурсы (этап job submission)
@@ -549,17 +557,17 @@ Node manager - управляет ресурсами конкретной нод
 
 Kubernetes имеет одноэтапный планировщик
 
-Контейнер - отдельный jvm процесс в системе
+Контейнер - это отдельный jvm процесс
 Если контейнер превысил допустимый порог потребления по памяти - YARN убивает контейнер
 Если Application master падает - все дочерние контейнеры уничтожаются
 
 YARN использует механизм очередей - указывается приоритет + выделяемые ресурсы (MIN/MAX) + логика планирования (FIFO/FAIR):
 1. отдельная очередь для долгих тяжелых задач
-2. отдельная очередь для мелких ad-hoc запросов
+2. отдельная очередь для ad-hoc запросов
 3. отдельная очередь для стриминговых задач
 4. отдельная очередь для обучения моделей
 5. отдельная очередь на каждый отдел
-6. ...
+...
 
 Если приложение долго висит в статусе accepted - кластеру не хватает ресурсов для создания воркеров
 
@@ -573,29 +581,29 @@ MapReduce:
 2. фреймворк в составе Hadoop
 
 Главная идея MapReduce - вычисления можно представить как последовательность операций:
-1. Map - трансформации
-2. Shuffle - перераспределение данных по ключам
-3. Reduce - агрегации
+1. Map - трансформация
+2. Shuffle - перераспределение данных
+3. Reduce - агрегация
 
 MapReduce стабильнее, но гораздо медленнее Spark
 
 
 Hive - SQL движок, для выполнения запросов к слабоструктурированным данным (запрос преобразуется в MapReduce джобу)
 Для запросов используется язык HiveQL
-Hive имеет свой metastore для хранения метаинформации (имя/структура таблицы)
+Hive имеет свой metastore для хранения метаинформации (имя -> структура таблицы)
 
 Этапы выполнение запроса в Hive:
 1. 
-JDBC/ODBC/Thrift =(HQL)=> HiveServer2
-CLI/WebUI =(HQL)=> Driver
-=>
+JDBC/ODBC/Thrift -(HQL)-> HiveServer2
+CLI/WebUI -(HQL)-> Driver
+->
 Hive:
 2.1 HiveServer2
 2.2 Driver
-2.3 Query parser(compiler) + optimizer + planner
+2.3 Query parser (compiler) + optimizer + planner
 2.4 Metastore DB (RDBMS) - хранит маппинги имя таблицы - путь в фс
 2.6 Execution engine
-=>
+->
 3. MapReduce job on Hadoop/YARN
 
 Hive может использовать движки Spark/Tez (работают быстрее), вместо MapReduce
@@ -603,34 +611,34 @@ Hive может использовать движки Spark/Tez (работаю�
 Партицирование - разбиение данных на уровне файловой системы
 Партицирование - ускоряет получение данных (~индекс в реляционных бд)
 
-show create table <table_name> - посмотреть какой командой была создана таблица (в т.ч. информацию по партицированию)
+SHOW CREATE TABLE <table_name> - посмотреть DDL таблицы (в т.ч. информация о партицировании)
 
 Виды форматов файлов хранения:
 1. Колоночные
-ORC/Parquet - последовательное чтение (гораздо быстрее случайного чтение с диска) нужных колонок + отличное сжатие (однородные данные сжимаются лучше) + индексы
+ORC/Parquet - последовательное чтение (гораздо быстрее случайного чтения с диска) нужных колонок + отличное сжатие (однородные данные сжимаются лучше) + индексы/метаинформация
 Нельзя записывать построчно => не подходят для потоковой записи
 Лучший формат для аналитики
 2. Строковые
 Avro - бинарный формат (компактное хранение данных) + схема не дублируется в каждом сообщении
 Avro - лучший выбор для потоковой записи
 
-В Hive можно описать собственный формат сериализации/десериализации через SerDe
+В Hive можно описать собственный формат сериализации/десериализации - ROW FORMAT SERDE <class>
 
 Типы таблиц Hive:
-1. Internal - удаляются данные и метаданные 
-2. External (внешняя) - удаляются только метаданные, данные остаются
+1. Internal (внутренняя) - при дропе удаляются данные и метаданные 
+2. External (внешняя) - при дропе удаляются только метаданные, данные остаются
 
 Если во внешней партицированной таблице Hive после записи новой партиции новых данных не видно (запрос hql):
-msck repair table <table_name> - обновление метастора (перечитает список партиций)
-+ invalidate metadata - если используется Impala
+MSCK REPAIR TABLE <table_name> - обновление метастора (перечитает список партиций)
++ INVALIDATE METADATA - если используется Impala
 
 Варианты написания запросов в Hive:
-1. Beeline(deprecated)/Hive CLI
+1. Beeline (deprecated)/Hive CLI
 2. HUE (Human User Experience) - Web UI
 3. библиотеки - JDBC/pyhive/...
 
-В Hive нельзя делать атомарные (where) Update/Delete - т.к. данные - это файлы на HDFS
-Для OLAP нагрузки характерен принцип Append only
+В Hive нельзя делать атомарные (WHERE) UPDATE/DELETE - т.к. данные - это файлы на HDFS
+Для OLAP нагрузки характерен принцип Append Only
 
 В Hive можно строить ACID таблицы в формате ORC - производительность очень низкая (можно использовать для небольших таблиц)
 
@@ -642,9 +650,9 @@ msck repair table <table_name> - обновление метастора (пер
 __2
 https://github.com/Gorini4/jupyter_scala_docker
 6-00
-53-05 => 59-30
-1-49-25 => 1-59-00
-3-01-30 => 3-08-30
+53-05 -> 59-30
+1-49-25 -> 1-59-00
+3-01-30 -> 3-08-30
 3-25-20
 
 
@@ -712,11 +720,11 @@ dataset.map(el => myCustomTransform(el)) - это выражение будет 
     1.1.4 Int
     1.1.5 Short
     1.1.6 Byte
-    1.1.7 Unit
-    1.1.8 Boolean
-    1.1.9 Char
+    1.1.7 Boolean
+    1.1.8 Char
+    1.1.9 Unit
       1.1.x.1 Nothing
-  1.2 AnyRef (== java.lang.Object)
+  1.2 AnyRef (= java.lang.Object)
     1.2.1 List
     1.2.2 Option
     1.2.3 Other classes ...
@@ -744,7 +752,7 @@ Case class (СС):
 
 Object:
 1. является Singleton - может существовать только 1 экземпляр
-2. используется для размещения методов, которые могут быть вызваны без создания экземпляра класса (~Java static method)
+2. используется для размещения методов, которые могут быть вызваны без создания экземпляра класса (= Java static method)
 3. Scala App - это объект
 
 Companion object (CO):
@@ -758,7 +766,7 @@ Companion object (CO):
 3. ...
 
 Trait:
-1. ~Java Interface 
+1. = Java Interface 
 2. основная задача - определить контракт на реализацию некоторой функциональности
 3. нет конструктора
 4. можно подмешивать неограниченное количество трейтов
@@ -796,7 +804,7 @@ Implicit class (IC) - использутся для неявного расши�
 2. работа с конфигурацией:
   2.1 Typesafe config
   2.2 PureConfig
-3. Тестирование
+3. тестирование
   3.1 ScalaTest
 
 
@@ -807,9 +815,6 @@ __3
 59-55 => 1-04-45
 1-40-10 => 1-47-05
 3-00-40
-
-
-SPARK_3.5.0
 
 
 Spark - фреймворк для создания распределенных приложений для обработки данных
@@ -832,7 +837,7 @@ Spark является эволюцией фреймворка Hadoop MapReduce
   2.2 каждый executor работает со своим сегментом данных - Partition
   2.3 код на экзекьюторе не выполняется напрямую - через API трансформации передаются с драйвера  на экзекьюторы и там применяются
   2.4 получает задачи от драйвера
-3. Cluster Manager (Kubernetes/YARN/Standalone)
+3. Cluster Manager (Kubernetes/YARN/Mesos/Standalone)
   3.1 отвечает за аллокацию контейнеров, выполняющих код драйвера/экзекьюторов на кластере
   3.2 квотирует ресурсы между пользователями
   3.3 контролирует состояние контейнеров
@@ -840,7 +845,7 @@ Spark является эволюцией фреймворка Hadoop MapReduce
 Driver/Executor'ы - обычные jvm приложения (могут быть многопоточными - если выделить несколько ядер)
 SparkContext - точка входа в API - отвечает за загрузку конфигурации/запуск экзекьюторов/... 
 
-1 Task == 1 Partition + 1 Cpu core
+1 Task = 1 Partition + 1 Cpu core
 1 таска - это обработка 1-ой партиции 1-м ядром
 
 Компоненты Spark DAG (Directed Acyclic Graph):
@@ -880,7 +885,7 @@ RDD - неизменяемы => трансформации всегда созд
 Большое количество памяти на экзекьюторе => большая нагрузка на GC
 
 Партиция - это Iterator (те поэлементная обработка), но, например при записи, его необходимо материализовать в памяти целиком
-Партиций обрабатываются параллельно, данные внутри партиии обрабатываются последовательно
+Партиции обрабатываются параллельно, данные внутри партиии обрабатываются последовательно
 Количество партиций/количество элементов в партиции в RDD/DF зависит от имплементации конкретного источника (определяет разработчик коннектора)
 
 
@@ -908,34 +913,34 @@ __4
 
 
 RDD API vs DF API:
-1. Типы данных:
+1. Типы данных
 RDD: низкоуровневая распределенная коллекция данных ЛЮБОГО типа
 DF: таблица со схемой, состоящей из колонок ОПРЕДЕЛЕННЫХ типов, описанных в org.apache.spark.sql.types
 
-2. Обработка данных:
-RDD: сериализация (Java serializer) функций на драйвере => десериализация и применение на экзекьюторах
+2. Обработка данных
+RDD: сериализация (Java serializer) функций на драйвере -> десериализация и применение на экзекьюторах
 DF: кодогенерация (Thungsten) -> Java код трансформации (для каждого физического оператора) -> компилятор janino -> применение скомпилированного кода к данным
 
-3. Функции и алгоритмы:
+3. Функции и алгоритмы
 RDD: нет ограничений
 DF: ограничен SQL операторами, функциями org.apache.spark.sql.functions и пользовательскими функциями udf
 
-4. Источники данных:
+4. Источники данных
 RDD: каждый источник имеет свое API
 DF: единое API для всех источников - интерфейс DataSource v1/v2
 
-5. Производительность:
+5. Производительность
 RDD: напрямую зависит от качества кода
 DF: встроенные механизмы оптимизации SQL запроса - Catalyst
 
-6. Потоковая обработка данных:
+6. Потоковая обработка данных
 RDD: устаревший DStream
 DF: активно развивающийся Structured Streaming
 
 На текущий момент RDD является низкоуровневым API, которое постепенно уходит "под капот" Apache Spark
 DF API представляет собой библиотеку для обработки данных с использованием SQL примитивов
 
-Создать dataframe можно из:
+Создать DF можно из:
 1. локальных коллекций
 2. файлов
 3. баз данных
@@ -956,7 +961,7 @@ DF API содержит класс функций "Not Available", описан�
 3. na.replace - замена значений
 
 Общая концепция - избавиться от null т.к.:
-1. в Spark - null + 1 == null
+1. в Spark - null + 1 = null
 2. udf и ряд встроенных функций уязвимы к null
 
 distinct - получает уникальные записи для всех колонок датафрейма
@@ -974,15 +979,14 @@ collect_list/collect_set/pivot - "тяжелые" агрегаты
 
 pivot - создает колонки из значений заданной колонки
 
-DF API позволяет строить большое количество агрегатов. Необходимо помнить, что операции groupBy/cube/rollup возвращают org.apache.spark.sql.RelationalGroupedDataset, к которому затем необходимо применить одну из функций агрегации - count/sum/agg/...
+DF API позволяет строить большое количество агрегатов. Операции groupBy/cube/rollup возвращают org.apache.spark.sql.RelationalGroupedDataset, к которому затем необходимо применить одну из функций агрегации - count/sum/agg/...
 
-При вычислении агрегатов необходимо помнить, что эта операция требует перемешивания
+При вычислении агрегатов необходимо помнить, что эта операция требует перемещения
 данных между экзекьюторами, что, в случае перекошенных данных, может привести к OOM на экзекьюторе
 
 
 Кэширование:
-По умолчанию при применении каждого action Spark пересчитывает весь граф, что
-негативно сказывается на производительности приложения
+По умолчанию при применении каждого action Spark пересчитывает весь граф, что негативно сказывается на производительности приложения
 
 cache/persist/repartition - позволяют не вычислять граф несколько раз
 Механизм кэширования работает одинаково для RDD/DF
@@ -1007,7 +1011,7 @@ RDD и DF представляют собой классы, описывающи
 
 В Spark DAG (Direct Acyclic Graph) есть 3 основные компонента:
 1. Job - представляет собой весь граф целиком, от момента создания DF до применения action к нему Job состоит из одной или более stage
-2. Stage - возникает когда необходимо сделать shuffle данных
+2. Stage - возникает когда необходимо сделать shuffle
 Stage состоит из task
 3. Task - базовая операция над данными
 Одновременно Spark выполняет N task, которые обрабатывают N партиций, где N - это суммарное число доступных ядер на всех экзекьюторах
@@ -1015,10 +1019,10 @@ Stage состоит из task
 Как следствие - важно обеспечить:
 1. достаточное количество партиций для распределения нагрузки по всем экзекьюторам
 Количество партиций нужно делать кратно больше числа ядер (x2, x3, x4)
-Эмпирический коэффициент == 3 => 100 ядер => 300 партиций
+Эмпирический коэффициент = 3 (например 100 ядер => 300 партиций)
 2. равномерное распределение данных между партициями
 
-spark.conf.set("spark.sql.shuffle.partitions", <partition_number>) - подбирается индивидуально исходя из ресурсов кластера (по умолчанию == 200)
+spark.conf.set("spark.sql.shuffle.partitions", <partition_number>) - подбирается индивидуально исходя из ресурсов кластера (по умолчанию = 200)
 
 !!! Передача данных между стейджами (шафл) выполняется через дисковую подсистему
 => репартиционирование считается дорогой операцией
@@ -1043,7 +1047,7 @@ DataSkew при агрегациях:
 Проблему слишком больших партиций можно попробовать решить разбиением исходного датасета на более мелкие
 
 1. партицирование - важный аспект распределенных вычислений, от которого напрямую зависит стабильность и скорость вычислений
-2. в Spark всегда работает правило 1 TASK == 1 CORE + 1 PARTITION
+2. в Spark всегда работает правило 1 TASK = 1 CORE + 1 PARTITION
 3. репартицирование и соление данных позволяет решить проблему перекоса данных
 4. репартицирование использует дисковую и сетевую подсистемы (при использовании стандартного шафл-сервиса) - обмен данными происходит по СЕТИ, а результат записывается на ДИСК, что может стать узким место при выполении репартицирования
 
@@ -1069,7 +1073,7 @@ null в Spark превращается в null внутри UDF
 2. массив - любые коллекции, наследующие Seq[T] - List/Vector/...
 3. словарь - Map[A, B]
 3. case class
-4. Option[T] (None => null in DF)
+4. Option[T] (None = null in DF)
 
 1. пользовательские функции позволяют реализовать произвольный алгоритм и использовать его в DF API
 2. пользовательские функции работают медленнее встроенных, поскольку при использовании встроенных функций Spark использует ряд оптимизаций (например векторизацию вычислений на уровне CPU) + Catalyst + Thungsten + отсутствуют лишние сериализации/десериализации/копирование
@@ -1095,10 +1099,10 @@ null в Spark превращается в null внутри UDF
 1. Seq(String)
 2. sql.Column
 
-В условии джоина может присутствовать Seq[String] - это синтаксический сахар, позволяющий не переименовывать колонки датасетов, а просто указать, что соединение будет производиться по колонкам с именами, входящими в массив
+Условие соединения можно задать с помощью Seq[String] - это синтаксический сахар, позволяющий не переименовывать колонки датасетов, а просто указать, что соединение будет производиться по колонкам с именами, входящими в seq
 
 В более общем виде условие джойна должно быть выражено в виде sql.Column
-Например - col("left_a") === col("right_a") - в выражении допускается использование встроенных функций, пользовательских функций и операторов сравнения. Следует помнить, что выполняется джоин двух распределенных датасетов и если условие соединения будет составлено плохо - Spark выполнит cross join производительность которого крайне мала
+Например: col("left_a") === col("right_a") - в выражении допускается использование встроенных функций, пользовательских функций и операторов сравнения. Следует помнить, что выполняется джоин двух распределенных датасетов и если условие соединения будет составлено плохо - Spark выполнит cross join производительность которого крайне мала
 
 При джоине может производится репартицирование
 
@@ -1107,8 +1111,8 @@ null в Spark превращается в null внутри UDF
 Позволяют выполнять функции над "окнами" данных - при этом не теряются исходные данные (как в обычных агрегациях - например groupBy)
 
 Окно создается из класса org.apache.spark.sql.expression.Window с указанием:
-1) колонок, определяющих границы окон
-2) колонок, определяющих порядок сорировки внутри окна
+1) колонок, определяющих границы окон - partitionBy
+2) колонок, определяющих порядок сорировки внутри окна - orderBy
 
 Окно определяется списком колонок и сортировками
 val window: WindowSpec = Window.partitionBy("a", "b").orderBy("a")
@@ -1117,13 +1121,14 @@ val window: WindowSpec = Window.partitionBy("a", "b").orderBy("a")
 lag/lead, а также эффективно работать с time-series данными
 
 !!! Применение оконных функций приводит к shuffle
-!!! row_number().over(Window.partitionBy()) == Exchange single partition (антипаттерн) => OOM
+!!! row_number().over(Window.partitionBy()) = Exchange single partition (антипаттерн) => OOM
 
 Use-cases оконных функций:
 1. агрегатные функции
-2. вычисления над значениями одной колонки из разных строк (c orderBy т.к. это гарантирует сортировку)
-3. нумерация строк в рамках партиции/кумулятивные функции
-4. функции по плавающим окнам для time-series данных
+2. кумулятивные функции
+3. вычисления над значениями одной колонки из разных строк (c orderBy т.к. это гарантирует сортировку)
+4. нумерация строк в рамках партиции 
+5. функции по плавающим окнам для time-series данных - rowsBetween/rangeBetween
 
 
 Misc:
@@ -1131,9 +1136,9 @@ spark.read.json - позволяет читать не только файлы, 
 spark.read.csv - позволяет читать заархивированные csv-файлы
 
 Методы map/flatMap - это переход к DS API => потеря перформанса из-за дополнительных действий:
-1. десериализация (Internal row => Java object)
+1. десериализация (Internal row -> Java object)
 2. MapPartition и применение функции
-3. сериализация (Java object => Internal row)
+3. сериализация (Java object -> Internal row)
 
 В Spark 3 появилась возможность написания плагинов для кастомных операторов (примеры - Direct Cassandra Join, Spark GPU)
 
@@ -1149,7 +1154,7 @@ __5
 Любой job в Spark SQL имеет под собой план выполнения, который генерируется на основе написанного кода. План запроса содержит операторы, которые потом превращаются в Java код. Поскольку одну и ту же задачу в Spark SQL можно выполнить по-разному, полезно смотреть в планы выполнения, чтобы:
 1. убрать лишние shuffle
 2. убедиться, что тот или иной оператор будет выполнен на уровне источника (predicate pushdown), а не внутри Spark
-3. понять, как будет выполнен join
+3. понять, какой вид join'а будет использован
 
 Планы выполнения доступны в 2-х видах:
 1. метод explain() у DF
@@ -1221,17 +1226,17 @@ BroadcastHash Join:
 7. может быть использован автоматически, либо явно - broadcast(df)
 
 
-BroadcastTimeoutException (по умолчанию 300с) => на экзекьюторе не хватает памяти для броадкаста датафрейма
+BroadcastTimeoutException (по умолчанию 300с) -> на экзекьюторе не хватает памяти для броадкаста датафрейма
 
 Указание объема памяти на экзекьюторах:
 1. spark-submit: --executor-memory 4g
 2. spark-submit: --conf spark.executor.memory=4g
-3. spark-defaults.conf spark.executor.memory 4g
+3. spark-defaults.conf: spark.executor.memory 4g
 
 
 SortMerge Join - дефолтный вид джоина больших датафреймов:
 1. работает, когда ключи соединения в обоих датасетах являются сортируемыми
-2. репартиционирует оба датасета в 200 партиций по ключам соединения
+2. репартицирует оба датасета в 200 партиций по ключам соединения
 3. сортирует партиции каждого из датасетов по ключам соединения
 4. сравнивает левый и правый ключи, обходит каждую пару партиций и соединяет строки с одинаковыми ключами
 
@@ -1256,7 +1261,7 @@ CartesianProduct - стоит избегать:
 
 Снижение объема shuffle:
 В ряде случаев можно уйти от лишних shuffle операций при выполнении соединения
-Для этого оба DF должны иметь одинаковое партицирование == одинаковое количество партиций и ключ партицирования, совпадающий с ключом соединения
+Для этого оба DF должны иметь одинаковое партицирование = одинаковое количество партиций и ключ партицирования, совпадающий с ключом соединения
 
 Оптимизация видна в Spark UI:
 1. ++ в плане выполнения - в SQL/Dataframe + Details
@@ -1280,7 +1285,7 @@ Optimal number of spark.sql.shuffle.partitions = num_workers * cores_per_worker 
 
 Вложенность словарей, массивов и структур не ограничена
 
-Схема DF описывается с помощью класса StructType[Seq(StructField)]
+Схема DF описывается классом StructType[Seq(StructField)]
 StructField имеет 3 атрибута - name/dataType/nullable
 
 Иерархия типов:
@@ -1304,24 +1309,30 @@ StructField имеет 3 атрибута - name/dataType/nullable
 
 Оптимизатор запросов Catalyst:
 Catalyst выполняет оптимизацию запросов с целью ускорения их выполнения и применяет следующие оптимизации:
+
 1. Column projection - позволяет избегать чтения ненужных колонок при работе с источником
 + позволяет избегать вычисления ненужных колонок (например - для groubBy)
 Работает для колоночных форматов - parquet/orc
 Физический оператор чтения файлов - FileScan <format> - до сих пор работает на Datasource API V1
 !!! Для неколоночных форматов (например - json) - ReadSchema[] будет указана в плане выполнения, но работать оптимизация не будет
+
 2. Partition pruning - позволяет избегать чтения ненужных партиций. Работает только с файловыми форматами (json/orc/parquet/csv/text)
 Best practice партиционирования - год/месяц/день
+
 3. Predicate pushdown - позволяет "протолкнуть" условия фильтрации данных на уровень datasource 
 В Datasource API V1 фильтр применяется дважды:
   1. на источнике - PushedFilters
-  2. в спарке - Filter
-      // Filter (isnotnull(iso_region#97) AND (iso_region#97 = RU))
+  2. в спарке - Filter:
+      // Filter (isnotnull(iso_region#46) AND (iso_region#46 = RU))
       *(1) Filter (isnotnull(iso_region#46) AND (iso_region#46 = RU))
       +- *(1) ColumnarToRow
          // PushedFilters: [IsNotNull(iso_region), EqualTo(iso_region,RU)]
          +- FileScan parquet [ident#41,type#42,name#43,elevation_ft#44,continent#45,iso_region#46,municipality#47,gps_code#48,iata_code#49,local_code#50,coordinates#51,iso_country#52] Batched: true, DataFilters: [isnotnull(iso_region#46), (iso_region#46 = RU)], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [IsNotNull(iso_region), EqualTo(iso_region,RU)], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_region:string,m...
+
 4. Simplify casts - убирает ненужные cast. Например - при попытке каста к тому же самому типу данных
+
 5. Constant folding - сокращает количество констант, используемых в физическом плане
+
 6. Combine filters - объединяет фильтры
 
 Алгоритм работы Dynamic resource allocation:
@@ -1367,30 +1378,32 @@ Spark - это платформа для ОБРАБОТКИ распределе
 
 2. добавить зависимость в проект:
 sbt - в libraryDependencies в файле build.sbt:
-libraryDependencies += "org.elasticsearch" %% "elasticsearch-spark-30" % "8.12.1"
+libraryDependencies += "org.elasticsearch" %% "elasticsearch-spark-30" % "8.13.4"
 
 Добавить зависимость в приложение можно одним из способов:
+
 3.1 добавить зависимость в spark-submit:
-spark-submit --packages org.elasticsearch:elasticsearch-spark-30_2.13:8.12.1
+spark-submit --packages org.elasticsearch:elasticsearch-spark-30_2.13:8.13.4
 Автоматическая загрузка джарников в кэш хоста, на котором запускается submit
 При запуске распределенного приложения джарники будут перемещены в рабочие
 директории драйвера/экзекьюторов и добавлены в classpath
   
 3.2 добавить jar в spark-submit:
-spark submit --jars /path/to/elasticsearch-spark-30_2.13-8.12.1.jar
+spark submit --jars /path/to/elasticsearch-spark-30_2.13-8.13.4.jar
 драйвер + воркеры
   
 3.3 добавить зависимость в spark-defaults.conf:
-spark.jars.packages org.elasticsearch:elasticsearch-spark-30_2.13:8.12.1
+spark.jars.packages org.elasticsearch:elasticsearch-spark-30_2.13:8.13.4
   
 3.4 добавить jar в spark-defaults.conf:
-spark.jars /path/to/elasticsearch=spark-30_2.13-8.12.1.jar
+spark.jars /path/to/elasticsearch=spark-30_2.13-8.13.4.jar
   
 3.5 в runtime с помощью кода:
 spark.sparkContext.addJar - !!! добавляет зависимости только в класспасс экзекьюторов
 
 
-Конфиги источника задаются одним из способов:
+Конфигурации для источника задаются одним из способов:
+
 4.1 через spark-submit:
 spark-submit --conf spark.es.nodes=localhost:9200
   
@@ -1408,7 +1421,7 @@ val df = spark.read.format("elastic).options(Map("es.nodes" -> "localhost:9200",
 df.write.format("elastic").option("es.nodes", "localhost:9200)
 df.write.format("elastic").options(Map("es.nodes" -> "localhost:9200", ...))
   
-1. поддержка источника всегда добавляется на уровне JVM (даже для pyspark) путем добавления в Java classpath нужного класса
+1. поддержка источника всегда добавляется на уровне JVM (даже для pySpark) путем добавления в Java classpath нужного класса
 2. добавить поддержку источника можно по-разному, однако в большинстве случаев следует избегать "хардкода"
 3. можно разработать свой коннектор на Datasource API (v1/v2)
 
@@ -1438,7 +1451,7 @@ Best practiсe - в HDFS маленькие файлы следует объед
 
 !!! При сжатии данные будут занимать меньше места, но у этого решения есть существенный минус - при чтении каждый сжатый файл текстового формата превращается ровно в 1 партицию в DF
 При работе с большими датасетами это означает:
-1. если файлов мало и они большие => экзекьюторам может не хватить памяти для их чтения (т.к. один сжатый текстовый файл нельзя разбить на несколько партиций)
+1. если файлов мало и они большие -> экзекьюторам может не хватить памяти для их чтения (т.к. один сжатый текстовый файл нельзя разбить на несколько партиций)
 2. если текстовых файлов много и они маленькие - получаем увеличенный расход памяти в хипе NameNode
 
 Партицированное хранение данных позволяет использовать partition pruning и быстро фильтровать данные по колонкам партицирования
@@ -1447,7 +1460,7 @@ Best practiсe - в HDFS маленькие файлы следует объед
 
 Файловые форматы не имеют автоматической валидации данных при записи => легко ошибиться и записать данные в другом формате
 
-В момент старта спарк сессии определяется с какой файловой системой будет работать Spark - если выставлена переменная окружения HADOOP_CONF_DIR => спарк будет работать с HDFS
+В момент старта спарк сессии определяется с какой файловой системой будет работать Spark - если выставлена переменная окружения HADOOP_CONF_DIR -> спарк будет работать с HDFS
 
 Режимы записи:
 Spark позволяет выбирать режим записи с помощью метода mode:
@@ -1510,7 +1523,7 @@ Parquet Tools позволяет:
 
 1. форматы ORC/Parquet позволяют эффективно работать со структурированными данными
 2. производительность ORC/Parquet на порядок выше обычных текстовых файлов
-3. данные форматы поддержживают сжатие на блочном уровне, что позволяет избегать проблем с многопоточным чтением
+3. данные форматы поддерживают сжатие на блочном уровне, что позволяет избегать проблем с многопоточным чтением
 4. форматы поддерживают добавление новых колонок в схему, но не изменение текущих
 
 
@@ -1535,13 +1548,15 @@ Elastic - документированная распределенная баз
 4. ротация (распределение данных по хостам) шардов не всегда проходит хорошо (перекосы)
 
 Основные сущности Elastic:
+
 1. Index - представляет собой "таблицу с данными", если проводить аналогию с реляционными БД
-Данные в elastic обычно хранятся в виде индексов, разбитых на сутки (foo-2020-05-29, foo-2020-05-30 и т.д.)
+Данные в elastic обычно хранятся в виде индексов, разбитых на сутки (foo-2024-05-29, foo-2024-05-30 и т.д.)
 У каждого документа в индексе есть ключ _id (обеспечивает уникальность) и может быть метка времени, по которой в Kibana строятся визуализации
+
 2. Template - шаблон с параметрами, с которыми создается новый индекс (~схема для записи)
 Задает ограничения (на уровне схемы документа) для записываемых документов (по умолчанию - ограничений нет)
 
-0.0.0.0:5601 -> MANAGEMENT (всплывающая панель слева) -> Dev Tools
+localhost:5601 -> MANAGEMENT (всплывающая панель слева) -> Dev Tools
 
 Пример шаблона:
 #! Legacy index templates are deprecated in favor of composable templates - (?)
@@ -1578,6 +1593,7 @@ PUT _template/airports
 
 3. Shard - индексы в elastic делятся на шарды
 Это позволяет хранить индекс на нескольких узлах кластера
+
 4. Index Pattern - шаблон, применяемый к индексу на уровне Kibana
 Позволяет настраивать форматирование и подсветку полей
 
@@ -1585,12 +1601,13 @@ PUT _template/airports
 Это можно сделать с помощью Dev Tools в Kibana
 
 MANAGEMENT -> Stack Management -> Kibana -> Data Views (опции для красивого отображения)
--> Create data view ->
-Name == airports 
-Index pattern == airports-*
-Timestamp field == ts
+-> Create data view
+-> Name = airports 
+Index pattern = airports-*
+Timestamp field = ts
 -> Save data view to Kibana
-ANALYTICS => Discover (аналитика)
+
+ANALYTICS -> Discover (аналитика)
 
 Основной пайплайн работы с Elastic (и другими БД) - записывать в него данные (а не
 читать - т.к. медленно)
@@ -1602,7 +1619,7 @@ Spark -> запись данных в Elastic -> аналитика/визуал
 2. Elastic позволяет делать сложные запросы, включая полнотекстовые
 3. при работе с Elastic, Spark часто использует predicate pushdown
 4. Spark отлично подходит для того, чтобы писать в Elastic. Однако чтение работает не очень быстро
-5. User friendly для аналитиков
+5. User friendly для аналитиков - Kibana
 6. при отказе ноды, кластер будет временно недоступен
 7. кластер только внутри одного дата-центра (будет лучше, если узлы будут расположены рядом на высокоскоростных свитчах)
 
@@ -1651,11 +1668,11 @@ token(n3) = t3		range(t3, t4] => {n4, n5, n6}
 на уровне keyspace устанавливается фактор репликации
 2. Table - таблицы (как в обычной бд)
 
-При записи производится Upsert == Update (для существующих ключей) + Insert
+При записи производится Upsert = Update (для существующих ключей) + Insert
 
 Скорость чтения ОЧЕНЬ СИЛЬНО зависит от структуры таблицы и запроса. Если сделать запрос по колонке, являющейся partition key, то будет применена оптимизация predicate pushdown (в Spark3 - Cassandra Filters: [["ident" = ?, 22WV]]) и запрос отработает очень быстро (т.к. зная ключ - cassandra быстро установит на каком хосте находятся данные)
 
-Если сделать запрос по колонке не являющейся partition key, то predicate pushdown также может отработать (а может и нет) => но cassandra будет искать эти данные на всем кластере(full table scan)
+Если сделать запрос по колонке не являющейся partition key, то predicate pushdown также может отработать, а может и нет - в этом случае cassandra будет искать эти данные на всем кластере (full table scan)
 (в Spark3 - Cassandra Filters: [])
 
 Скорость записи в Cassandra/Kafka - почти никогда не является узким местом
@@ -1688,7 +1705,7 @@ SELECT * FROM table_name WHERE 1 = 0 LIMIT 1;
 
 
 
-__7  SPARK_3.5.1
+__7
 9-50
 1-09-50 => 1-15-00
 1-58-55 => 2-05-10
@@ -1748,16 +1765,17 @@ Rate streaming:
 Созданный DF является streaming, о чем нам говорит метод создания readStream и атрибут isStreaming
 Rate хорошо подходит для тестирования приложений, когда нет возможности подключиться к потоку реальных данных
 
-Cинк == сток/потребитель/получатель == DataStreamWriter
+Cинк = сток/потребитель/получатель = DataStreamWriter
 
-В отличие от обычных датафреймов, у стриминговых нет таких методов как show/collect/take, также недоступен Dataset API => для просмотра их содержимого, нужно использовать console синк и создать StreamingQuery
+В отличие от обычных датафреймов, у стриминговых нет таких методов как show/collect/take, также недоступен Dataset API -> для просмотра их содержимого, нужно использовать console синк и создать StreamingQuery
 !!! Процессинг начинается только после вызова метода start и не блокирует основной поток приложения
 Trigger позоляет настроить частоту чтения/обработки новых данных
 
 Стриминговый датафрейм как и обычный имеет партиции (можно выполнять repartition/groupBy/join)
-В заданный момент времени обрабатывается конкретный микробатч (микробатч под капотом == RDD[InternalRow]), состоящий из определенного числа партиций
+В заданный момент времени обрабатывается конкретный микробатч (микробатч под капотом = RDD[InternalRow]), состоящий из определенного числа партиций
 
 Автоматический перезапуск стрима:
+
 1. Стрим упал, но приложение не упало - например ошибка трансформации/OOM на экзекьюторе
 
 Перезапуск возможен из приложения после анализа ошибки
@@ -1770,9 +1788,9 @@ while (true) {
 
 awaitTermination(15000) блокирует основной поток на 15с - далее стрим или продолжит работу или упадет с ошибкой
 Т.е. через каждые 15 секунд работы мы можем запустить свою логику - например rest api для управления стримом снаружи (стартовать/перезапускать)
-Более простое решение - маркер файл на HDFS - если появляется (например stop.file) - остановить стрим
+Более простое решение - маркер файл на HDFS - если появляется (например stop_file) - остановить стрим
 
-2. Стрим упал и приложение упало - например зафейлились таски => зафейлился стрейдж => несколько перезапусков стейджа (если все еще фейлится) => фейл приложения
+2. Стрим упал и приложение упало - например зафейлились таски -> зафейлился стрейдж -> несколько перезапусков стейджа (если все еще фейлится) -> фейл приложения
 
 Можно перезапустить через oozie/airflow/cron
 Если платформа стримовая - стрим надо мониторить
@@ -1819,14 +1837,15 @@ Spark позволяет запустить стрим, который буде�
 Можно стримить как плоскую так и вложенную (/*) структуру директорий
 Можно стримить из parquet/orc/json/text/csv - важно, чтобы был единый формат данных для всего стрима
 
-!!! В директорию могут попать любые данные и DF должен иметь фиксированную схему =>
+!!! В директорию могут попать любые данные и DF должен иметь фиксированную схему ->
 файловый стриминг нельзя создать без указания схемы
 
 Недостатки File streaming:
 1. входной поток можно ограничить только максимальным количеством файлов, попадающих в батч
 2. гранулярность обработки - батч
 Если стрим упадет в середине обработки батча, то при перезапуске все файлы этого батча будут обрабатываться снова
-=> File streaming не стоит использовать на проде
+
+File streaming не стоит использовать на проде
 
 
 Kafka streaming:
@@ -1834,7 +1853,7 @@ Apache Kafka - самая распространенная в мире сист�
 
 Предназначена для записи/чтения больших объемов данных
 Снижает связанность системы - приложение продюсер никак не связано с приложением консьюмером
-=> можно останавливать продюсер/консьюмер приложения независимо
+=> можно останавливать/обновлять/... продюсер/консьюмер приложения независимо
 
 Преимущества:
 1. высокая пропускная способность
@@ -1846,7 +1865,7 @@ Apache Kafka - самая распространенная в мире сист�
 
 Архитектура системы:
 Topic - это логическая таблица в Kafka. Мы пишем данные в топик и читаем данные из топика 
-Топик, как правило, распределен по нескольким брокерам (== узел кластера Kafka == broker) для обеспечения высокой доступности и скорости работы с данными
+Топик, как правило, распределен по нескольким брокерам (= узел кластера Kafka = нода) для обеспечения высокой доступности и скорости работы с данными
 
 Partition - это физические блоки, из которых состоят топики. Партиция представляет собой неделимый блок, который хранится на одном из узлов. Топик может иметь произвольное количество партиций
 Чем больше партиций - тем выше параллелизм при чтении/записи, однако большое число партиций в топике может привести к замедлению работы всей системы
@@ -1854,7 +1873,7 @@ Partition - это физические блоки, из которых сост
 Replica - каждая партиция может иметь несколько реплик (т.е. репликация в Kafka работает на уровне партиций). Внешние приложения всегда работают (читают/пушат) с основной репликой. Остальные реплики являются дочерними и не используются во внешнем IO - только синхронизируют данные из основной реплики. Если узел, на котором расположена основная реплика, падает, то одна из дочерних реплик становится основной и работа с данными продолжается
 
 Message - это данные, которые мы пишем и читаем в Kafka - представляют собой кортеж (key, value)
-Ключ используется не всегда - может иметь значение null
+Ключ используется не всегда - часто имеет значение null
 Сериализация/десериализация данных всегда происходят на уровне клиентов Kafka
 !!! Kafka ничего о типах данных не знает и хранит ключи/значения в виде массива байт
 
@@ -1877,7 +1896,8 @@ Consumer - это приложение, читающее данные из то�
 Поскольку оффсеты для каждой партиции топика свои, то и информация о последнем обработанном оффсете хранится по каждой партиции отдельно
 Обычные приложения пишут коммиты в специальный топик Kafka __consumer_offsets
 
-!!! Управление оффсетами в Spark происходит с помощью чекпоинтов, которые сохраняются на ФС (например HDFS)
+!!! Spark не использует стандартный механизм управления оффсетами Kafka
+Управление оффсетами в Spark происходит с помощью чекпоинтов, которые сохраняются на ФС (например HDFS)
 Spark сохраняет обработанные оффсеты по каждому батчу
 
 Retention - поскольку кластер Kafka не может хранить данные вечно -> в конфигурации задаются пороговые значения по объему и/или времени хранения для каждого топика, при превышении которого данные удаляются
@@ -1908,7 +1928,7 @@ Kafka использует Zookeeper для синхронизации узло�
 Чтобы получить данные из binary - их необходимо десериализовать
 Формат данных может быть произвольным (если json - достаточно cast(StringType))
 
-Spark управляет Сonsumer group'ами сам, собственный механизм Kafka - не используется
+!!! Spark управляет Сonsumer group'ами сам, собственный механизм Kafka - не используется
 
 При использовании статических датафреймов с Kafka - если нужно хранить последний прочитанный оффсет - делать вручную
 
@@ -1917,7 +1937,7 @@ Spark управляет Сonsumer group'ами сам, собственный �
 
 При создании streamingDf необходимо помнить:
 1. startingOffsets - по умолчанию имеет значение latest
-2. endingOffsets использовать нельзя (стрим бесконечен)
+2. endingOffsets использовать нельзя (тк стрим бесконечен)
 3. !!! количество сообщений за батч можно (и нужно) ограничить параметром maxOffsetsPerTrigger - по умолчанию он не задан => первый батч будет вычитывать данные всего топика
 
 Гранулярность - 1 offset топика Kafka
@@ -1938,8 +1958,6 @@ __8
 44-25 => 50-40
 1-43-55 => 1-50-00
 
-1-44-20
-https://www.youtube.com/watch?v=9wuQVcl211g
 
 Stateful streaming - это вид поточной обработки данных, при которой при обработке батча с данными используются данные из предыдущих батчей
 
@@ -1973,7 +1991,7 @@ Spark позволяет удалять дубликаты данных в ст�
   2.4 колонка, по которой делается watermark, должна быть включена в dropDuplicates
 
 Watermark - пороговое значение, рассчитывающееся на основании колонки с таймстемпом данных
-!!! т.е. в датафрейме обязательно наличие колонки с временной меткой
+!!! В датафрейме обязательно наличие колонки с временной меткой
 
 Алгоритм работы watermark:
 1. Maximum Observable Timestamp (MOT) - максимальный таймстэмп в предыдущем батче
@@ -2016,7 +2034,7 @@ dropDuplicates - делает неявное репартицирование
 В Append режиме в синк будут записаны только ЗАВЕРШЕННЫЕ окна с данными в момент window_right_bound + watermark_value
 !!! Без watermark - не работает
 
-!!! Удобно, когда нужно ЕДИНОЖДЫ записать ФИНАЛЬНЫЙ результат (т.к. он больше не изменится) - например в реляционную БД (низкая нагрузка)
+!!! Удобно, когда нужно ЕДИНОЖДЫ записать ФИНАЛЬНЫЙ результат (т.к. он больше не изменится) - например в реляционную БД (снижаем нагрузку на БД)
 
 
 Агрегаты на плавающих окнах:
@@ -2041,14 +2059,16 @@ Spark позволяет делать:
   2.3 Right Outer
   
 Stream-Static join - может использоваться для:
+
 1. Left Outer - Обогащения стрима фактами
 !!! Best practice - соединять с небольшой таблицей в формате parquet
-Не стоит джойнить с большими таблицами из БД (даже из быстрых типа Cassandra) т.к. для джоина надо прочитать оба датафрейма целиком (механика джоина) - т.е. на каждом батче будет вычитываться вся огромная таблица из БД
+Не стоит джойнить с большими таблицами из БД (даже из быстрых типа Cassandra) т.к. для джоина надо прочитать оба датафрейма ЦЕЛИКОМ (механика джоина) - т.е. на каждом батче будет вычитываться ВСЯ огромная таблица из БД
 В Spark3 - появился оператор directCassandraJoin, который работает быстрее BroadcastHashJoin, но для highload также не подойдет
 Подобную логику можно реализовать с помощью udf с получением данных из БД с помощью connection pool
 
-2. Inner - фильтрация по whitelist
-3. Left Anti - фильтрация по blacklist
+2. Inner - фильтрация по white list
+
+3. Left Anti - фильтрация по black list
   
 !!! Можно использовать watermark для удаления старых данных из стрима
 
@@ -2066,10 +2086,11 @@ Stream-Stream join:
 StreamingSymmetricHashJoin - технически работает как HashJoin (был удален из Spark) - строит карту хэш-мап для партиций
 
 Stream-Static Left/Inner/Left Anti join - работают в Append режиме без обязательного указания watermark
+
 Watermark нужен только для stream-stream join (?)
 
 Получение отброшенных (по watermark) событий:
-В lastProgess => раздел eventTime - есть значения watermark + метрики времени - на основании этих данных потенциально можно получить отброшенные события - создать еще 1 стрим и на основании batchId/eventTime получать отброшенные события (но это двойное чтение источника + возможность рассинхронизации стримов)
+В lastProgess -> раздел eventTime - есть значения watermark + метрики времени - на основании этих данных потенциально можно получить отброшенные события - создать еще 1 стрим и на основании batchId/eventTime получать отброшенные события (но это двойное чтение источника + возможность рассинхронизации стримов)
 Нормального решения - нет (только постпроцессинг)
 
 
@@ -2080,20 +2101,17 @@ __9
 2-02-55 => 2-09-00
 
 
-udf sleep 1000
-
-
 Foreach Batch Sink:
 Проблемы обычных синков:
 
-!!! Два стрима, даже если они созданы на основе одного датафрейма, не могут использовать общий чекпоит =>
+!!! Два стрима, даже если они созданы на основе одного датафрейма, не могут использовать общий чекпоинт =>
 1. стримы являются независимыми и работают асинхронно
 2. чтение данных из источника происходит у каждого стрима НЕЗАВИСИМО и АСИНХРОННО (серьезное увеличение нагрузки на источник)
 3. один стрим может начать отставать (лагать) от другого стрима
 
 Обычные синки не позволяют использовать кастомную логику работы стрима (например в зависимости от поступающих данных)
 
-В Spark 2.4 появился foreachBatch синк - это синк, позволяющий применить произвольную функцию к каждому батчу в стриме, работая с ним, как со статическим датафреймом
+!!! В Spark 2.4 появился foreachBatch синк - это синк, позволяющий применить произвольную функцию к каждому батчу в стриме, работая с ним, как со СТАТИЧЕСКИМ датафреймом
 
 1. Стандартные синки позволяют создавать простые пайплайны, в реальной жизни чаще используется foreachBatch
 
@@ -2115,14 +2133,14 @@ FAIR Scheduler:
 Используя метод par - можно запустить вычисления на драйвере одновременно для всех датафреймов, однако планировщие Spark приложения работает в режиме FIFO (все доступные ядра забирает первая джоба, если ядер больше, чем нужно первой джобе - они отдаются второй и т.д.), поэтому на экзекьюторах партиции разных датарфеймов будут все еще обрабатываться ПОСЛЕДОВАТЕЛЬНО - плохо, например при записи в несколько источников (пиковая нагрузка на каждый источник)
 
 Если переключить режим планировщика в FAIR, то все действия (!!! в рамках стейджа) буду выполняться ПАРАЛЛЕЛЬНО
-FIFO - плохой вариант при записи в несколько мест (например в 3 базы) =>
+FIFO - плохой вариант при записи в несколько мест (например в 3 базы)
 FAIR - даст меньшую нагрузку на базы + лучше параллелизм
 
 !!! FAIR режим можно использовать и для работы со static DF
 
 Для этого необходимо устновить две опции в spark-defaults.conf:
 1. spark.scheduler.mode FAIR
-2. spark.scheduler.allocation.file /path/to/fairscheduler.xml.
+2. spark.scheduler.allocation.file /path/to/fairscheduler.xml
 Если запуск производится в cluster mode - нужно указать данный файл через --file
 
 Файл fairscheduler.xml должен содержать:
@@ -2140,7 +2158,7 @@ FAIR - даст меньшую нагрузку на базы + лучше па�
   2.2 пул default должен быть переведен в FAIR режим
   2.3 действия должны запускаться на драйвере параллельно (можно использовать любое API, поддерживающее multithreading)
 
-Для выполнения shuffle - драйвер должен знать где какие ключи лежат - драйвер составляет карту ключей на экзекьюторах
+Для выполнения shuffle - драйвер должен знать где какие ключи лежат -> драйвер составляет карту ключей на экзекьюторах
 
 !!! В одну и ту же папку нельзя одновременно записывать паркеты из разных датафреймов
 
@@ -2171,8 +2189,9 @@ InternalRow - строка с данными в датафрейме (не вк�
 
 Из JDBC можно создать стриминговый источник
 
-!!! Минорная (2.13.x) версия скалы в джарнике ДОЛЖНА соответствовать версии скалы в дистрибутиве спарка
-./spark-shell =>
+!!! Минорная (2.X.14) версия скалы в джарнике ДОЛЖНА соответствовать версии скалы в дистрибутиве спарка
+
+./spark-shell ->
 util.Properties.versionString - версия скалы
 sc.version - версия спарка
 
@@ -2185,7 +2204,9 @@ __11
 
 
 Настройка spark-submit окружения:
-Дистрибутив Spark содержит в себе различные библиотеки, примеры конфигурационных файлов и набор утилит. Любое Spark приложение запускается одной из утилит:
+Дистрибутив Spark содержит в себе различные библиотеки, примеры конфигурационных файлов и набор утилит
+
+Любое Spark приложение запускается одной из утилит:
 1. spark-shell - запуск интерактивного Scala REPL с поддержкой Spark
 2. pyspark - запуск интерактивного python шела с поддержкой Spark
 3. spark-submit - запуск Spark приложений, собранных в виде jar/py файлов с зависимостями
@@ -2199,15 +2220,16 @@ spark-submit/spark-shell/pyspark - находятся в каталоге bin
 beeline - cmd утилита для подключения к thrift/Hive для выполнение sql запросов
 spark-sql - позволяет выполнять нативные sql запросы (запускает спарк джобу)
 
-./spark-submit --help =>
+./spark-submit --help
+->
 Usage: spark-submit [options] <app jar | python file | R file> [app arguments]
 Usage: spark-submit --kill [submission ID] --master [spark://...]
 Usage: spark-submit --status [submission ID] --master [spark://...]
 Usage: spark-submit run-example [options] example-class [example args]
 
 Options:
-  --master MASTER_URL (выбор менеджера кластера):
-  	1. spark://host:port - используется спарковский кластер менеджер
+  --master MASTER_URL (выбор менеджера ресурсов кластера):
+  	1. spark://host:port - standalone - используется спарковский кластер менеджер
   	Демон на каждой ноде
   	1 общий application master на все спарк приложения
   	Хороший вариант для бэкэнда (не нужно пускать пользователей, не нужна ad-hoc аналитика)
@@ -2223,18 +2245,19 @@ Options:
   	Default: local[*]
                               
   --deploy-mode DEPLOY_MODE
-  	1. сlient - драйвер будет запущен на локальной машине =>
-  	все логи будут приходить в локальную консоль
-  	2. сluster - драйвер будет запущен на кластере
-  	Удобно для серверного приложения, без взаимодействия с пользователем
-  	Приложение будет работать после отключения ssh-сессии
   	Whether to launch the driver program locally ("client") or
         on one of the worker machines inside the cluster ("cluster")
+  	
+  	1. сlient - драйвер будет запущен на локальной машине ->
+  	все логи будут приходить в локальную консоль
+  	2. сluster - драйвер будет запущен в кластере
+  	Удобно для серверного приложения, без взаимодействия с пользователем
+  	Приложение будет работать после отключения ssh-сессии
   	
   	Default: client
  
   --class CLASS_NAME
-  	Your application's main class (for Java / Scala apps)
+  	 Your application's main class (for Java / Scala apps)
   	
   --name NAME
   	A name of your application
@@ -2243,12 +2266,12 @@ Options:
   	Comma-separated list of jars to include on the driver and executor classpaths
   	
   --packages
-  	Место хранения джарников - <user>/ivy2
-  	Comma-separated list of maven coordinates of jars to include
-  	on the driver and executor classpaths.
-  	Will search the local maven repo, then maven central and any additional remote
-        repositories given by --repositories.
+  	Comma-separated list of maven coordinates of jars to include on the driver and executor 
+  	classpaths. Will search the local maven repo, then maven central and any additional
+  	remote repositories given by --repositories.
         The format for the coordinates should be groupId:artifactId:version
+        
+  	Место хранения джарников на файловой системе - <user>/ivy2
   	
   --exclude-packages
   	Comma-separated list of groupId:artifactId, to exclude while
@@ -2262,9 +2285,10 @@ Options:
   	Comma-separated list of .zip, .egg, or .py files to place on the PYTHONPATH for Python apps
   	
   --files FILES
-  	Можно передать файл - например log4j2.properties
   	Comma-separated list of files to be placed in the working directory of each executor.
-  	File paths of these files in executors can be accessed via SparkFiles.get(fileName)
+  	File paths of these files
+  	
+  	Можно передать файл - например log4j2.properties/ssl-сертификат/...
   	
   --archives ARCHIVES
   	Comma-separated list of archives to be extracted into the working directory of each executor
@@ -2278,29 +2302,33 @@ Options:
 
   --driver-memory MEM
   	Memory for driver (e.g. 1000M, 2G)
+  	
   	Default: 1024M
   	
-  --driver-java-options
-  	Например - выбор gc
+  --driver-java-options 
   	Extra Java options to pass to the driver
+  	
+  	Например - выбор gc
   	
   --driver-library-path
   	Extra library path entries to pass to the driver
   	
   --driver-class-path
-  	Указываем дополнительные класспасы для драйвера
   	Extra class path entries to pass to the driver.
-  	Note that jars added with --jars are automatically included in theclasspath
+  	Note that jars added with --jars are automatically included in the classpath
+  	
+  	Указываем дополнительные класспасы для драйвера
 
   --executor-memory MEM
   	Memory per executor (e.g. 1000M, 2G)
+  	
   	Default: 1G
 
   --proxy-user NAME
   	User to impersonate when submitting the application.
         This argument does not work with --principal / --keytab
 
-  --help, -h 
+  --help, -h
   	Show this help message and exit
   	
   --verbose, -v
@@ -2318,7 +2346,8 @@ Options:
  Cluster deploy mode only:
   --driver-cores NUM 
   	Number of cores used by the driver, only in cluster mode
-  	Default: 1
+  	
+        Default: 1
 
  Spark standalone or Mesos with cluster deploy mode only:
   --supervise
@@ -2331,31 +2360,34 @@ Options:
   --status SUBMISSION_ID
   	If given, requests the status of the driver specified
 
- Spark standalone, Mesos and Kubernetes only:
+ Spark standalone and Mesos only:
   --total-executor-cores NUM
-  	Total cores for all executors.
+  	Total cores for all executors
 
  Spark standalone, YARN and Kubernetes only:
-  --executor-cores NUЬ
+  --executor-cores NUM
   	Number of cores used by each executor.
-  	Default: 1 in YARN and K8S modes, or all available cores on the worker in standalone mode
+        Default: 1 in YARN and K8S modes, or all available cores on the worker in standalone mode
 
  Spark on YARN and Kubernetes only:
   --num-executors NUM
   	Number of executors to launch
-        If dynamic allocation is enabled, the initial number of executors will be at least NUM
-        Default: 2
+  	If dynamic allocation is enabled, the initial number of executors will be at least NUM
   	
+  	Default: 2
+                              
   --principal PRINCIPAL
-  	Для Кербероса
   	Principal to be used to login to KDC
   	
+  	Для Кербероса
+  	
   --keytab KEYTAB
-  	The full path to the file that contains the keytab for theprincipal specified above
+  	The full path to the file that contains the keytab for the principal specified above
 
  Spark on YARN only:
   --queue QUEUE_NAME
   	The YARN queue to submit to
+  	
   	Default: "default"
 
 В каталоге python/lib находятся зависимости для python - при настройке среды разработки не нужно ставить pyspark в свой venv. Правильнее - добавить эти библиотеки из дистрибутива - избегаем возможных конфликтов версий в будущем
@@ -2365,10 +2397,10 @@ Options:
 В каталоге conf находятся шаблоны конфигурационных файлов:
 1. spark-defaults.conf - основной конфигурациооный файл
 Общие для всех пользователей настройки нужно указать в spark-defaults.conf,
-отличающиеся - через параметры спарк-сабмита/пропертис файл
+отличающиеся - через параметры спарк-сабмита/properties-файл
 !!! Properties файл полностью оверрайдит дефолтный
-2. log4j.properties - конфигурация логирования, можно задать необходимый уровень логирования для различных компонентов Spark (включая собственные 
-3. spark-en.sh - скрипт, в котором устанавливаются переменные окружения (например - HADOOP_CONF_DIR/YARN_CONF_DIR)
+2. log4j2.properties - конфигурация логирования, можно задать необходимый уровень логирования для различных компонентов Spark (включая собственные 
+3. spark-env.sh - скрипт, в котором устанавливаются переменные окружения (например - HADOOP_CONF_DIR/YARN_CONF_DIR)
 !!! Переменные окружения имеют больший вес, чем настройки в spark-defaults.conf
 4. metrics.properties
 Можно отправлять метрики (например - Java метрики/стриминговые метрики/...) в Графит (например)
@@ -2381,7 +2413,7 @@ Options:
 3. spark-defaults.conf
 
 1. Наличие Hadoop не является необходимым условием для работы Spark
-2. spark-submit позволяет запустить Spark прложение как локально, так и на кластере
+2. spark-submit позволяет запустить Spark приложение как локально, так и на кластере
 
 
 Работа со Spark UI:
@@ -2390,10 +2422,10 @@ Options:
 
 count запускает проекцию в 0 колонок (т.к. важно только количество строк) - поэтому это быстрая операция
 
-Количество экзекьюторов - Spark UI => Executors
+Количество экзекьюторов - Spark UI -> Executors
 
-Если Yarn status == Accepted, но контейнер с драйвером не поднимается => не хватает ресурсов
-Если Yarn status == Running (т.е. драйвер запустился), но контейнеры с воркерами не поднимаются => не хватает ресурсов 
+Если Yarn status = Accepted, но контейнер с драйвером не поднимается -> не хватает ресурсов
+Если Yarn status = Running (т.е. драйвер запустился), но контейнеры с воркерами не поднимаются -> не хватает ресурсов 
 
 Кэшировать паркет не имеет особого смысла т.к. это быстрый источник
 Медленные источники - базы данных/статический DF из кафки/заархивированные текстовые форматы
@@ -2414,5 +2446,5 @@ InternalRow является упорядоченной коллекцией
 
 
 .withColumn("domain", callUDF("parse_url", 'domain, lit("HOST")))
-https://spark.apache.org/docs/3.2.1/api/sql/#parse_url
+https://spark.apache.org/docs/latest/api/sql/#parse_url
 

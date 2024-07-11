@@ -67,7 +67,7 @@ object Streaming_6 extends App {
 
   /**
    * Complete mode
-   * таблица с полным агрегатом по ВСЕМУ стриму (рассчитывается по ВСЕМ батчам в стриме) - обновляется на каждом батче
+   * таблица с полным агрегатом по ВСЕМУ стриму - пересчитывается на каждом батче
    *
    * !!! В Complete mode нельзя использовать watermark
    */
@@ -85,11 +85,14 @@ object Streaming_6 extends App {
 
   /**
    * Update mode
-   * на каждом батче - получаем только дельты (изменившиеся строки)
+   * на каждом батче - получаем только ДЕЛЬТЫ (изменившиеся строки)
+   *
+   * Update mode может работать как с указанием watermark так и без
    */
 //  createConsoleSink("state6_UpdateAgg", OutputMode.Update, groupedDf).start()
 
   /** Update mode + watermark */
+
   /** v1 - watermark + агрегат по указанным колонкам */
   val groupedWithWatermarkDf: DataFrame =
     streamDfWithDuplicates
@@ -111,7 +114,7 @@ object Streaming_6 extends App {
       .withColumn("ident", lit("OLD_DATA"))
       .withColumn("timestamp", date_sub($"timestamp", 1))
 
-//  createConsoleSink("state8_Example", OutputMode.Append, oldDateDf).start()
+//  createConsoleSink("state8_OldData", OutputMode.Append, oldDateDf).start()
 
   val newDataDf: DataFrame =
     spark
@@ -128,9 +131,10 @@ object Streaming_6 extends App {
       .count()
 
   /**
-   * !!! В первом (и втором) батче будет OLD_DATA, т.к. в нулевом батче MOT не был установлен из-за отсутствия в нем данных
-   * в последующих батчах OLD_DATA не будет из-за watermark
+   * !!! В первом (и втором - почему?) батче будет OLD_DATA, т.к. в нулевом батче MOT не был установлен из-за отсутствия в нем данных
+   * В последующих батчах OLD_DATA не будет из-за watermark
    */
+  /** !!! В одном стриме - 2 стриминговых датафрейма oldDateDf/newDataDf */
 //  createConsoleSink("state9_UpdateAggWindowWatermark", OutputMode.Update, unionDataDf).start()
 
   /** Окна доступны и для статических датафреймов */
@@ -143,6 +147,8 @@ object Streaming_6 extends App {
        * window($"timestamp", "10 minutes", "5 minutes")
        * "10 minutes" - ширина окна
        * "5 minutes" - пересечение окон
+       *
+       * из 10 строк получаем 20 тк таймстемп попадает в 2 окна (из-за пересечения окон)
        */
       window($"ts", "10 minutes", "5 minutes").as("window")
     )
@@ -151,11 +157,14 @@ object Streaming_6 extends App {
 
   /**
    * Append mode - режим по умолчанию
-   * !!! Без  watermark - агрегации в Append mode не работает
-   * !!! В Append mode в синк будут записаны ТОЛЬКО ЗАВЕРШЕННЫЕ ОКНА с данными в момент window_right_bound + watermark_value
+   * !!! Без watermark - агрегации в Append mode не работает
+   * !!! В Append mode в синк будут записаны ТОЛЬКО ЗАВЕРШЕННЫЕ окна с данными в момент window_right_bound + watermark_value
    */
 
-  /** !!! Первый результат будет через ~1.5 минуты (delayThreshold + windowDuration) */
+  /**
+   * !!! Первый результат будет через ~1.5 минуты (delayThreshold + windowDuration)
+   * Второй - через 30 секунд после первого
+   */
   val unionDataDf2: DataFrame =
     newDataDf
       .withWatermark("timestamp", "1 minutes")
@@ -180,10 +189,10 @@ object Streaming_6 extends App {
       .groupBy($"ident", $"timestamp")
       .count()
 
-  createConsoleSink("state11_AppendAgg_2", OutputMode.Append, unionDataDf3).start()
+//  createConsoleSink("state11_AppendAgg_2", OutputMode.Append, unionDataDf3).start()
 
 
-  Thread.sleep(1000000)
+  Thread.sleep(1_000_000)
 
   spark.stop()
 }
