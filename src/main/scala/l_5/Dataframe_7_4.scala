@@ -84,14 +84,14 @@ object Dataframe_7_4 extends App {
 //    joinedDf.show(numRows = 1)
 
     /** план в SQL/DataFrame показан для joinedDf.count(), а не joinedDf */
-    joinedDf.count()
+    println(joinedDf.count())
     airportsRepDf.unpersist()
-  } // 4613 ms
+  } // 4164 ms
   println()
 
 
   println(sc.uiWebUrl)
-  Thread.sleep(1000000)
+  Thread.sleep(1_000_000)
 
   spark.stop()
 }

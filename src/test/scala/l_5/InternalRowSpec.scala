@@ -22,12 +22,12 @@ class InternalRowSpec extends AnyFlatSpec with should.Matchers {
   val sc: SparkContext = spark.sparkContext
 //  sc.setLogLevel("ERROR")
 
-  val df: Dataset[lang.Long] = spark.range(0, 100)
-  val schema: StructType = df.schema
+  val ds: Dataset[lang.Long] = spark.range(0, 100)
+  val schema: StructType = ds.schema
   println(schema)
 
   val iRdd: RDD[InternalRow] =
-    df
+    ds
       .queryExecution
       .toRdd
 

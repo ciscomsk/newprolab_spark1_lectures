@@ -23,6 +23,7 @@ object DataFrame_3 extends App {
 //  spark.conf.set("spark.sql.adaptive.coalescePartitions.enabled", true)
 //  spark.conf.set("spark.sql.adaptive.advisoryPartitionSizeInBytes", "128m")
 //  spark.conf.set("spark.sql.adaptive.skewJoin.enabled", true)
+
 //  spark.conf.getAll.foreach(println)
 //  sc.getConf.getAll.foreach(println)
 
@@ -62,12 +63,13 @@ object DataFrame_3 extends App {
    * !!! несмотря на то, что onlyRuAndHighDs является общим для всех действий ниже
    * весь граф по его расчету будет выполняться при вызове каждого action
    *
-   * onlyRuAndHighDs в нашем случае будет рассчитан 4 раза - show/count/collect/groupBy-show
+   * onlyRuAndHighDs в нашем случае будет рассчитан 4 раза - show/count/collect/groupBy+show
    */
   val start1: Long = System.currentTimeMillis()
   onlyRuAndHighDs.show(numRows = 1, truncate = 100, vertical = true)
-  onlyRuAndHighDs.count()
-  onlyRuAndHighDs.collect()
+  println(onlyRuAndHighDs.count())
+  println(onlyRuAndHighDs.collect().mkString("Array(", ", ", ")"))
+  println()
 
   onlyRuAndHighDs
     .groupBy($"municipality")
@@ -77,7 +79,7 @@ object DataFrame_3 extends App {
     .show()
 
   val end1: Long = System.currentTimeMillis()
-  println(s"time1: ${(end1.toDouble - start1) / 1000}") // 1.781s
+  println(s"time1: ${(end1.toDouble - start1) / 1000}") // 2.408s
   println()
 
   /**
@@ -86,7 +88,7 @@ object DataFrame_3 extends App {
    *
    * !!! если после cache/persist будет show - будет обработана только 1 партиция => 1 партиция будет помещена в кэш
    * т.е. часть данных будет в виде снэпшота в кэше, часть в источнике (в нашем случае - csv-файл)
-   * при обновлении данных в источнике теряется консистентность -> partial caching (антипаттерн)
+   * при обновлении данных в источнике теряется консистентность - partial caching (антипаттерн)
    *
    * после окончания работы с закешированными данными необходимо выполнить unpersist - для очистки памяти
    */
@@ -95,8 +97,9 @@ object DataFrame_3 extends App {
 
   val start2: Long = System.currentTimeMillis()
   onlyRuAndHighDs.show(numRows = 1, truncate = 100, vertical = true)
-  onlyRuAndHighDs.count()
-  onlyRuAndHighDs.collect()
+  println(onlyRuAndHighDs.count())
+  println(onlyRuAndHighDs.collect().mkString("Array(", ", ", ")"))
+  println()
 
   onlyRuAndHighDs
     .groupBy($"municipality")
@@ -106,12 +109,12 @@ object DataFrame_3 extends App {
     .show()
 
   val end2: Long = System.currentTimeMillis()
-  println(s"time2: ${(end2.toDouble - start2) / 1000}") // 0.472s
+  println(s"time2: ${(end2.toDouble - start2) / 1000}") // 0.609s
   onlyRuAndHighDs.unpersist()
   println()
 
   /**
-   * localcheckpoint ~= cache/persist
+   * localcheckpoint ~ cache/persist
    *
    * 1. использует стандартную систему кеширования Spark
    * 2. localcheckpoint - неленивая операция (по умолчанию)
@@ -124,14 +127,14 @@ object DataFrame_3 extends App {
    * checkpoint
    *
    * checkpoint - сериализует датафрейм и сохраняет на диск, с возможностью дальнейшего чтения (в т.ч. другим Spark приложением)
-   * checkpoint - проприетарный формат Spark => лучше сохранять данные в открытом формате (например - parquet)
+   * checkpoint - проприетарный формат Spark - лучше сохранять данные в открытом формате (например - parquet)
    * checkpoint - стирает граф выполнения до checkpoint
    */
 //  onlyRuAndHighDs.checkpoint()
 
   /**
    * память, выделенная экзекьютору, делится на области:
-   * 1. хип - для внутренних объектов Spark
+   * 1. для внутренних объектов Spark
    * 2. storage - для кэша (max 50%)
    *
    * распределение памяти по областям является динамическим
@@ -152,7 +155,7 @@ object DataFrame_3 extends App {
   /*
     == Physical Plan ==
     AdaptiveSparkPlan isFinalPlan=false
-    +- Exchange hashpartitioning(CASE WHEN (id#1564L < 900) THEN 0 ELSE 1 END, 10), REPARTITION_BY_NUM, [plan_id=393]
+    +- Exchange hashpartitioning(CASE WHEN (id#1564L < 900) THEN 0 ELSE 1 END, 10), REPARTITION_BY_NUM, [plan_id=377]
        +- Range (0, 1000, step=1, splits=8)
    */
 
@@ -164,7 +167,7 @@ object DataFrame_3 extends App {
     val resDf: DataFrame =
       ds
         .mapPartitions(partition => Iterator(partition.length)) // col("value")
-        .withColumnRenamed("value", "itemPerPartition")
+        .withColumnRenamed("value", "item_per_partition")
 
     resDf.show(50, truncate = false)
     println(s"partitionsNumber: ${resDf.rdd.getNumPartitions}")
@@ -196,14 +199,14 @@ object DataFrame_3 extends App {
   /*
     == Physical Plan ==
     AdaptiveSparkPlan isFinalPlan=false
-    +- Exchange RoundRobinPartitioning(20), REPARTITION_BY_NUM, [plan_id=751]
+    +- Exchange RoundRobinPartitioning(20), REPARTITION_BY_NUM, [plan_id=735]
        +- Range (0, 1000, step=1, splits=8)
    */
 
   /**
    * 2. HashPartitioning - распределение по ключам (хэшам ключей) заданных колонок
    * позволяет оптимизировать граф вычислений
-   * пример - при репартицировании по полям, по которым в дальнейшем будет производиться группировка -> повторного репартицирования не будет
+   * пример: при репартицировании по полям, по которым в дальнейшем будет производиться группировка - повторного репартицирования не будет
    */
   val repartitionedDf2: Dataset[lang.Long] = skewDs.repartition(20, col("id"))
   println("printItemPerPartition[java.lang.Long](repartitionedDf2): ")
@@ -214,7 +217,7 @@ object DataFrame_3 extends App {
   /*
     == Physical Plan ==
     AdaptiveSparkPlan isFinalPlan=false
-    +- Exchange hashpartitioning(id#1564L, 20), REPARTITION_BY_NUM, [plan_id=883]
+    +- Exchange hashpartitioning(id#1564L, 20), REPARTITION_BY_NUM, [plan_id=867]
        +- Range (0, 1000, step=1, splits=8)
    */
 
@@ -234,7 +237,7 @@ object DataFrame_3 extends App {
     == Physical Plan ==
     AdaptiveSparkPlan isFinalPlan=false
     +- Sort [count#1632L DESC NULLS LAST], true, 0
-       +- Exchange rangepartitioning(count#1632L DESC NULLS LAST, 200), ENSURE_REQUIREMENTS, [plan_id=943]
+       +- Exchange rangepartitioning(count#1632L DESC NULLS LAST, 200), ENSURE_REQUIREMENTS, [plan_id=927]
           +- Scan ExistingRDD[municipality#24,count#1632L]
    */
 

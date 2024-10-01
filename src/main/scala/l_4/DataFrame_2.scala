@@ -49,7 +49,7 @@ object DataFrame_2 extends App {
       .groupBy($"continent")
       .agg(
         count("*").as("count"),
-        sum("population").as("sumPop")
+        sum("population").as("sum_pop")
       )
 
   aggDf.show()
@@ -111,17 +111,17 @@ object DataFrame_2 extends App {
 
   json2Ds.explain()
   /**
-   * проблема toJSON (и других методов Dataset API) - выполнение дополнительных сериализаций/десериализаций:
-   * DeserializeToObject (Internal row => Java object) => MapPartitions => SerializeFromObject (Java object => Internal row)
+   * !!! проблема toJSON (и других методов Dataset API) - выполнение дополнительных сериализаций/десериализаций:
+   * DeserializeToObject (Internal row -> Java object) -> MapPartitions -> SerializeFromObject (Java object -> Internal row)
    */
   /*
     == Physical Plan ==
     AdaptiveSparkPlan isFinalPlan=false
-    // конвертация Java object (String) => Internal row
+    // конвертация Java object (String) -> Internal row
     +- SerializeFromObject [staticinvoke(class org.apache.spark.unsafe.types.UTF8String, StringType, fromString, input[0, java.lang.String, true], true, false, true) AS value#175]
        // применение функции к Java object (String)
-       +- MapPartitions org.apache.spark.sql.Dataset$$Lambda$3532/0x000000080159d040@aecfc07, obj#174: java.lang.String
-          // конвертация Internal row => Java object (String)
+       +- MapPartitions org.apache.spark.sql.Dataset$$Lambda$3555/0x00000008015cf040@2a0cc666, obj#174: java.lang.String
+          // конвертация Internal row -> Java object (String)
           +- DeserializeToObject createexternalrow(continent#0.toString, mapobjects(lambdavariable(MapObject, StringType, false, -1), lambdavariable(MapObject, StringType, false, -1).toString, countries#102, Some(class scala.collection.mutable.ArraySeq)), StructField(continent,StringType,true), StructField(countries,ArrayType(StringType,false),false)), obj#173: org.apache.spark.sql.Row
              +- ObjectHashAggregate(keys=[continent#0], functions=[collect_list(country#1, 0, 0)])
                 +- Exchange hashpartitioning(continent#0, 200), ENSURE_REQUIREMENTS, [plan_id=453]
@@ -150,6 +150,8 @@ object DataFrame_2 extends App {
     |   Europe|  Spain|Barselona|         0|
     |Undefined|  Spain|   Madrid|         0|
     +---------+-------+---------+----------+
+
+    ->
 
     pivotDf:
     +-------+--------+--------+---------+

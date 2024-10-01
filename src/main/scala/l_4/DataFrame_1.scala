@@ -21,18 +21,18 @@ object DataFrame_1 extends App {
 
   import spark.implicits._
 
-  val cityList: Vector[String] = Vector("Moscow", "Paris", "Madrid", "London", "New York")
-  val df: DataFrame = cityList.toDF() // toDF - import spark.implicits._
+  val cities: Vector[String] = Vector("Moscow", "Paris", "Madrid", "London", "New York")
+  val df: DataFrame = cities.toDF() // toDF - import spark.implicits._
   df.printSchema()
   /*
     root
      |-- value: string (nullable = true)
    */
 
-  /** df.show работает аналогично rdd.take - пытается взять данные из минимального количества партиций -> оптимизация */
+  /** df.show работает аналогично rdd.take - пытается взять данные из минимального количества партиций - оптимизация */
   df.show()
 
-  // vertical = true - вертикальная ориентация удобна при большом количестве колонок или длинной строке в колонке
+  // vertical = true - вертикальная ориентация, удобна при большом количестве колонок или длинной строке в колонке
   df.show(numRows = 20, truncate = 100, vertical = true)
 
 
@@ -46,7 +46,7 @@ object DataFrame_1 extends App {
   println()
 
   /**
-   * filter == СРЕЗ (PO Filter)
+   * filter = СРЕЗ (PO Filter)
    * в отличии от RDD API - может принимать SQL выражение
    *
    * def filter(condition: Column): Dataset[T]
@@ -139,7 +139,7 @@ object DataFrame_1 extends App {
    */
 
 
-  /** withColumn/select/drop == ПРОЕКЦИЯ (PO Project) */
+  /** withColumn/select/drop = ПРОЕКЦИЯ (PO Project) */
 
   /**
    * withColumn - добавление новой колонку
@@ -161,7 +161,7 @@ object DataFrame_1 extends App {
 
 
   /**
-   * select - может использоваться не только для выборки существующих колонок, но и для СОЗДАНИЯ новых
+   * select - может использоваться не только для выборки существующих колонок, но и для СОЗДАНИЯ НОВЫХ
    *
    * select(col("*")) - позволяет получить DF со всеми колонками - полезно, когда список всех колонок не известен
    * и нужно выбрать все существующие + добавить новые колонки

@@ -25,12 +25,12 @@ object ScalaTutorial extends App {
   println(s"c: $c")
   println()
 
-  /** Unit () - выражение, которое не возвращает значение = Java void */
+  /** Unit, литерал - () - выражение, которое не возвращает значение = Java void */
   def printer(s: String): Unit = println(s)
 
   /** val = value - Immutable */
   val thisIsVal: Int = 1
-//  thisIsVal = 2 // err - reassignment to val
+//  thisIsVal = 2 // compile time err - reassignment to val
 
   /** var = variable - Mutable */
   var thisIsVar: Int = 1
@@ -42,14 +42,14 @@ object ScalaTutorial extends App {
   println(v1)
 
   /** Постфиксная нотация - используется для методов без аргументов */
-  /** без ";" не работает т.к. считает println(v2) - аргументом -> test.sc */
+  /** без ";" не работает т.к. парсер считает 'println(v2)' - аргументом -> test.sc */
   val v2: String = "Some words" toUpperCase; // постфиксная нотация
   println(v2)
   println()
 
   /**
    * Инфиксная нотация - используется для методов с 1-м аргументом
-   * инфиксная нотация полезна при написании DSL -> select * from table1 = select.(*).from(table1)
+   * инфиксная нотация полезна при написании DSL: select * from table1 => select.(*).from(table1)
    */
   val v3: String = "Some" concat " words" // инфиксная нотация
   println(v3)
@@ -107,7 +107,7 @@ object ScalaTutorial extends App {
 
   /**
    * val - вычисляется 1 раз при появлении в области видимости
-   * lazy val - вычисляется 1 раз при первом обращении к нему
+   * lazy val - вычисляется 1 раз при первом обращении к переменной
    * def = define - выполняется при каждом вызове
    */
 
@@ -239,7 +239,7 @@ object ScalaTutorial extends App {
   println(fruits1)
   // =
   val fruits2: List[String] = "apple" :: ("banana" :: ("pear" :: Nil)) // скобки только для удобства понимания
-  // :: - правоассоциативный метод => "pear" :: Nil = Nil.::("pear")
+  // :: - правоассоциативный метод - "pear" :: Nil = Nil.::("pear")
   println(fruits2)
   println()
 
@@ -365,7 +365,7 @@ object ScalaTutorial extends App {
   println(safeValue2)
   println()
 
-  // "apple" -> 2 - сахар для кортежа = ("apple", 2)
+  // "apple" -> 2 = ("apple", 2) - сахар для кортежа
   val list2Map: Map[String, Int] = List("apple" -> 2, "banana" -> 1, "pear" -> 10).toMap
   println(s"list2Map: $list2Map")
 
@@ -379,14 +379,14 @@ object ScalaTutorial extends App {
   println(s"colors.isEmpty: ${colors.isEmpty}")
   println()
 
-  // Immutable map - update<D>, result type = Map
+  // Immutable map - updateD, result type = Map
   val colorsImmutable: Map[String, String] = colors.updated("black", "#000000")
-  println(s"colors before update: $colors")
+  println(s"colors before updateD: $colors")
   println(s"colorsImmutable: $colorsImmutable")
-  println(s"colors after update: $colors")
+  println(s"colors after updateD: $colors")
   println()
 
-  // Mutable map - update<_>, result type = Unit
+  // Mutable map - update, result type = Unit
   val colorsMutable: mutable.Map[String, String] = mutable.Map("red" -> "#FF0000", "azure" -> "#F0FFFF")
   println(s"colorsMutable original: $colorsMutable")
   val _: Unit = colorsMutable.update("black", "#000000")
@@ -433,7 +433,7 @@ object ScalaTutorial extends App {
   println(s"optNone: $optNone")
   println()
 
-  val aVal: Int = null.asInstanceOf[Int] // = 0 - в Scala numeric классы не могут принимать значение null
+  val aVal: Int = null.asInstanceOf[Int] // = 0 - в Scala anyVal классы не могут принимать значение null (~примитивы в Java)
   println(s"aVal: $aVal")
 
   val bVal: java.lang.Integer = null // = null - в Java numeric классы могут принимать значение null, примитивы - не могут

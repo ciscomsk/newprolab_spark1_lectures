@@ -28,6 +28,7 @@ object DataFrame_6 extends App {
       .options(csvOptions)
       .csv("src/main/resources/l_3/airport-codes.csv")
 
+
   /** Оптимизация соединений и группировок */
   val leftDf: DataFrame = airportsDf.select($"type", $"ident", $"iso_country")
 
@@ -131,7 +132,7 @@ object DataFrame_6 extends App {
 
     dates
       .map { date =>
-        leftDf.filter(date_condition).join(right.filter(date_condition), Seq(...), "inner")
+        leftDf.filter(date_condition).join(rightDf.filter(date_condition), Seq(...), "inner")
       }
       .reduce((df1, df2) => df1.unionAll(df2))
 
@@ -141,8 +142,8 @@ object DataFrame_6 extends App {
 
   /** BroadcastNestedLoop Join */
   /**
-   * несмотря на то, что udf проверяет на равенство два ключа (т.е. фактически equ-join), Spark ничего не знает про логику udf
-   * и не может применить BroadcastHashJoin/SortMergeJoin -> применится BroadcastNestedLoopJoin/CartesianProduct
+   * несмотря на то, что udf проверяет на равенство два ключа (т.е. это фактически equ-join), Spark ничего не знает про логику udf
+   * и не может применить BroadcastHashJoin/SortMergeJoin - применится BroadcastNestedLoopJoin или CartesianProduct
    *
    * через udf можно сделать null-safe join
    */
@@ -171,7 +172,7 @@ object DataFrame_6 extends App {
     +- *(2) Scan ExistingRDD[type#191,count#192L]
    */
 
-  /** cartesian product result num partitions = left df num partitions * right df num partitions */
+  /** cartesian product result partitions number = leftDf_partitionsNumber * rightDf_partitionsNumber */
   println(
     s"""Partition summary:
        |left=${leftDf2.rdd.getNumPartitions}

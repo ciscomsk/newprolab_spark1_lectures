@@ -24,17 +24,17 @@ object DataFrame_4 extends App {
   import spark.implicits._
 
   /** Built-in functions */
-  val df: Dataset[lang.Long] = spark.range(0, 10)
+  val ds: Dataset[lang.Long] = spark.range(0, 10)
   val colFunc: Column = pmod(col("id"), lit(2))
   // =
   val exprFunc: Column = expr("pmod(id, 2)")
   println()
 
-  df
+  ds
     .withColumn("pmod", colFunc)
     .show()
 
-  df
+  ds
     .withColumn("pmod", exprFunc)
     .show()
 
@@ -49,20 +49,20 @@ object DataFrame_4 extends App {
    */
   val plusOne: UserDefinedFunction = udf { (value: Long) => value + 1 }
 
-  df
-    .withColumn("idPlusOne", plusOne(col("id")))
+  ds
+    .withColumn("id_plus_one", plusOne(col("id")))
     .show(10, truncate = false)
 
   val hostname: UserDefinedFunction = udf { () => InetAddress.getLocalHost.getHostAddress }
 
-  df
+  ds
     .withColumn("hostname", hostname())
     .show(10, truncate = false)
 
   /** !!! None = null в DF */
   val divideTwoBy: UserDefinedFunction = udf { (inputValue: Long) => Try(2L / inputValue).toOption }
 
-  val resultDf: DataFrame = df.withColumn("divideTwoBy", divideTwoBy(col("id")))
+  val resultDf: DataFrame = ds.withColumn("divide_two_by", divideTwoBy(col("id")))
   resultDf.printSchema()
   /*
     root
@@ -99,6 +99,7 @@ object DataFrame_4 extends App {
 
   val innerJoinDf: DataFrame =
     aggTypeCountryDf
+      // v1 - Seq(...)
       .join(aggCountryDf, Seq("iso_country"), "inner") // inner join - default
       .select(
         $"iso_country",
@@ -133,7 +134,6 @@ object DataFrame_4 extends App {
     case Success(df) => println(df.show())
     case Failure(ex) => println(ex)
   }
-
   println()
 
   val joinCondition: Column =
@@ -153,6 +153,7 @@ object DataFrame_4 extends App {
 
   val rightDf: DataFrame = spark.range(10).withColumn("foo", lit("foo"))
 
+  // v2 - df.as(...)
   leftDf.as("left")
     .join(rightDf.as("right"), joinConditionExpr, "inner")
 //    .drop($"right.id") // v1
@@ -161,6 +162,15 @@ object DataFrame_4 extends App {
       leftDf("foo").as("left_foo"),
       rightDf("foo").as("right_foo")
     ) // v2
+    .show()
+
+  // v2 - df(...)
+  leftDf
+    .join(rightDf, Seq("id", "foo"), "inner")
+    .select(
+      leftDf("foo").as("left_foo"),
+      rightDf("foo").as("right_foo")
+    )
     .show()
 
 

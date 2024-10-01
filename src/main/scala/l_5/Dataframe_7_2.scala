@@ -44,7 +44,7 @@ object Dataframe_7_2 extends App {
    * Оптимизация видна в Spark UI:
    * 1. ++ в плане выполнения - SQL/Dataframe + Details
    * 2. +  в графе выполнения - в Jobs
-   * 3. -  в explain разница не видна
+   * 3. +  в explain видно, что HashAggregate выполняются без репартицирования
    *
    * -1 Scan csv - т.к. результат репартицирования это файлы на файловой системе воркеров (~persist DISK_ONLY) => второе чтение из источника не нужно
    * -1 Exchange hashpartitioning - т.к. репартицирование по нужному ключу уже было
@@ -80,19 +80,18 @@ object Dataframe_7_2 extends App {
                      +- Exchange hashpartitioning(type#42, 200), REPARTITION_BY_NUM, [plan_id=40]
                         +- Filter isnotnull(type#42)
                            +- FileScan csv [type#42] Batched: false, DataFilters: [isnotnull(type#42)], Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [IsNotNull(type)], ReadSchema: struct<type:string>
-
      */
 
 //    joinedDf.show(numRows = 1)
 
     /** план в SQL/DataFrame показан для joinedDf.count(), а не joinedDf */
-    joinedDf.count()
-  } // 3662 ms
+    println(joinedDf.count())
+  } // 3587 ms
   println()
 
 
   println(sc.uiWebUrl)
-  Thread.sleep(1000000)
+  Thread.sleep(1_000_000)
 
   spark.stop()
 }

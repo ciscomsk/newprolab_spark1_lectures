@@ -63,24 +63,24 @@ object DataFrame_9 extends App {
 
     selectedDf.cache()
     /** в кэш будет помещена только колонка ident */
-    selectedDf.count()
+    println(selectedDf.count())
     selectedDf.unpersist()
 
     printPhysicalPlan(selectedDf)
     /*
-      *(1) Project [ident#41]
+      *(1) Project [ident#92]
       +- *(1) ColumnarToRow
          // ReadSchema: struct<ident:string> - будет вычитана только колонка ident
-         +- FileScan parquet [ident#41,iso_country#52] Batched: true, DataFilters: [], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<ident:string>
+         +- FileScan parquet [ident#92,iso_country#103] Batched: true, DataFilters: [], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<ident:string>
      */
-  } // 1264 ms
+  } // 1281 ms
   println()
 
   spark.time {
     val selectedDf: DataFrame = airportPartPqDf
 
     selectedDf.cache()
-    selectedDf.count()
+    println(selectedDf.count())
     selectedDf.unpersist()
 
     printPhysicalPlan(selectedDf)
@@ -89,7 +89,7 @@ object DataFrame_9 extends App {
       // ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_region:string,m...
       +- FileScan parquet [ident#41,type#42,name#43,elevation_ft#44,continent#45,iso_region#46,municipality#47,gps_code#48,iata_code#49,local_code#50,coordinates#51,iso_country#52] Batched: true, DataFilters: [], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_region:string,m...
      */
-  } // 854 ms
+  } // 946 ms
   println()
 
   /** !!! для неколоночных форматов (например json) - ReadSchema будет указана в плане выполнения, но работать оптимизация не будет */
@@ -117,30 +117,29 @@ object DataFrame_9 extends App {
 //    val filteredDf: Dataset[Row] = airportPartPqDf.filter($"iso_country" === "RU" || $"iso_country" === "US")
 //    println(filteredDf.queryExecution.executedPlan.toJSON)
 
-    filteredDf.count()
+    println(filteredDf.count())
 
     printPhysicalPlan(filteredDf)
     /*
       *(1) ColumnarToRow
-      // PartitionFilters: [isnotnull(iso_country#52), (iso_country#52 = RU)] -> будет прочитан только каталог RU
+      // PartitionFilters: [isnotnull(iso_country#52), (iso_country#52 = RU)] - будет прочитан только каталог RU
       +- FileScan parquet [ident#41,type#42,name#43,elevation_ft#44,continent#45,iso_region#46,municipality#47,gps_code#48,iata_code#49,local_code#50,coordinates#51,iso_country#52] Batched: true, DataFilters: [], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [isnotnull(iso_country#52), (iso_country#52 = RU)], PushedFilters: [], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_region:string,m...
      */
-  } // 117 ms
+  } // 98 ms
   println()
 
 
   spark.time {
     val filteredDf: Dataset[Row] = airportPartPqDf
-    filteredDf.count()
+    println(filteredDf.count())
 
     printPhysicalPlan(filteredDf)
     /*
       *(1) ColumnarToRow
       // PartitionFilters: []
       +- FileScan parquet [ident#41,type#42,name#43,elevation_ft#44,continent#45,iso_region#46,municipality#47,gps_code#48,iata_code#49,local_code#50,coordinates#51,iso_country#52] Batched: true, DataFilters: [], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_region:string,m...
-
      */
-  } // 256 ms
+  } // 290 ms
   println()
 
 
@@ -150,25 +149,25 @@ object DataFrame_9 extends App {
    * в плане - PushedFilters
    */
   spark.time {
-    val filteredDf: Dataset[Row] = airportPartPqDf.filter($"iso_region" === "RU")
-    filteredDf.count()
+    val filteredDf: Dataset[Row] = airportPartPqDf.filter($"iso_region" === "RU-MOW")
+    println(filteredDf.count())
 
     printPhysicalPlan(filteredDf)
     /*
-      // Filter (isnotnull(iso_region#46) AND (iso_region#46 = RU))
-      *(1) Filter (isnotnull(iso_region#46) AND (iso_region#46 = RU))
+      // Filter (isnotnull(iso_region#46) AND (iso_region#46 = RU-MOW))
+      *(1) Filter (isnotnull(iso_region#46) AND (iso_region#46 = RU-MOW))
       +- *(1) ColumnarToRow
-         // PushedFilters: [IsNotNull(iso_region), EqualTo(iso_region,RU)]
-         +- FileScan parquet [ident#41,type#42,name#43,elevation_ft#44,continent#45,iso_region#46,municipality#47,gps_code#48,iata_code#49,local_code#50,coordinates#51,iso_country#52] Batched: true, DataFilters: [isnotnull(iso_region#46), (iso_region#46 = RU)], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [IsNotNull(iso_region), EqualTo(iso_region,RU)], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_region:string,m...
+         // PushedFilters: [IsNotNull(iso_region), EqualTo(iso_region,RU-MOW)]
+         +- FileScan parquet [ident#41,type#42,name#43,elevation_ft#44,continent#45,iso_region#46,municipality#47,gps_code#48,iata_code#49,local_code#50,coordinates#51,iso_country#52] Batched: true, DataFilters: [isnotnull(iso_region#46), (iso_region#46 = RU-MOW)], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [IsNotNull(iso_region), EqualTo(iso_region,RU-MOW)], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_region:string,m...
      */
-  } // 386 ms
+  } // 343 ms
   println()
 
 
   println("__Simplify casts__: ")
   /**
    * 4. Simplify casts
-   * LongType.cast(LongType) -> каста не будет
+   * LongType.cast(LongType) - каста не будет
    */
   val resDf1: DataFrame =
     spark

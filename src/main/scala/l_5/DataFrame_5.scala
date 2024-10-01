@@ -6,7 +6,7 @@ import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.execution.{CodegenMode, CostMode}
 import org.apache.spark.sql.execution.command.ExplainCommand
-/** Spark 3.5.1 */
+/** Spark 3.5.2 */
 import org.apache.spark.sql.execution.ExtendedMode
 /** 2.4.8 */
 import org.apache.spark.sql.{DataFrame, SparkSession}
@@ -33,6 +33,7 @@ object DataFrame_5 extends App {
       /** чтение любого вида файлов = Physical Operator (PO) File scan <format> */
       .csv("src/main/resources/l_3/airport-codes.csv")
 
+
   /** План выполнения */
   println()
   airportsDf.printSchema()
@@ -57,7 +58,9 @@ object DataFrame_5 extends App {
     FileScan csv [ident#17,type#18,name#19,elevation_ft#20,continent#21,iso_country#22,iso_region#23,municipality#24,gps_code#25,iata_code#26,local_code#27,coordinates#28] Batched: false, DataFilters: [], Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_country:string,...
    */
 
+
   /** Логирование плана выполнения */
+
   /** queryExecution - класс, представляющий собой дерево выполнения каких-то действий над данными */
   def printPhysicalPlan(ds: Dataset[_]): Unit = {
     /** !!! информация обрезается */
@@ -73,9 +76,13 @@ object DataFrame_5 extends App {
    * !!! executedPlan.toJSON - информация не обрезается
    * echo '<json>' | jq - удобный анализ в консоли, '' - обязательны
    */
+  spark.conf.set("spark.sql.maxMetadataStringLength", "10000")
+  println("plans: ")
+//  println(airportsDf.queryExecution.toString()) // все планы
+//  println(airportsDf.queryExecution.executedPlan.toString()) // только физический
   println(airportsDf.queryExecution.executedPlan.toJSON)
   /*
-    [{"class":"org.apache.spark.sql.execution.FileSourceScanExec","num-children":0,"relation":null,"output":[[{"class":"org.apache.spark.sql.catalyst.expressions.AttributeReference","num-children":0,"name":"ident","dataType":"string","nullable":true,"metadata":{},"exprId":{"product-class":"org.apache.spark.sql.catalyst.expressions.ExprId","id":17,"jvmId":"4f1a7cbd-c512-4096-8008-5a467344d96b"},"qualifier":[]}],[{"class":"org.apache.spark.sql.catalyst.expressions.AttributeReference","num-children":0,"name":"type","dataType":"string","nullable":true,"metadata":{},"exprId":{"product-class":"org.apache.spark.sql.catalyst.expressions.ExprId","id":18,"jvmId":"4f1a7cbd-c512-4096-8008-5a467344d96b"},"qualifier":[]}],[{"class":"org.apache.spark.sql.catalyst.expressions.AttributeReference","num-children":0,"name":"name","dataType":"string","nullable":true,"metadata":{},"exprId":{"product-class":"org.apache.spark.sql.catalyst.expressions.ExprId","id":19,"jvmId":"4f1a7cbd-c512-4096-8008-5a467344d96b"},"qualifier":[]}],[{"class":"org.apache.spark.sql.catalyst.expressions.AttributeReference","num-children":0,"name":"elevation_ft","dataType":"integer","nullable":true,"metadata":{},"exprId":{"product-class":"org.apache.spark.sql.catalyst.expressions.ExprId","id":20,"jvmId":"4f1a7cbd-c512-4096-8008-5a467344d96b"},"qualifier":[]}],[{"class":"org.apache.spark.sql.catalyst.expressions.AttributeReference","num-children":0,"name":"continent","dataType":"string","nullable":true,"metadata":{},"exprId":{"product-class":"org.apache.spark.sql.catalyst.expressions.ExprId","id":21,"jvmId":"4f1a7cbd-c512-4096-8008-5a467344d96b"},"qualifier":[]}],[{"class":"org.apache.spark.sql.catalyst.expressions.AttributeReference","num-children":0,"name":"iso_country","dataType":"string","nullable":true,"metadata":{},"exprId":{"product-class":"org.apache.spark.sql.catalyst.expressions.ExprId","id":22,"jvmId":"4f1a7cbd-c512-4096-8008-5a467344d96b"},"qualifier":[]}],[{"class":"org.apache.spark.sql.catalyst.expressions.AttributeReference","num-children":0,"name":"iso_region","dataType":"string","nullable":true,"metadata":{},"exprId":{"product-class":"org.apache.spark.sql.catalyst.expressions.ExprId","id":23,"jvmId":"4f1a7cbd-c512-4096-8008-5a467344d96b"},"qualifier":[]}],[{"class":"org.apache.spark.sql.catalyst.expressions.AttributeReference","num-children":0,"name":"municipality","dataType":"string","nullable":true,"metadata":{},"exprId":{"product-class":"org.apache.spark.sql.catalyst.expressions.ExprId","id":24,"jvmId":"4f1a7cbd-c512-4096-8008-5a467344d96b"},"qualifier":[]}],[{"class":"org.apache.spark.sql.catalyst.expressions.AttributeReference","num-children":0,"name":"gps_code","dataType":"string","nullable":true,"metadata":{},"exprId":{"product-class":"org.apache.spark.sql.catalyst.expressions.ExprId","id":25,"jvmId":"4f1a7cbd-c512-4096-8008-5a467344d96b"},"qualifier":[]}],[{"class":"org.apache.spark.sql.catalyst.expressions.AttributeReference","num-children":0,"name":"iata_code","dataType":"string","nullable":true,"metadata":{},"exprId":{"product-class":"org.apache.spark.sql.catalyst.expressions.ExprId","id":26,"jvmId":"4f1a7cbd-c512-4096-8008-5a467344d96b"},"qualifier":[]}],[{"class":"org.apache.spark.sql.catalyst.expressions.AttributeReference","num-children":0,"name":"local_code","dataType":"string","nullable":true,"metadata":{},"exprId":{"product-class":"org.apache.spark.sql.catalyst.expressions.ExprId","id":27,"jvmId":"4f1a7cbd-c512-4096-8008-5a467344d96b"},"qualifier":[]}],[{"class":"org.apache.spark.sql.catalyst.expressions.AttributeReference","num-children":0,"name":"coordinates","dataType":"string","nullable":true,"metadata":{},"exprId":{"product-class":"org.apache.spark.sql.catalyst.expressions.ExprId","id":28,"jvmId":"4f1a7cbd-c512-4096-8008-5a467344d96b"},"qualifier":[]}]],"requiredSchema":{"type":"struct","fields":[{"name":"ident","type":"string","nullable":true,"metadata":{}},{"name":"type","type":"string","nullable":true,"metadata":{}},{"name":"name","type":"string","nullable":true,"metadata":{}},{"name":"elevation_ft","type":"integer","nullable":true,"metadata":{}},{"name":"continent","type":"string","nullable":true,"metadata":{}},{"name":"iso_country","type":"string","nullable":true,"metadata":{}},{"name":"iso_region","type":"string","nullable":true,"metadata":{}},{"name":"municipality","type":"string","nullable":true,"metadata":{}},{"name":"gps_code","type":"string","nullable":true,"metadata":{}},{"name":"iata_code","type":"string","nullable":true,"metadata":{}},{"name":"local_code","type":"string","nullable":true,"metadata":{}},{"name":"coordinates","type":"string","nullable":true,"metadata":{}}]},"partitionFilters":[],"dataFilters":[],"disableBucketedScan":false}]
+    [{"class":"org.apache.spark.sql.execution.FileSourceScanExec","num-children":0,"relation":null,"output":[[{"class":"org.apache.spark.sql.catalyst.expressions.AttributeReference","num-children":0,"name":"ident","dataType":"string","nullable":true,"metadata":{},"exprId":{"product-class":"org.apache.spark.sql.catalyst.expressions.ExprId","id":17,"jvmId":"b341e6c2-2187-4005-abcc-e62d1f315558"},"qualifier":[]}],[{"class":"org.apache.spark.sql.catalyst.expressions.AttributeReference","num-children":0,"name":"type","dataType":"string","nullable":true,"metadata":{},"exprId":{"product-class":"org.apache.spark.sql.catalyst.expressions.ExprId","id":18,"jvmId":"b341e6c2-2187-4005-abcc-e62d1f315558"},"qualifier":[]}],[{"class":"org.apache.spark.sql.catalyst.expressions.AttributeReference","num-children":0,"name":"name","dataType":"string","nullable":true,"metadata":{},"exprId":{"product-class":"org.apache.spark.sql.catalyst.expressions.ExprId","id":19,"jvmId":"b341e6c2-2187-4005-abcc-e62d1f315558"},"qualifier":[]}],[{"class":"org.apache.spark.sql.catalyst.expressions.AttributeReference","num-children":0,"name":"elevation_ft","dataType":"integer","nullable":true,"metadata":{},"exprId":{"product-class":"org.apache.spark.sql.catalyst.expressions.ExprId","id":20,"jvmId":"b341e6c2-2187-4005-abcc-e62d1f315558"},"qualifier":[]}],[{"class":"org.apache.spark.sql.catalyst.expressions.AttributeReference","num-children":0,"name":"continent","dataType":"string","nullable":true,"metadata":{},"exprId":{"product-class":"org.apache.spark.sql.catalyst.expressions.ExprId","id":21,"jvmId":"b341e6c2-2187-4005-abcc-e62d1f315558"},"qualifier":[]}],[{"class":"org.apache.spark.sql.catalyst.expressions.AttributeReference","num-children":0,"name":"iso_country","dataType":"string","nullable":true,"metadata":{},"exprId":{"product-class":"org.apache.spark.sql.catalyst.expressions.ExprId","id":22,"jvmId":"b341e6c2-2187-4005-abcc-e62d1f315558"},"qualifier":[]}],[{"class":"org.apache.spark.sql.catalyst.expressions.AttributeReference","num-children":0,"name":"iso_region","dataType":"string","nullable":true,"metadata":{},"exprId":{"product-class":"org.apache.spark.sql.catalyst.expressions.ExprId","id":23,"jvmId":"b341e6c2-2187-4005-abcc-e62d1f315558"},"qualifier":[]}],[{"class":"org.apache.spark.sql.catalyst.expressions.AttributeReference","num-children":0,"name":"municipality","dataType":"string","nullable":true,"metadata":{},"exprId":{"product-class":"org.apache.spark.sql.catalyst.expressions.ExprId","id":24,"jvmId":"b341e6c2-2187-4005-abcc-e62d1f315558"},"qualifier":[]}],[{"class":"org.apache.spark.sql.catalyst.expressions.AttributeReference","num-children":0,"name":"gps_code","dataType":"string","nullable":true,"metadata":{},"exprId":{"product-class":"org.apache.spark.sql.catalyst.expressions.ExprId","id":25,"jvmId":"b341e6c2-2187-4005-abcc-e62d1f315558"},"qualifier":[]}],[{"class":"org.apache.spark.sql.catalyst.expressions.AttributeReference","num-children":0,"name":"iata_code","dataType":"string","nullable":true,"metadata":{},"exprId":{"product-class":"org.apache.spark.sql.catalyst.expressions.ExprId","id":26,"jvmId":"b341e6c2-2187-4005-abcc-e62d1f315558"},"qualifier":[]}],[{"class":"org.apache.spark.sql.catalyst.expressions.AttributeReference","num-children":0,"name":"local_code","dataType":"string","nullable":true,"metadata":{},"exprId":{"product-class":"org.apache.spark.sql.catalyst.expressions.ExprId","id":27,"jvmId":"b341e6c2-2187-4005-abcc-e62d1f315558"},"qualifier":[]}],[{"class":"org.apache.spark.sql.catalyst.expressions.AttributeReference","num-children":0,"name":"coordinates","dataType":"string","nullable":true,"metadata":{},"exprId":{"product-class":"org.apache.spark.sql.catalyst.expressions.ExprId","id":28,"jvmId":"b341e6c2-2187-4005-abcc-e62d1f315558"},"qualifier":[]}]],"requiredSchema":{"type":"struct","fields":[{"name":"ident","type":"string","nullable":true,"metadata":{}},{"name":"type","type":"string","nullable":true,"metadata":{}},{"name":"name","type":"string","nullable":true,"metadata":{}},{"name":"elevation_ft","type":"integer","nullable":true,"metadata":{}},{"name":"continent","type":"string","nullable":true,"metadata":{}},{"name":"iso_country","type":"string","nullable":true,"metadata":{}},{"name":"iso_region","type":"string","nullable":true,"metadata":{}},{"name":"municipality","type":"string","nullable":true,"metadata":{}},{"name":"gps_code","type":"string","nullable":true,"metadata":{}},{"name":"iata_code","type":"string","nullable":true,"metadata":{}},{"name":"local_code","type":"string","nullable":true,"metadata":{}},{"name":"coordinates","type":"string","nullable":true,"metadata":{}}]},"partitionFilters":[],"dataFilters":[],"disableBucketedScan":false}]
    */
   println()
 
@@ -98,7 +105,7 @@ object DataFrame_5 extends App {
               "exprId": {
                 "product-class": "org.apache.spark.sql.catalyst.expressions.ExprId",
                 "id": 17,
-                "jvmId": "4f1a7cbd-c512-4096-8008-5a467344d96b"
+                "jvmId": "b341e6c2-2187-4005-abcc-e62d1f315558"
               },
               "qualifier": []
             }
@@ -114,7 +121,7 @@ object DataFrame_5 extends App {
               "exprId": {
                 "product-class": "org.apache.spark.sql.catalyst.expressions.ExprId",
                 "id": 18,
-                "jvmId": "4f1a7cbd-c512-4096-8008-5a467344d96b"
+                "jvmId": "b341e6c2-2187-4005-abcc-e62d1f315558"
               },
               "qualifier": []
             }
@@ -130,7 +137,7 @@ object DataFrame_5 extends App {
               "exprId": {
                 "product-class": "org.apache.spark.sql.catalyst.expressions.ExprId",
                 "id": 19,
-                "jvmId": "4f1a7cbd-c512-4096-8008-5a467344d96b"
+                "jvmId": "b341e6c2-2187-4005-abcc-e62d1f315558"
               },
               "qualifier": []
             }
@@ -146,7 +153,7 @@ object DataFrame_5 extends App {
               "exprId": {
                 "product-class": "org.apache.spark.sql.catalyst.expressions.ExprId",
                 "id": 20,
-                "jvmId": "4f1a7cbd-c512-4096-8008-5a467344d96b"
+                "jvmId": "b341e6c2-2187-4005-abcc-e62d1f315558"
               },
               "qualifier": []
             }
@@ -162,7 +169,7 @@ object DataFrame_5 extends App {
               "exprId": {
                 "product-class": "org.apache.spark.sql.catalyst.expressions.ExprId",
                 "id": 21,
-                "jvmId": "4f1a7cbd-c512-4096-8008-5a467344d96b"
+                "jvmId": "b341e6c2-2187-4005-abcc-e62d1f315558"
               },
               "qualifier": []
             }
@@ -178,7 +185,7 @@ object DataFrame_5 extends App {
               "exprId": {
                 "product-class": "org.apache.spark.sql.catalyst.expressions.ExprId",
                 "id": 22,
-                "jvmId": "4f1a7cbd-c512-4096-8008-5a467344d96b"
+                "jvmId": "b341e6c2-2187-4005-abcc-e62d1f315558"
               },
               "qualifier": []
             }
@@ -194,7 +201,7 @@ object DataFrame_5 extends App {
               "exprId": {
                 "product-class": "org.apache.spark.sql.catalyst.expressions.ExprId",
                 "id": 23,
-                "jvmId": "4f1a7cbd-c512-4096-8008-5a467344d96b"
+                "jvmId": "b341e6c2-2187-4005-abcc-e62d1f315558"
               },
               "qualifier": []
             }
@@ -210,7 +217,7 @@ object DataFrame_5 extends App {
               "exprId": {
                 "product-class": "org.apache.spark.sql.catalyst.expressions.ExprId",
                 "id": 24,
-                "jvmId": "4f1a7cbd-c512-4096-8008-5a467344d96b"
+                "jvmId": "b341e6c2-2187-4005-abcc-e62d1f315558"
               },
               "qualifier": []
             }
@@ -226,7 +233,7 @@ object DataFrame_5 extends App {
               "exprId": {
                 "product-class": "org.apache.spark.sql.catalyst.expressions.ExprId",
                 "id": 25,
-                "jvmId": "4f1a7cbd-c512-4096-8008-5a467344d96b"
+                "jvmId": "b341e6c2-2187-4005-abcc-e62d1f315558"
               },
               "qualifier": []
             }
@@ -242,7 +249,7 @@ object DataFrame_5 extends App {
               "exprId": {
                 "product-class": "org.apache.spark.sql.catalyst.expressions.ExprId",
                 "id": 26,
-                "jvmId": "4f1a7cbd-c512-4096-8008-5a467344d96b"
+                "jvmId": "b341e6c2-2187-4005-abcc-e62d1f315558"
               },
               "qualifier": []
             }
@@ -258,7 +265,7 @@ object DataFrame_5 extends App {
               "exprId": {
                 "product-class": "org.apache.spark.sql.catalyst.expressions.ExprId",
                 "id": 27,
-                "jvmId": "4f1a7cbd-c512-4096-8008-5a467344d96b"
+                "jvmId": "b341e6c2-2187-4005-abcc-e62d1f315558"
               },
               "qualifier": []
             }
@@ -274,7 +281,7 @@ object DataFrame_5 extends App {
               "exprId": {
                 "product-class": "org.apache.spark.sql.catalyst.expressions.ExprId",
                 "id": 28,
-                "jvmId": "4f1a7cbd-c512-4096-8008-5a467344d96b"
+                "jvmId": "b341e6c2-2187-4005-abcc-e62d1f315558"
               },
               "qualifier": []
             }
@@ -361,11 +368,12 @@ object DataFrame_5 extends App {
         "dataFilters": [],
         "disableBucketedScan": false
       }
-    ]
+      ]
    */
 
   /**
-   * filter = PO Filter - каталист добавляет в фильтр условие isnotnull
+   * filter = PO Filter
+   * каталист добавляет в фильтр условие isnotnull
    * isnotnull - высокопроизводительный фильтр, который часто можно запушдаунить в источник
    */
   printPhysicalPlan(airportsDf.filter($"type" === "small_airport"))
@@ -375,15 +383,15 @@ object DataFrame_5 extends App {
    */
 
   /**
-   * groupBy($"iso_country").count = 3 PO: 2 HashAggregate + Exchange hashpartitioning
+   * groupBy($"iso_country").count() = 3 PO: 2 HashAggregate + Exchange hashpartitioning
    *
-   * 1-й HashAggregate содержит функцию partial_count(1) - это означает, что внутри каждой партиции будет выполнен
+   * первый HashAggregate содержит функцию partial_count(1) - это означает, что внутри каждой партиции будет выполнен
    * подсчет строк по каждому ключу (аналогично методу RDD reduceByKey)
    *
-   * output=[iso_country#22, count#120L] == создание маленького датафрейма внутри партиции после partial_count
+   * output=[iso_country#22, count#120L] = создание маленького датафрейма внутри партиции после partial_count
    *
-   * затем происходит шафл (Exchange hashpartitioning) по ключу агрегата (iso_country),
-   * после которого выполняется еще один HashAggregate с функцией count(1)
+   * затем происходит шафл - Exchange hashpartitioning по ключу агрегата - iso_country,
+   * после которого выполняется второй HashAggregate с функцией count(1)
    *
    * использование двух HashAggregate позволяет сократить количество передаваемых данных по сети
    */
@@ -425,7 +433,7 @@ object DataFrame_5 extends App {
     val codeGen: ExplainCommand =
       ExplainCommand(
         logicalPlan,
-        CodegenMode // CodegenMode | ExtendedMode == df.explain(extended = true) | CostMode
+        CodegenMode // CodegenMode | ExtendedMode = df.explain(extended = true) | CostMode
       )
 
     /** Spark 2.4.8 */

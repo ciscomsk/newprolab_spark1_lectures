@@ -77,8 +77,8 @@ object Dataframe_7_1 extends App {
 //    joinedDf.show(numRows = 1)
 
     /** план в SQL/DataFrame показан для joinedDf.count(), а не joinedDf */
-    joinedDf.count()
-  } // 2590 ms
+    println(joinedDf.count())
+  } // 2673 ms
   println()
 
 

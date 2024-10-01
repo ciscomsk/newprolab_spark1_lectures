@@ -1,6 +1,17 @@
 package l_2
 
-import l_2.ScalaTutorial.Point
+class Point(xc: Int, yc: Int) {
+  var x: Int = xc
+  var y: Int = yc
+
+  def move(dx: Int, dy: Int): Unit = {
+    x += dx
+    y += dy
+
+    println(s"Point x location: $x")
+    println(s"Point y location: $y")
+  }
+}
 
 object App {
   def main(args: Array[String]): Unit = {

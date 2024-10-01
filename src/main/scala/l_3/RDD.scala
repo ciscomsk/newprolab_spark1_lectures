@@ -42,7 +42,7 @@ object RDD extends App {
 
   /**
    * Transformations (map/flatMap/filter/distinct/...) - не запускают вычисления (т.е. являются lazy), выполняется только построение графа
-   * Actions (count/reduce/collect/take/takeOrdered/foreach...) - запускают выполнение графа
+   * Actions (count/reduce/collect/take/takeOrdered/foreach/...) - запускают выполнение графа
    */
 
   /** map - применение трансформации к каждому элементу коллекции */
@@ -96,7 +96,7 @@ object RDD extends App {
 
   /**
    * take - передача N первых элементов RDD на драйвер
-   * элементы берутся из одной партиции - если в ней хватает элементов, если нет - будут вычитываться следующие партиции -> оптимизация
+   * элементы берутся из одной партиции - если в ней хватает элементов, если нет - будут вычитываться следующие партиции - оптимизация
    */
   val twoFirstElements: Array[String] = startsWithM.take(2)
   println(s"Two first elements of the RDD are: ${twoFirstElements.mkString(", ")}")
@@ -104,7 +104,7 @@ object RDD extends App {
 
   /**
    * takeOrdered - двухэтапный action - передача N минимальных элементов RDD на драйвер
-   * 1. сортировка + выборка N минимальных элементов в каждой партиции + передача на драйвер
+   * 1. сортировка + выборка N минимальных элементов в каждой партиции - передача на драйвер
    * 2. сортировка + выборка N минимальных элементов на драйвере
    */
   val twoSortedElements: Array[String] = startsWithM.takeOrdered(2)
@@ -114,6 +114,8 @@ object RDD extends App {
 
 
   /*
+    IDEA: View -> Show Implicits Hints
+
     package scala.collection.immutable
 
     final class WrappedString(private val self: String)
@@ -282,7 +284,7 @@ object RDD extends App {
   println()
 
   /**
-   * !!! вывода в консоль драйвера - не будет (при работе на кластере) т.к. функция foreach применяется к данным НА ЭКЗЕКЬЮТОРАХ
+   * !!! вывода в консоль драйвера - не будет (при работе на кластере) т.к. foreach выполняется НА ЭКЗЕКЬЮТОРАХ
    * вывод будет в консолях экзекьюторов
    */
   joinedRdd
@@ -298,8 +300,8 @@ object RDD extends App {
   joinedRdd.unpersist()
   println()
 
-  /** map/foreach VS mapPartition/foreachPartition */
 
+  /** map/foreach VS mapPartition/foreachPartition */
   val rdd2: RDD[Int] = sc.parallelize(1 to 1000)
 
   /*
@@ -307,12 +309,12 @@ object RDD extends App {
 
     def func(el: A): B = _
     rdd2.map(func)
-    ->
+
     partition0: Iterator[A]
     partition1: Iterator[A]
     partition2: Iterator[A]
     partition3: Iterator[A]
-    ->
+
     в каждой партиции будет выполнен цикл:
     while (partition.hasNext) {
       func(partition.next())
@@ -323,13 +325,13 @@ object RDD extends App {
     mapPartition
 
     def func(part: Iterator[A]): Iterator[B] = _
-    rdd2.mapPartitions(func) { (p: Iterator[A} => ... }
-    ->
+    rdd2.mapPartitions(func)
+
     partition0: Iterator[A]
     partition1: Iterator[A]
     partition2: Iterator[A]
     partition3: Iterator[A]
-    ->
+
     на каждой партиции будет выполнена функция:
     func(p)
    */
@@ -457,7 +459,7 @@ object RDD extends App {
    *
    * err: scala.MatchError - означает, что размер массива полученного после операции split != количеству переменных,
    * указанных в распаковке val Array(...) = airportArr
-   * -> используем Option
+   * => используем Option
    */
 //  airportRdd.count()
 
@@ -555,7 +557,7 @@ object RDD extends App {
 
   /**
    * err: java.lang.NumberFormatException - не все строки приводятся к числам
-   * -> используем Try
+   * => используем Try
    */
 //  println(airportTypedRdd.count())
 
@@ -580,7 +582,7 @@ object RDD extends App {
       case Success(v) => v
       case Failure(_) => 0
     }
-  println(tryValue)
+  println(s"tryValue: $tryValue")
   println()
 
   case class AirportTypedSafe(
@@ -677,7 +679,7 @@ object RDD extends App {
   val rdd4: RDD[Int] = sc.parallelize(1 to 100)
 
   /**
-   * myMap будет сериализован и передан в КАЖДУЮ партицию => нагрузка на драйвер/сеть
+   * myMap будет сериализован и передан в КАЖДУЮ ПАРТИЦИЮ => нагрузка на драйвер/сеть
    * передача будет осуществляться ТОЛЬКО с драйвера
    */
   val resMapRdd: RDD[Option[String]] = rdd4.map(el => myMap.get(el))
@@ -702,7 +704,7 @@ object RDD extends App {
 
   /**
    * бессмысленная операция (при работе на кластере)
-   * мутабельная переменная сериализуется и передается в каждую партицию, инкрементируется и там же остается
+   * мутабельная переменная counter сериализуется и передается в каждую партицию, инкрементируется и там же остается
    */
   rdd4.foreach(_ => counter += 1)
   println(s"counter: $counter")

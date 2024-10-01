@@ -59,29 +59,37 @@ class SchemaSpec extends AnyFlatSpec with should.Matchers {
     val result: DataType = recursion(someSchema)
     println()
 
-    println(s"res: $result")
+    println(s"result: $result")
   }
 
-  /** sbt shell => testOnly org.apache.spark.sql.SchemaSpec */
+  /** sbt shell -> testOnly org.apache.spark.sql.SchemaSpec */
   def toUpperCase(schema: StructType): StructType = {
     val upperCaseFields: Array[StructField] =
       schema
         .fields
+        // v1
         .map {
-          case sf if !sf.dataType.isInstanceOf[StructType] =>
-            StructField(sf.name.toUpperCase, sf.dataType, sf.nullable, sf.metadata)
-          case sf if sf.dataType.isInstanceOf[StructType] =>
-            val struct: StructType = sf.dataType.asInstanceOf[StructType]
-            StructField(sf.name.toUpperCase, toUpperCase(struct), sf.nullable, sf.metadata)
+          case sf@StructField(_, dataType, _, _) if !dataType.isInstanceOf[StructType] =>
+            StructField(sf.name.toUpperCase(), dataType, sf.nullable, sf.metadata)
+          case StructField(name, dataType, nullable, metadata) =>
+            StructField(name.toUpperCase(), toUpperCase(dataType.asInstanceOf[StructType]), nullable, metadata)
         }
+        // v2
+//        .map {
+//          case sf if !sf.dataType.isInstanceOf[StructType] =>
+//            StructField(sf.name.toUpperCase(), sf.dataType, sf.nullable, sf.metadata)
+//          case sf if sf.dataType.isInstanceOf[StructType] =>
+//            val struct: StructType = sf.dataType.asInstanceOf[StructType]
+//            StructField(sf.name.toUpperCase(), toUpperCase(struct), sf.nullable, sf.metadata)
+//        }
 
     StructType(upperCaseFields)
   }
 
   "Schema uppercase" should "work" in {
-    val res: StructType = toUpperCase(someSchema)
+    val result: StructType = toUpperCase(someSchema)
 
     println(someSchema)
-    println(res)
+    println(result)
   }
 }

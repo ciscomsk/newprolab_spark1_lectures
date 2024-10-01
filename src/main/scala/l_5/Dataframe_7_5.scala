@@ -45,7 +45,7 @@ object Dataframe_7_5 extends App {
     val airportsRepDf: Dataset[Row] = airportsDf.repartition(200, col("type")) // cache + count
     /** !!! cache после repartition не имеет смысла */
     airportsRepDf.cache()
-    airportsRepDf.count()
+    println(airportsRepDf.count())
 
     val leftDf: Dataset[Row] = airportsRepDf
 
@@ -66,31 +66,41 @@ object Dataframe_7_5 extends App {
             :  +- Filter isnotnull(type#1)
             :     +- InMemoryTableScan [ident#0, type#1, name#2, elevation_ft#3, continent#4, iso_country#5, iso_region#6, municipality#7, gps_code#8, iata_code#9, local_code#10, coordinates#11], [isnotnull(type#1)]
             :           +- InMemoryRelation [ident#0, type#1, name#2, elevation_ft#3, continent#4, iso_country#5, iso_region#6, municipality#7, gps_code#8, iata_code#9, local_code#10, coordinates#11], StorageLevel(disk, memory, deserialized, 1 replicas)
-            :                 +- AdaptiveSparkPlan isFinalPlan=false
-            :                    +- Exchange hashpartitioning(type#1, 200), REPARTITION_BY_NUM, [plan_id=6]
-            :                       +- FileScan csv [ident#0,type#1,name#2,elevation_ft#3,continent#4,iso_country#5,iso_region#6,municipality#7,gps_code#8,iata_code#9,local_code#10,coordinates#11] Batched: false, DataFilters: [], Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_country:string,...
+            :                 +- AdaptiveSparkPlan isFinalPlan=true
+                                 +- == Final Plan ==
+                                    ShuffleQueryStage 0
+                                    +- Exchange hashpartitioning(type#1, 200), REPARTITION_BY_NUM, [plan_id=6]
+                                       +- FileScan csv [ident#0,type#1,name#2,elevation_ft#3,continent#4,iso_country#5,iso_region#6,municipality#7,gps_code#8,iata_code#9,local_code#10,coordinates#11] Batched: false, DataFilters: [], Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_country:string,...
+                                 +- == Initial Plan ==
+                                    Exchange hashpartitioning(type#1, 200), REPARTITION_BY_NUM, [plan_id=6]
+                                    +- FileScan csv [ident#0,type#1,name#2,elevation_ft#3,continent#4,iso_country#5,iso_region#6,municipality#7,gps_code#8,iata_code#9,local_code#10,coordinates#11] Batched: false, DataFilters: [], Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_country:string,...
             +- Sort [type#431 ASC NULLS FIRST], false, 0
                +- HashAggregate(keys=[type#431], functions=[count(1)])
                   +- HashAggregate(keys=[type#431], functions=[partial_count(1)])
                      +- Filter isnotnull(type#431)
                         +- InMemoryTableScan [type#431], [isnotnull(type#431)]
                               +- InMemoryRelation [ident#430, type#431, name#432, elevation_ft#433, continent#434, iso_country#435, iso_region#436, municipality#437, gps_code#438, iata_code#439, local_code#440, coordinates#441], StorageLevel(disk, memory, deserialized, 1 replicas)
-                                    +- AdaptiveSparkPlan isFinalPlan=false
-                                       +- Exchange hashpartitioning(type#1, 200), REPARTITION_BY_NUM, [plan_id=6]
+                                    +- AdaptiveSparkPlan isFinalPlan=true
+                                       +- == Final Plan ==
+                                          ShuffleQueryStage 0
+                                          +- Exchange hashpartitioning(type#1, 200), REPARTITION_BY_NUM, [plan_id=6]
+                                             +- FileScan csv [ident#0,type#1,name#2,elevation_ft#3,continent#4,iso_country#5,iso_region#6,municipality#7,gps_code#8,iata_code#9,local_code#10,coordinates#11] Batched: false, DataFilters: [], Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_country:string,...
+                                       +- == Initial Plan ==
+                                          Exchange hashpartitioning(type#1, 200), REPARTITION_BY_NUM, [plan_id=6]
                                           +- FileScan csv [ident#0,type#1,name#2,elevation_ft#3,continent#4,iso_country#5,iso_region#6,municipality#7,gps_code#8,iata_code#9,local_code#10,coordinates#11] Batched: false, DataFilters: [], Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/home/mike/_learn/Spark/newprolab_1/_repos/lectures/src/main/reso..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<ident:string,type:string,name:string,elevation_ft:int,continent:string,iso_country:string,...
      */
 
     //    joinedDf.show(numRows = 1)
 
     /** план в SQL/DataFrame показан для joinedDf.count(), а не joinedDf */
-    joinedDf.count()
+    println(joinedDf.count())
     airportsRepDf.unpersist()
-  } // 4569 ms
+  } // 4737 ms
   println()
 
 
   println(sc.uiWebUrl)
-  Thread.sleep(1000000)
+  Thread.sleep(1_000_000)
 
   spark.stop()
 }

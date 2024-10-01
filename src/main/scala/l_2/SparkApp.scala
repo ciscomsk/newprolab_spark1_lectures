@@ -4,7 +4,7 @@ import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SparkSession
 
-object Spark extends App {
+object SparkApp extends App {
   // не работает в Spark 3.5
 //  Logger
 //    .getLogger("org")
@@ -17,7 +17,7 @@ object Spark extends App {
       .master("local[*]")
       .getOrCreate()
 
-  // работает в Spark 3.5
+  // работает в Spark 3.5.2
   val sc: SparkContext = spark.sparkContext
   sc.setLogLevel("ERROR")
 
